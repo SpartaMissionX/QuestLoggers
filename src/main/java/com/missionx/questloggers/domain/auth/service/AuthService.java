@@ -1,5 +1,7 @@
 package com.missionx.questloggers.domain.auth.service;
 
+import com.missionx.questloggers.domain.auth.dto.LoginRequestDto;
+import com.missionx.questloggers.domain.auth.dto.LoginResponseDto;
 import com.missionx.questloggers.domain.auth.dto.SignupRequestDto;
 import com.missionx.questloggers.domain.auth.dto.SignupResponseDto;
 import com.missionx.questloggers.domain.user.entity.User;
@@ -7,6 +9,7 @@ import com.missionx.questloggers.domain.user.exception.UserException;
 import com.missionx.questloggers.domain.user.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,6 +17,8 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final UserService userService;
+     private final BCryptPasswordEncoder passwordEncoder;
+//     private final JwtTokenProvider jwtTokenProvider;
 
     // 회원가입
     @Transactional
@@ -21,7 +26,26 @@ public class AuthService {
         if (userService.existsByEmail(signupRequestDto.getEmail())) {
             throw new UserException("이미 존재하는 이메일입니다.");
         }
-        User savedUser = userService.createUser(new User(signupRequestDto.getEmail(), signupRequestDto.getPassword(), signupRequestDto.getApiKey()));
+
+        // 암호화(해싱)
+        String encodedPassword = passwordEncoder.encode(signupRequestDto.getPassword());
+
+        User savedUser = userService.createUser(new User(signupRequestDto.getEmail(), encodedPassword, signupRequestDto.getApiKey()));
         return new SignupResponseDto(savedUser.getId(), savedUser.getEmail());
+    }
+
+    // 로그인
+    public LoginResponseDto login(LoginRequestDto loginRequestDto) {
+        // 일치하는 이메일 없을 때
+        User user = userService.findByEmail(loginRequestDto.getEmail()).orElseThrow(()-> new UserException("존재하지 않는 이메일입니다."));
+        // 일치하는 비밀번호가 아닐 때
+        if(!passwordEncoder.matches(loginRequestDto.getPassword(), user.getPassword())) {
+            throw new UserException("비밀번호가 일치하지 않습니다.");
+        }
+
+//        String jwtToken = jwtTokenProvider.createToken(user.getEmail());
+//
+//        return new LoginResponseDto(user.getId(), jwtToken);
+        return null;
     }
 }
