@@ -78,4 +78,15 @@ public class CommentService {
 
         return new UpdateCommentResponseDto(comment.getId(), comment.getContent());
     }
+
+    /**
+     * 댓글 삭제 기능
+     */
+    @Transactional
+    public void deleteComment(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundCommentException(HttpStatus.NOT_FOUND,"댓글을 찾을 수 없습니다. 다시 확인해주세요"));
+
+        comment.delete();
+    }
 }
