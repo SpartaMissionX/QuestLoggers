@@ -7,6 +7,7 @@ import com.missionx.questloggers.domain.auth.dto.SignupResponseDto;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.domain.user.exception.UserException;
 import com.missionx.questloggers.domain.user.service.UserService;
+import com.missionx.questloggers.global.config.JwtTokenProvider;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,7 +19,7 @@ public class AuthService {
 
     private final UserService userService;
      private final BCryptPasswordEncoder passwordEncoder;
-//     private final JwtTokenProvider jwtTokenProvider;
+     private final JwtTokenProvider jwtTokenProvider;
 
     // 회원가입
     @Transactional
@@ -36,16 +37,13 @@ public class AuthService {
 
     // 로그인
     public LoginResponseDto login(LoginRequestDto loginRequestDto) {
-        // 일치하는 이메일 없을 때
         User user = userService.findByEmail(loginRequestDto.getEmail()).orElseThrow(()-> new UserException("존재하지 않는 이메일입니다."));
-        // 일치하는 비밀번호가 아닐 때
         if(!passwordEncoder.matches(loginRequestDto.getPassword(), user.getPassword())) {
             throw new UserException("비밀번호가 일치하지 않습니다.");
         }
 
-//        String jwtToken = jwtTokenProvider.createToken(user.getEmail());
-//
-//        return new LoginResponseDto(user.getId(), jwtToken);
-        return null;
+        String jwtToken = jwtTokenProvider.createToken(user.getId(), user.getEmail());
+
+        return new LoginResponseDto(user.getId(), jwtToken);
     }
 }
