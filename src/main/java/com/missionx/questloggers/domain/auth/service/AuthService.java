@@ -18,7 +18,7 @@ public class AuthService {
     private final UserService userService;
 
     // 회원가입
-    public SignupResponseDto signup(SignupRequestDto signupRequestDto) {
+    public SignupUserData signup(SignupRequestDto signupRequestDto) {
         String email = signupRequestDto.getEmail();
         String password = signupRequestDto.getPassword();
         String apiKey = signupRequestDto.getApiKey();
@@ -38,23 +38,27 @@ public class AuthService {
             throw new UserException("존재하지 않거나 잘못된 API키입니다.");
         }
 
-        // db 저장
-        // 123123
+        // 유저 저장
+        User savedUser = userService.createUser(new User(email, password, apiKey));
 
-        return new SignupResponseDto(201, "회원가입이 완료되었습니다.", signupUserData);
+        // SignupUserData만 리턴
+        return new SignupUserData(
+                savedUser.getId(),
+                savedUser.getEmail(),
+                savedUser.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+        );
     }
 
-
     // 비밀번호 유효성 검사 메서드
-        private boolean isValidPassword(String password) {
-            return password != null &&
-                    password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[~!@#$%^&*]).{8,}$");
-        }
+    private boolean isValidPassword(String password) {
+        return password != null &&
+                password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[~!@#$%^&*]).{8,}$");
+    }
 
-        // API 키 유효성 검사 메서드
-        private boolean isValidApiKey(String apiKey) {
-            return apiKey != null && apiKey.length() >= 10;
-        }
+    // API 키 유효성 검사 메서드
+    private boolean isValidApiKey(String apiKey) {
+        return apiKey != null && apiKey.length() >= 10;
+    }
 
     public void login() {
 
