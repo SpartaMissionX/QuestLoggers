@@ -5,6 +5,7 @@ import com.missionx.questloggers.domain.user.dto.SignupResponseDto;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.domain.user.exception.UserException;
 import com.missionx.questloggers.domain.user.service.UserService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import com.missionx.questloggers.domain.user.dto.SignupResponseDto.SignupUserData;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ public class AuthService {
     private final UserService userService;
 
     // 회원가입
+    @Transactional
     public SignupUserData signup(SignupRequestDto signupRequestDto) {
         String email = signupRequestDto.getEmail();
         String password = signupRequestDto.getPassword();
