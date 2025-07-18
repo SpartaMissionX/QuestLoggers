@@ -5,12 +5,10 @@ import com.missionx.questloggers.domain.post.dto.CreatePostResponseDto;
 import com.missionx.questloggers.domain.post.dto.UpdatePostRequestDto;
 import com.missionx.questloggers.domain.post.dto.UpdatePostResponseDto;
 import com.missionx.questloggers.domain.post.entity.Post;
-import com.missionx.questloggers.domain.post.entity.Post;
-import com.missionx.questloggers.domain.post.exception.NotFoundException;
+import com.missionx.questloggers.domain.post.exception.NotFoundPostException;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +20,7 @@ public class PostService {
 
     public Post findPostById(Long postId) {
         return postRepository.findById(postId)
-                .orElseThrow(() -> new NotFoundException(HttpStatus.NOT_FOUND,
+                .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND,
                         "게시글을 찾을 수 없습니다. 다시 확인해주세요"));
     }
 
@@ -41,9 +39,15 @@ public class PostService {
     @Transactional
     public UpdatePostResponseDto updatePostService(Long postId, UpdatePostRequestDto updatePostRequestDto) {
         Post foundPost = postRepository.findById(postId)
-                        .orElseThrow(()-> new NotFoundException(HttpStatus.NOT_FOUND, "post not found"));
+                        .orElseThrow(()-> new NotFoundPostException(HttpStatus.NOT_FOUND, "post not found"));
         foundPost.updatePost(updatePostRequestDto);
         return new UpdatePostResponseDto(foundPost.getId(), foundPost.getTitle(), foundPost.getContent());
     }
 
+    // 다른 domain에서 사용하는 기능
+    public Post findPostById(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND,
+                        "게시글을 찾을 수 없습니다. 다시 확인해주세요"));
+    }
 }
