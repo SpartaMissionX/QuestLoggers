@@ -1,15 +1,17 @@
 package com.missionx.questloggers.domain.post.controller;
 
-import com.missionx.questloggers.domain.post.dto.CreatePostRequestDto;
-import com.missionx.questloggers.domain.post.dto.CreatePostResponseDto;
-import com.missionx.questloggers.domain.post.dto.UpdatePostRequestDto;
-import com.missionx.questloggers.domain.post.dto.UpdatePostResponseDto;
+import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.post.service.PostService;
 import com.missionx.questloggers.global.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -32,4 +34,14 @@ public class PostController {
         UpdatePostResponseDto responseDto = postService.updatePostService(postId, updatePostRequestDto);
         return ApiResponse.success(HttpStatus.OK, "게시글 수정이 완료되었습니다.", responseDto);
     }
+
+    @GetMapping("/posts")
+    public ResponseEntity<ApiResponse<List<GetAllPostResponseDto>>> getAllPost(
+            @RequestParam("keyword") String keyword,
+            @PageableDefault(size = 10,page = 0,sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        List<GetAllPostResponseDto> allPostService = postService.getAllPostService(keyword, pageable);
+        return ApiResponse.success(HttpStatus.ACCEPTED,"게시글 전체 조회 성공.", allPostService);
+    }
+
 }
