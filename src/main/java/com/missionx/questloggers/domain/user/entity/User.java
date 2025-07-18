@@ -20,11 +20,16 @@ public class User extends BaseEntity {
 
     private String password;
 
+    @Enumerated(EnumType.STRING)
     private Role role;
 
     private String apiKey;
 
     private String point;
 
-
+    public User(String email, String password, String apiKey) {
+        this.email = email;
+        this.password = password;
+        this.apiKey = apiKey;
+    }
 }
