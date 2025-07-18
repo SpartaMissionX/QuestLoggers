@@ -2,6 +2,8 @@ package com.missionx.questloggers.domain.comment.controller;
 
 import com.missionx.questloggers.domain.comment.dto.CreateCommentRequestDto;
 import com.missionx.questloggers.domain.comment.dto.CreateCommentResponseDto;
+import com.missionx.questloggers.domain.comment.dto.UpdateCommentRequestDto;
+import com.missionx.questloggers.domain.comment.dto.UpdateCommentResponseDto;
 import com.missionx.questloggers.domain.comment.service.CommentService;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.global.dto.ApiResponse;
@@ -23,9 +25,16 @@ public class CommentController {
             @RequestBody CreateCommentRequestDto requestDto
     ) {
         Long userId = 1L;
-        postId = 1L;
         CreateCommentResponseDto responseDto = commentService.createComment(userId, postId, requestDto);
-        return ApiResponse.success(HttpStatus.OK, "댓글 작성이 완료되었습니다.", responseDto);
+        return ApiResponse.success(HttpStatus.CREATED, "댓글 작성이 완료되었습니다.", responseDto);
     }
 
+    @PatchMapping("/comments/{commentId}")
+    public ResponseEntity<ApiResponse<UpdateCommentResponseDto>> updateComment(
+            @PathVariable Long commentId,
+            @RequestBody UpdateCommentRequestDto requestDto
+    ) {
+        UpdateCommentResponseDto responseDto = commentService.updateComment(commentId, requestDto);
+        return ApiResponse.success(HttpStatus.OK, "댓글 수정이 완료되었습니다.", responseDto);
+    }
 }
