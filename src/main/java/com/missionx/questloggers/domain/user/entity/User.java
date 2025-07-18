@@ -21,6 +21,7 @@ public class User extends BaseEntity {
 
     private String password;
 
+    @Enumerated(EnumType.STRING)
     private Role role;
 
     private String apiKey;
@@ -32,5 +33,4 @@ public class User extends BaseEntity {
         this.password = password;
         this.apiKey = apiKey;
     }
-
 }
