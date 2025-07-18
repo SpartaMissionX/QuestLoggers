@@ -43,4 +43,5 @@ public class PostController {
         List<GetAllPostResponseDto> allPostService = postService.getAllPostService(keyword, pageable);
         return ApiResponse.success(HttpStatus.ACCEPTED,"게시글 전체 조회 성공.", allPostService);
     }
+
 }

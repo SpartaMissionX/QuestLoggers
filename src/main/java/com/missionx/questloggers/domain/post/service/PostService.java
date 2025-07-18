@@ -4,13 +4,12 @@ import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.exception.NotFoundPostException;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,14 +42,8 @@ public class PostService {
         return new UpdatePostResponseDto(foundPost.getId(), foundPost.getTitle(), foundPost.getContent());
     }
 
-    // 다른 domain에서 사용하는 기능
-    public Post findPostById(Long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND,
-                        "게시글을 찾을 수 없습니다. 다시 확인해주세요"));
-    }
-
     //포스트 다건조회 페이징 및 키워드 검색
+    @Transactional(readOnly = true)
     public List<GetAllPostResponseDto> getAllPostService(String keyword, Pageable pageable) {
         Page<Post> foundPostList = postRepository.findByTitleContaining(keyword, pageable);
 
@@ -61,5 +54,12 @@ public class PostService {
                 .collect(Collectors.toList());
 
         return getAllPostResponseDtos;
+    }
+
+    // 다른 domain에서 사용하는 기능
+    public Post findPostById(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND,
+                        "게시글을 찾을 수 없습니다. 다시 확인해주세요"));
     }
 }
