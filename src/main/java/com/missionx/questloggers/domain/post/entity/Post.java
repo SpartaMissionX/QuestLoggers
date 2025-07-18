@@ -1,5 +1,6 @@
 package com.missionx.questloggers.domain.post.entity;
 
+import com.missionx.questloggers.domain.post.dto.UpdatePostRequestDto;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.global.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -29,5 +30,9 @@ public class Post extends BaseEntity {
         this.content = content;
     }
 
+    public void updatePost(UpdatePostRequestDto updatePostRequestDto) {
+        this.title = updatePostRequestDto.getTitle();
+        this.content = updatePostRequestDto.getContent();
+    }
 
 }
