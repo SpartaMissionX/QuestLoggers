@@ -14,6 +14,7 @@ public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // pk
     private Long id;
 
     private String email;
@@ -24,7 +25,12 @@ public class User extends BaseEntity {
 
     private String apiKey;
 
-    private String point;
+    private int point;
 
+    public User(String email, String password, String apiKey) {
+        this.email = email;
+        this.password = password;
+        this.apiKey = apiKey;
+    }
 
 }

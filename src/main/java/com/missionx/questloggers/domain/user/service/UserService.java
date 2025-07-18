@@ -10,4 +10,12 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    // 이메일 중복 체크용
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    public User createUser(User user) {
+        return userRepository.save(user);
+    }
 }
