@@ -1,5 +1,6 @@
 package com.missionx.questloggers.domain.boss.entity;
 
+import com.missionx.questloggers.domain.boss.dto.CreateBossRequestDto;
 import com.missionx.questloggers.domain.characterboss.entity.CharacterBoss;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -25,4 +26,10 @@ public class Boss {
     private String bossName;
 
     private String bossImage;
+
+    //보스 생성 생성자
+    public Boss(CreateBossRequestDto createBossRequestDto) {
+        this.bossName = createBossRequestDto.getBossName();
+        this.bossImage = createBossRequestDto.getBossImage();
+    }
 }
