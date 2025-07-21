@@ -4,6 +4,7 @@ import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.exception.NotFoundPostException;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
+import com.missionx.questloggers.global.entity.BaseEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -62,6 +63,13 @@ public class PostService {
                 .orElseThrow(()-> new RuntimeException("post not found"));
 
         return new GetPostResponseDto(foundPost.getUser().getId(), foundPost.getId(), foundPost.getTitle(), foundPost.getContent());
+    }
+
+    @Transactional
+    public void deletePostService(Long postId) {
+        Post foundPost = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("post not found"));
+        foundPost.delete();
     }
 
     // 다른 domain에서 사용하는 기능
