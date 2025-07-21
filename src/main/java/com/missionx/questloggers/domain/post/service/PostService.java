@@ -48,13 +48,11 @@ public class PostService {
     public List<GetAllPostResponseDto> getAllPostService(String keyword, Pageable pageable) {
         Page<Post> foundPostList = postRepository.findByTitleContaining(keyword, pageable);
 
-        List<GetAllPostResponseDto> getAllPostResponseDtos = foundPostList.stream()
+        return foundPostList.stream()
                 .map((post) -> {
                     return new GetAllPostResponseDto(post.getId(), post.getTitle(), post.getContent());
                 })
                 .collect(Collectors.toList());
-
-        return getAllPostResponseDtos;
     }
 
     @Transactional(readOnly = true)
