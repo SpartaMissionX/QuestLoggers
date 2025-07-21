@@ -56,6 +56,14 @@ public class PostService {
         return getAllPostResponseDtos;
     }
 
+    @Transactional(readOnly = true)
+    public GetPostResponseDto getPostService(Long postId) {
+        Post foundPost = postRepository.findById(postId)
+                .orElseThrow(()-> new RuntimeException("post not found"));
+
+        return new GetPostResponseDto(foundPost.getUser().getId(), foundPost.getId(), foundPost.getTitle(), foundPost.getContent());
+    }
+
     // 다른 domain에서 사용하는 기능
     public Post findPostById(Long postId) {
         return postRepository.findById(postId)

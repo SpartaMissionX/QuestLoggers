@@ -1,6 +1,7 @@
 package com.missionx.questloggers.domain.post.controller;
 
 import com.missionx.questloggers.domain.post.dto.*;
+import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.service.PostService;
 import com.missionx.questloggers.global.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,12 @@ public class PostController {
     ) {
         List<GetAllPostResponseDto> allPostService = postService.getAllPostService(keyword, pageable);
         return ApiResponse.success(HttpStatus.ACCEPTED,"게시글 전체 조회 성공.", allPostService);
+    }
+
+    @GetMapping("/posts/{postId}")
+    public ResponseEntity<ApiResponse<GetPostResponseDto>> getPost (@PathVariable("postId") Long postId) {
+        GetPostResponseDto getPostResponseDto = postService.getPostService(postId);
+        return ApiResponse.success(HttpStatus.FOUND,"게시글 조회 성공", getPostResponseDto);
     }
 
 }
