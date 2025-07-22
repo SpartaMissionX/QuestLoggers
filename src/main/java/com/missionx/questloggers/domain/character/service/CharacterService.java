@@ -1,14 +1,18 @@
 package com.missionx.questloggers.domain.character.service;
 
+import com.missionx.questloggers.domain.character.dto.GetSerchCharResponseDto;
 import com.missionx.questloggers.domain.character.dto.AccountListDto;
 import com.missionx.questloggers.domain.character.dto.CharacterDto;
 import com.missionx.questloggers.domain.character.dto.CreateCharacterResponseDto;
 import com.missionx.questloggers.domain.character.entity.Character;
 import com.missionx.questloggers.domain.character.exception.CharacterException;
 import com.missionx.questloggers.domain.character.repository.CharacterRepository;
+import com.missionx.questloggers.domain.post.dto.GetAllPostResponseDto;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -91,4 +96,14 @@ public class CharacterService {
         }
     }
 
+    public List<GetSerchCharResponseDto> serchCharService(String keyword, Pageable pageable) {
+        Page<Character> foundCharList = characterRepository.findByCharNameContaining(keyword, pageable);
+
+        return foundCharList.stream()
+                .map(character -> {
+                    return new GetSerchCharResponseDto(character.getCharName(), character.getCharLevel());
+                })
+                .collect(Collectors.toList());
+
+    }
 }
