@@ -66,4 +66,9 @@ public class JwtTokenProvider {
         }
         return null;
     }
+
+    // 토큰에서 email 추출
+    public String getEmailFromToken(String token) {
+        return parseClaims(token).getSubject();
+    }
 }

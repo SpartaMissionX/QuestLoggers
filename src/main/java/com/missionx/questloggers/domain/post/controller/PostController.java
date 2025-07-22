@@ -2,6 +2,7 @@ package com.missionx.questloggers.domain.post.controller;
 
 import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.post.service.PostService;
+import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,8 +23,8 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping("/posts")
-    public ResponseEntity<ApiResponse<CreatePostResponseDto>> createPost(@RequestBody CreatePostRequestDto createPostRequestDto) {
-        CreatePostResponseDto responseDto = postService.createPostService(createPostRequestDto);
+    public ResponseEntity<ApiResponse<CreatePostResponseDto>> createPost(@RequestBody CreatePostRequestDto createPostRequestDto, @AuthenticationPrincipal LoginUser loginUser) {
+        CreatePostResponseDto responseDto = postService.createPostService(createPostRequestDto, loginUser.getUserId());
         return ApiResponse.success(HttpStatus.CREATED, "게시글 작성이 완료되었습니다.", responseDto);
     }
 

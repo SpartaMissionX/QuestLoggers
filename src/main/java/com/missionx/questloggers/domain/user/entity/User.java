@@ -17,13 +17,16 @@ public class User extends BaseEntity {
     // pk
     private Long id;
 
+    @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
     private Role role = Role.USER;
 
+    @Column(nullable = false)
     private String apiKey;
 
     private int point;
