@@ -6,11 +6,10 @@ import com.missionx.questloggers.domain.character.dto.SerchAllCharResponseDto;
 import com.missionx.questloggers.domain.character.dto.AccountListDto;
 import com.missionx.questloggers.domain.character.dto.CharacterDto;
 import com.missionx.questloggers.domain.character.entity.Character;
+import com.missionx.questloggers.domain.character.exception.AlreadyHaveOwnerCharacterException;
 import com.missionx.questloggers.domain.character.exception.CharacterException;
 import com.missionx.questloggers.domain.character.exception.NotFoundCharException;
 import com.missionx.questloggers.domain.character.repository.CharacterRepository;
-import com.missionx.questloggers.domain.characterboss.entity.CharacterBoss;
-import com.missionx.questloggers.domain.characterboss.service.CharacterBossService;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.domain.user.service.UserService;
 import com.missionx.questloggers.global.config.security.LoginUser;
@@ -149,6 +148,9 @@ public class CharacterService {
         User user = userService.findUserById(loginUser.getUserId());
         Character character = findById(charId);
 
+        if (character.isOwnerChar()) {
+            throw new AlreadyHaveOwnerCharacterException(HttpStatus.BAD_REQUEST, "이미 대표로 설정된 캐릭터입니다.");
+        }
         Character alreadyHaveOwnerChar = characterRepository.findByUserAndOwnerCharTrue(user).orElseThrow(
                 () -> new CharacterException(HttpStatus.NOT_FOUND, "대표캐릭터가 존재하지 않습니다.")
         );
