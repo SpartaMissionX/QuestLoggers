@@ -28,9 +28,17 @@ public class User extends BaseEntity {
 
     private int point;
 
+    //soft delete 추가
+    @Column(nullable = false)
+    private boolean isDeleted = false;
+
     public User(String email, String password, String apiKey) {
         this.email = email;
         this.password = password;
         this.apiKey = apiKey;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.isDeleted = deleted;
     }
 }
