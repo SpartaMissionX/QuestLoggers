@@ -4,6 +4,7 @@ import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.exception.NotFoundPostException;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
+import com.missionx.questloggers.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

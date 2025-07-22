@@ -1,13 +1,12 @@
 package com.missionx.questloggers.global.config;
 
+import com.missionx.questloggers.global.config.security.LoginUser;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
-import java.util.List;
 
 public class JwtAuthorizationFilter implements Filter {
 
@@ -24,19 +23,21 @@ public class JwtAuthorizationFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         String token = jwtTokenProvider.resolveToken(httpRequest);
 
-        Long userId = null;
-
         if (token != null && jwtTokenProvider.validateToken(token)) {
-            userId = jwtTokenProvider.getUserIdFromToken(token);
-            httpRequest.setAttribute("userId", userId);
+            Long userId = jwtTokenProvider.getUserIdFromToken(token);
+            String email = jwtTokenProvider.getEmailFromToken(token);
+
+            LoginUser loginUser = new LoginUser(userId, email);
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
-                            userId,
+                            loginUser,
                             null,
-                            List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                            loginUser.getAuthorities()  // ROLE_USER 포함
                     );
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            httpRequest.setAttribute("userId", userId);  // 선택 사항
         }
 
         chain.doFilter(request, response);
