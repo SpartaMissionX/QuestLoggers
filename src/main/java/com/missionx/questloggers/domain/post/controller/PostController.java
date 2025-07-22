@@ -44,4 +44,16 @@ public class PostController {
         return ApiResponse.success(HttpStatus.ACCEPTED,"게시글 전체 조회 성공.", allPostService);
     }
 
+    @GetMapping("/posts/{postId}")
+    public ResponseEntity<ApiResponse<GetPostResponseDto>> getPost (@PathVariable("postId") Long postId) {
+        GetPostResponseDto getPostResponseDto = postService.getPostService(postId);
+        return ApiResponse.success(HttpStatus.FOUND,"게시글 조회 성공", getPostResponseDto);
+    }
+
+    @DeleteMapping("/posts/{postId}")
+    public ResponseEntity<ApiResponse<Object>> deletePost (@PathVariable("postId") Long postId) {
+        postService.deletePostService(postId);
+        return ApiResponse.success(HttpStatus.OK,"게시글 삭제가 완료되었습니다.", null);
+    }
+
 }
