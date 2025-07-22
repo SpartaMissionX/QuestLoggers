@@ -1,6 +1,7 @@
 package com.missionx.questloggers.domain.character.controller;
 
 import com.missionx.questloggers.domain.character.dto.AccountListDto;
+import com.missionx.questloggers.domain.character.dto.SetOwnerCharResponseDto;
 import com.missionx.questloggers.domain.character.service.CharacterService;
 import com.missionx.questloggers.global.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -29,4 +30,9 @@ public class CharacterController {
         return ApiResponse.success(HttpStatus.OK, "캐릭터 생성이 완료되었습니다.", null);
     }
 
+    @PostMapping("/mychar/{charId}")
+    public void setOwnerChar(@PathVariable Long charId) {
+        SetOwnerCharResponseDto responseDto = characterService.setOwnerChar(charId);
+        ApiResponse.success(HttpStatus.OK, "대표 캐릭터 설정이 완료되었습니다.", responseDto);
+    }
 }

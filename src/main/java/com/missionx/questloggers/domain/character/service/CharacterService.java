@@ -3,22 +3,22 @@ package com.missionx.questloggers.domain.character.service;
 import com.missionx.questloggers.domain.character.dto.AccountListDto;
 import com.missionx.questloggers.domain.character.dto.CharacterDto;
 import com.missionx.questloggers.domain.character.dto.CreateCharacterResponseDto;
+import com.missionx.questloggers.domain.character.dto.SetOwnerCharResponseDto;
 import com.missionx.questloggers.domain.character.entity.Character;
 import com.missionx.questloggers.domain.character.exception.CharacterException;
+import com.missionx.questloggers.domain.character.exception.NotFoundCharException;
 import com.missionx.questloggers.domain.character.repository.CharacterRepository;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -91,4 +91,16 @@ public class CharacterService {
         }
     }
 
+    /**
+     * 대표캐릭터 설정 기능
+     * 최초 1번만 사용
+     */
+    public SetOwnerCharResponseDto setOwnerChar(Long charId) {
+        Character character = characterRepository.findById(charId).orElseThrow(
+                () -> new NotFoundCharException(HttpStatus.NOT_FOUND, "존재하지 않는 캐릭터입니다."));
+
+        character.updateOwnerChar(true);
+
+        return new SetOwnerCharResponseDto(character.getCharName(), character.getWorldName(), character.getCharClass(), character.getCharLevel());
+    }
 }

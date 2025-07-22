@@ -59,4 +59,8 @@ public class Character {
         this.charClass = charClass;
         this.charLevel = charLevel;
     }
+
+    public void updateOwnerChar(boolean ownerChar) {
+        this.ownerChar = ownerChar;
+    }
 }
