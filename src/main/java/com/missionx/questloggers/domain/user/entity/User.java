@@ -24,7 +24,7 @@ public class User extends BaseEntity {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private Role role = Role.USER;
 
     @Column(nullable = false)
     private String apiKey;
@@ -45,8 +45,7 @@ public class User extends BaseEntity {
         this.isDeleted = deleted;
     }
 
-    // API 키 변경
-    public void updateApiKey(String newApiKey) {
-        this.apiKey = newApiKey;
+    public void updatePassword(String newPassword) {
+        this.password = newPassword;
     }
 }
