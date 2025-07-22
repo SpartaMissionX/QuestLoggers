@@ -1,7 +1,12 @@
 package com.missionx.questloggers.domain.characterboss.exception;
 
+import org.springframework.http.HttpStatus;
+
 public class CharacterBossException extends RuntimeException {
-    public CharacterBossException(String message) {
+    private final HttpStatus status;
+
+    public CharacterBossException(HttpStatus status, String message) {
         super(message);
+        this.status = status;
     }
 }

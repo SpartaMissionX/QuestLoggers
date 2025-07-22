@@ -26,8 +26,9 @@ public class CharacterController {
      * 캐릭터 생성 API
      * 수정 필요
      */
-    @PostMapping("/mychar/{userId}")
-    public ResponseEntity<ApiResponse<AccountListDto>> saveCharList(@PathVariable Long userId) {
+    @PostMapping("/mychar")
+    public ResponseEntity<ApiResponse<AccountListDto>> saveCharList() {
+        Long userId = 1L;
         characterService.createCharList(userId);
         return ApiResponse.success(HttpStatus.OK, "캐릭터 생성이 완료되었습니다.", null);
     }
@@ -36,8 +37,9 @@ public class CharacterController {
      * 본인 캐릭터 조회 API
      * 수정 필요
      */
-    @GetMapping("/mychar/{userId}")
-    public ResponseEntity<ApiResponse<AccountListDto>> getCharList(@PathVariable Long userId) {
+    @GetMapping("/mychar")
+    public ResponseEntity<ApiResponse<AccountListDto>> getCharList() {
+        Long userId = 1L;
         AccountListDto charList = characterService.getCharList(userId);
         return ApiResponse.success(HttpStatus.OK, "조회가 완료되었습니다.", charList);
     }
@@ -67,7 +69,7 @@ public class CharacterController {
      * 대표캐릭터 설정
      * 수정 필요
      */
-    @PostMapping("/mychar/{charId}")
+    @PostMapping("/mychar/owner/{charId}")
     public ResponseEntity<ApiResponse<SetOwnerCharResponseDto>> setOwnerChar(@PathVariable Long charId) {
         Long userId = 1L;
         SetOwnerCharResponseDto responseDto = characterService.setOwnerChar(userId , charId);
@@ -78,10 +80,11 @@ public class CharacterController {
      * 대표캐릭터 업데이트
      * 수정 필요
      */
-    @PatchMapping("/mychar/{charId}")
+    @PatchMapping("/mychar/owner/{charId}")
     public ResponseEntity<ApiResponse<UpdateOwnerCharResponseDte>> updateOwnerChar(@PathVariable Long charId) {
         Long userId = 1L;
         UpdateOwnerCharResponseDte responseDte = characterService.updateOwnerChar(userId, charId);
         return ApiResponse.success(HttpStatus.OK, "대표 캐릭터 변경이 완료되었습니다.", responseDte);
     }
+
 }
