@@ -48,7 +48,14 @@ public class PostService {
     //포스트 다건조회 페이징 및 키워드 검색
     @Transactional(readOnly = true)
     public List<GetAllPostResponseDto> getAllPostService(String keyword, Pageable pageable) {
-        Page<Post> foundPostList = postRepository.findByTitleContaining(keyword, pageable);
+
+
+        Page<Post> foundPostList;
+        if (keyword == null) {
+            foundPostList = postRepository.findAll(pageable);
+        } else {
+            foundPostList = postRepository.findByTitleContaining(keyword, pageable);
+        }
 
         return foundPostList.stream()
                 .map((post) -> {

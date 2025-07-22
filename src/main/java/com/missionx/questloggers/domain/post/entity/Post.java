@@ -36,8 +36,4 @@ public class Post extends BaseEntity {
         this.content = updatePostRequestDto.getContent();
     }
 
-    @Override
-    public void delete() {
-        super.delete();
-    }
 }
