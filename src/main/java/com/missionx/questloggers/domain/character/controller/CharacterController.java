@@ -1,9 +1,6 @@
 package com.missionx.questloggers.domain.character.controller;
 
-import com.missionx.questloggers.domain.character.dto.SerchAllCharResponseDto;
-import com.missionx.questloggers.domain.character.dto.AccountListDto;
-import com.missionx.questloggers.domain.character.dto.SerchCharResponseDto;
-import com.missionx.questloggers.domain.character.dto.SetOwnerCharResponseDto;
+import com.missionx.questloggers.domain.character.dto.*;
 import com.missionx.questloggers.domain.character.service.CharacterService;
 import com.missionx.questloggers.global.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -46,16 +43,24 @@ public class CharacterController {
         return ApiResponse.success(HttpStatus.OK, "조회가 완료되었습니다.", charList);
     }
 
-    @PostMapping("/mychar")
-    public ResponseEntity<ApiResponse<AccountListDto>> saveCharList() {
-        Long userId = 1L;
+    // 수정필요
+    @PostMapping("/mychar/{userId}")
+    public ResponseEntity<ApiResponse<AccountListDto>> saveCharList(@PathVariable Long userId) {
         characterService.createCharList(userId);
         return ApiResponse.success(HttpStatus.OK, "캐릭터 생성이 완료되었습니다.", null);
     }
 
     @PostMapping("/mychar/{charId}")
-    public void setOwnerChar(@PathVariable Long charId) {
-        SetOwnerCharResponseDto responseDto = characterService.setOwnerChar(charId);
-        ApiResponse.success(HttpStatus.OK, "대표 캐릭터 설정이 완료되었습니다.", responseDto);
+    public ResponseEntity<ApiResponse<SetOwnerCharResponseDto>> setOwnerChar(@PathVariable Long charId) {
+        Long userId = 1L;
+        SetOwnerCharResponseDto responseDto = characterService.setOwnerChar(userId , charId);
+        return ApiResponse.success(HttpStatus.OK, "대표 캐릭터 설정이 완료되었습니다.", responseDto);
+    }
+
+    @PatchMapping("/mychar/{charId}")
+    public ResponseEntity<ApiResponse<UpdateOwnerCharResponseDte>> updateOwnerChar(@PathVariable Long charId) {
+        Long userId = 1L;
+        UpdateOwnerCharResponseDte responseDte = characterService.updateOwnerChar(userId, charId);
+        return ApiResponse.success(HttpStatus.OK, "대표 캐릭터 변경이 완료되었습니다.", responseDte);
     }
 }

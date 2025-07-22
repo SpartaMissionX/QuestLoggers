@@ -63,5 +63,4 @@ public class Character {
     public void updateOwnerChar(boolean ownerChar) {
         this.ownerChar = ownerChar;
     }
-
 }

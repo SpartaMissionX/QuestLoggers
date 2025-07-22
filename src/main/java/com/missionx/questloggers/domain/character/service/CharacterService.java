@@ -6,6 +6,7 @@ import com.missionx.questloggers.domain.character.dto.SerchAllCharResponseDto;
 import com.missionx.questloggers.domain.character.dto.AccountListDto;
 import com.missionx.questloggers.domain.character.dto.CharacterDto;
 import com.missionx.questloggers.domain.character.entity.Character;
+import com.missionx.questloggers.domain.character.exception.CharacterException;
 import com.missionx.questloggers.domain.character.exception.NotFoundCharException;
 import com.missionx.questloggers.domain.character.repository.CharacterRepository;
 import com.missionx.questloggers.domain.user.entity.User;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -97,15 +99,22 @@ public class CharacterService {
      * 대표캐릭터 설정 기능
      * 최초 1번만 사용
      */
-    public SetOwnerCharResponseDto setOwnerChar(Long charId) {
+    public SetOwnerCharResponseDto setOwnerChar(Long userId, Long charId) {
+        User user = userService.findUserById(userId);
         Character character = characterRepository.findById(charId).orElseThrow(
                 () -> new NotFoundCharException(HttpStatus.NOT_FOUND, "존재하지 않는 캐릭터입니다."));
+        if (character.isOwnerChar() && characterRepository.existsByUserAndOwnerCharTrue(user)) {
+            throw new CharacterException(HttpStatus.BAD_REQUEST, "이미 대표캐릭터 설정이 되어있습니다.");
+        }
 
         character.updateOwnerChar(true);
 
         return new SetOwnerCharResponseDto(character.getCharName(), character.getWorldName(), character.getCharClass(), character.getCharLevel());
     }
 
+    /**
+     * 유저 리스트 검색
+     */
     public List<SerchAllCharResponseDto> serchAllCharService(String keyword, Pageable pageable) {
         Page<Character> foundCharList = characterRepository.findByCharNameContaining(keyword, pageable);
 
@@ -117,9 +126,40 @@ public class CharacterService {
 
     }
 
+    /**
+     * 유저 단건 검색
+     */
     public SerchCharResponseDto serchCharService(Long charId) {
         Character foundChar = characterRepository.findById(charId)
                 .orElseThrow(()-> new RuntimeException("캐릭터 정보를 불러왔습니다."));
         return new SerchCharResponseDto(foundChar.getCharName(), foundChar.getCharLevel(), foundChar.getWorldName());
+    }
+
+
+    /**
+     * 대표 캐릭터 업데이트
+     */
+    public UpdateOwnerCharResponseDte updateOwnerChar(Long userId ,Long charId) {
+        User user = userService.findUserById(userId);
+        Character character = findById(charId);
+
+        Character alreadyHaveOwnerChar = characterRepository.findByUserAndOwnerCharTrue(user).orElseThrow(
+                () -> new CharacterException(HttpStatus.NOT_FOUND, "대표캐릭터가 존재하지 않습니다.")
+        );
+
+        alreadyHaveOwnerChar.updateOwnerChar(false);
+        character.updateOwnerChar(true);
+
+        return new UpdateOwnerCharResponseDte(character.getCharName(), character.getWorldName(), character.getCharClass(), character.getCharLevel());
+    }
+
+
+    /**
+     * 다른 domain에서 사용
+     */
+    public Character findById(Long charId) {
+        return characterRepository.findById(charId).orElseThrow(
+                () -> new NotFoundCharException(HttpStatus.NOT_FOUND, "존재하지 않는 캐릭터입니다.")
+        );
     }
 }
