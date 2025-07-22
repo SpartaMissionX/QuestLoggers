@@ -49,7 +49,7 @@ public class CommentService {
     @Transactional(readOnly = true)
     public PageResponseDto<FindAllCommentResponseDto> findAllComment(Long postId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<Comment> commentsPage = commentRepository.findByPostId(postId, pageable);
+        Page<Comment> commentsPage = commentRepository.findByPostIdAndDeletedAtNull(postId, pageable);
 
 
         List<FindAllCommentResponseDto> responseDtos = commentsPage.stream()
