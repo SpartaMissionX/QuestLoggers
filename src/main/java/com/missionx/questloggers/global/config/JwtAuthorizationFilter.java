@@ -31,8 +31,11 @@ public class JwtAuthorizationFilter implements Filter {
         if (token != null && jwtTokenProvider.validateToken(token)) {
             Long userId = jwtTokenProvider.getUserIdFromToken(token);
             String email = jwtTokenProvider.getEmailFromToken(token);
+            String role = jwtTokenProvider.getRoleFromToken(token);
+            String apiKey = jwtTokenProvider.getApiKeyFromToken(token);
+            Integer point = jwtTokenProvider.getPointFromToken(token);
 
-            LoginUser loginUser = new LoginUser(userId, email);
+            LoginUser loginUser = new LoginUser(userId, email, role, apiKey, point);
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(

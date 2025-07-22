@@ -31,9 +31,10 @@ public class PostController {
     @PatchMapping("/posts/{postId}")
     public ResponseEntity<ApiResponse<UpdatePostResponseDto>> updatePost(
             @PathVariable("postId") Long postId,
-            @RequestBody UpdatePostRequestDto updatePostRequestDto
+            @RequestBody UpdatePostRequestDto updatePostRequestDto,
+            @AuthenticationPrincipal LoginUser loginUser
             ) {
-        UpdatePostResponseDto responseDto = postService.updatePostService(postId, updatePostRequestDto);
+        UpdatePostResponseDto responseDto = postService.updatePostService(postId, updatePostRequestDto, loginUser.getUserId());
         return ApiResponse.success(HttpStatus.OK, "게시글 수정이 완료되었습니다.", responseDto);
     }
 
@@ -53,8 +54,8 @@ public class PostController {
     }
 
     @DeleteMapping("/posts/{postId}")
-    public ResponseEntity<ApiResponse<Object>> deletePost (@PathVariable("postId") Long postId) {
-        postService.deletePostService(postId);
+    public ResponseEntity<ApiResponse<Object>> deletePost (@PathVariable("postId") Long postId, @AuthenticationPrincipal LoginUser loginUser) {
+        postService.deletePostService(postId, loginUser.getUserId());
         return ApiResponse.success(HttpStatus.OK,"게시글 삭제가 완료되었습니다.", null);
     }
 
