@@ -52,9 +52,9 @@ public class PostService {
 
         Page<Post> foundPostList;
         if (keyword == null) {
-            foundPostList = postRepository.findAll(pageable);
+            foundPostList = postRepository.findByDeletedAtNull(pageable);
         } else {
-            foundPostList = postRepository.findByTitleContaining(keyword, pageable);
+            foundPostList = postRepository.findByTitleContainingAndDeletedAtNull(keyword, pageable);
         }
 
         return foundPostList.stream()
