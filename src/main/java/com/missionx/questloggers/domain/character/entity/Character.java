@@ -1,11 +1,11 @@
 package com.missionx.questloggers.domain.character.entity;
 
-import com.missionx.questloggers.domain.character.enums.CharServer;
 import com.missionx.questloggers.domain.characterboss.entity.CharacterBoss;
 import com.missionx.questloggers.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,15 +28,35 @@ public class Character {
     @JoinColumn(name = "char_boss_id")
     private List<CharacterBoss> characterBoss = new ArrayList<>();
 
+    @Column(name = "ocid", unique = true, nullable = false)
+    private String ocid;
+
+    @Column(name = "char_name", nullable = false)
     private String charName;
 
-    private int charLevel;
+    @Column(name = "world_name")
+    private String worldName;
 
-    private long charPower;
+    @Column(name = "char_class")
+    private String charClass;
 
+    @Column(name = "char_level")
+    private Integer charLevel;
+
+    ;@Column(name = "char_image")
     private String charImage;
 
-    private CharServer charServer;
+    @Column(name = "owner_char")
+    @ColumnDefault("false")
+    private boolean ownerChar;
 
 
+    public Character(User user, String ocid, String charName, String worldName, String charClass, int charLevel) {
+        this.user = user;
+        this.ocid = ocid;
+        this.charName = charName;
+        this.worldName = worldName;
+        this.charClass = charClass;
+        this.charLevel = charLevel;
+    }
 }
