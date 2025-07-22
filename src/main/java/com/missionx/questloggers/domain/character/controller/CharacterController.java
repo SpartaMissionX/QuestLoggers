@@ -46,8 +46,9 @@ public class CharacterController {
         return ApiResponse.success(HttpStatus.OK, "조회가 완료되었습니다.", charList);
     }
 
-    @PostMapping("/mychar/{userId}")
-    public ResponseEntity<ApiResponse<AccountListDto>> saveCharList(@PathVariable Long userId) {
+    @PostMapping("/mychar")
+    public ResponseEntity<ApiResponse<AccountListDto>> saveCharList() {
+        Long userId = 1L;
         characterService.createCharList(userId);
         return ApiResponse.success(HttpStatus.OK, "캐릭터 생성이 완료되었습니다.", null);
     }
