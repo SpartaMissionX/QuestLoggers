@@ -1,23 +1,20 @@
 package com.missionx.questloggers.domain.character.service;
 
-import com.missionx.questloggers.domain.character.dto.GetSerchCharResponseDto;
+import com.missionx.questloggers.domain.character.dto.SerchCharResponseDto;
+import com.missionx.questloggers.domain.character.dto.*;
+import com.missionx.questloggers.domain.character.dto.SerchAllCharResponseDto;
 import com.missionx.questloggers.domain.character.dto.AccountListDto;
 import com.missionx.questloggers.domain.character.dto.CharacterDto;
-import com.missionx.questloggers.domain.character.dto.CreateCharacterResponseDto;
 import com.missionx.questloggers.domain.character.entity.Character;
-import com.missionx.questloggers.domain.character.exception.CharacterException;
+import com.missionx.questloggers.domain.character.exception.NotFoundCharException;
 import com.missionx.questloggers.domain.character.repository.CharacterRepository;
-import com.missionx.questloggers.domain.post.dto.GetAllPostResponseDto;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -96,14 +93,33 @@ public class CharacterService {
         }
     }
 
-    public List<GetSerchCharResponseDto> serchCharService(String keyword, Pageable pageable) {
+    /**
+     * 대표캐릭터 설정 기능
+     * 최초 1번만 사용
+     */
+    public SetOwnerCharResponseDto setOwnerChar(Long charId) {
+        Character character = characterRepository.findById(charId).orElseThrow(
+                () -> new NotFoundCharException(HttpStatus.NOT_FOUND, "존재하지 않는 캐릭터입니다."));
+
+        character.updateOwnerChar(true);
+
+        return new SetOwnerCharResponseDto(character.getCharName(), character.getWorldName(), character.getCharClass(), character.getCharLevel());
+    }
+
+    public List<SerchAllCharResponseDto> serchAllCharService(String keyword, Pageable pageable) {
         Page<Character> foundCharList = characterRepository.findByCharNameContaining(keyword, pageable);
 
         return foundCharList.stream()
                 .map(character -> {
-                    return new GetSerchCharResponseDto(character.getCharName(), character.getCharLevel());
+                    return new SerchAllCharResponseDto(character.getCharName(), character.getCharLevel());
                 })
                 .collect(Collectors.toList());
 
+    }
+
+    public SerchCharResponseDto serchCharService(Long charId) {
+        Character foundChar = characterRepository.findById(charId)
+                .orElseThrow(()-> new RuntimeException("캐릭터 정보를 불러왔습니다."));
+        return new SerchCharResponseDto(foundChar.getCharName(), foundChar.getCharLevel(), foundChar.getWorldName());
     }
 }
