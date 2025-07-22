@@ -4,6 +4,8 @@ import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.exception.NotFoundPostException;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
+import com.missionx.questloggers.domain.user.entity.User;
+import com.missionx.questloggers.domain.user.exception.NotFoundUserException;
 import com.missionx.questloggers.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,18 +22,18 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final UserRepository userRepository;
 
     //포스트 생성 기능
     @Transactional
-    public CreatePostResponseDto createPostService(CreatePostRequestDto createPostRequestDto) {
-        //임시 유저 아이디
-        Long id = 1L;
+    public CreatePostResponseDto createPostService(CreatePostRequestDto requestDto, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundUserException("유저를 찾을 수 없습니다."));
 
-        String dtoTitle = createPostRequestDto.getTitle();
-        String dtoContent = createPostRequestDto.getContent();
-        Post newPost = new Post(dtoTitle, dtoContent);
-        Post savedPost = postRepository.save(newPost);
-        return new CreatePostResponseDto(savedPost.getId(), savedPost.getTitle(), savedPost.getContent());
+        Post post = new Post(requestDto.getTitle(), requestDto.getContent(), user);
+        postRepository.save(post);
+
+        return new CreatePostResponseDto(post.getId(), post.getTitle(), post.getContent());
     }
 
     //포스트 수정 기능
