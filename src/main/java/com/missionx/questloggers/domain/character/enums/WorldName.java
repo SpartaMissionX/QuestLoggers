@@ -1,6 +1,6 @@
 package com.missionx.questloggers.domain.character.enums;
 
-public enum CharServer {
+public enum WorldName {
 
     SCANIA("스카니아"),
     BERA("베라"),
@@ -21,7 +21,7 @@ public enum CharServer {
     YETIxPINKBEAN("예티x핑크빈");
 
     private String krName;
-    CharServer(String krName) {
+    WorldName(String krName) {
         this.krName = krName;
     }
 
