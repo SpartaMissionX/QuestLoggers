@@ -45,12 +45,10 @@ public class UserService {
         return new UpdatePasswordResponseDto(user.getId(), user.getEmail(), user.getPoint(), user.getRole());
     }
 
-    public User findUserById(Long userId) {
-        return userRepository.findById(userId).orElseThrow(
-                () -> new NotFoundUserException("유저가 존재하지 않습니다.")
-        );
-    }
 
+    /**
+     * 다른 domain에서 사용
+     */
     // 회원 탈퇴 - soft delete
     public void deleteUserById(Long userId) {
         User user = userRepository.findById(userId)
@@ -58,6 +56,12 @@ public class UserService {
 
         user.setDeleted(true);
         userRepository.save(user);
+    }
+
+    public User findUserById(Long userId) {
+        return userRepository.findById(userId).orElseThrow(
+                () -> new NotFoundUserException("유저가 존재하지 않습니다.")
+        );
     }
 
     // 이메일 중복 체크용

@@ -18,6 +18,10 @@ public class UserController {
 
     private final UserService userService;
 
+    /**
+     * 유저 정보 조회
+     * 수정 필요
+     */
     @GetMapping("/users")
     public ResponseEntity<ApiResponse<FindUserResponseDto>> findUser() {
         Long userId = 1L;
@@ -25,17 +29,15 @@ public class UserController {
         return ApiResponse.success(HttpStatus.OK, "유저 정보 조회 성공", responseDto);
     }
 
+    /**
+     * 비밀번호 변경
+     * 수정 필요
+     */
     @PatchMapping("/users/password")
     public ResponseEntity<ApiResponse<UpdatePasswordResponseDto>> updatePassword(@RequestBody UpdatePasswordRequestDto requestDto) {
         Long userId = 1L;
         UpdatePasswordResponseDto responseDto = userService.updatePassword(requestDto, userId);
         return ApiResponse.success(HttpStatus.OK, "비밀번호 변경 성공", responseDto);
-    }
-
-    @PatchMapping("/users/apikey")
-    public void updateApiKey(@RequestBody UpdateApiKeyRequestDto requestDto) {
-
-        ApiResponse.success(HttpStatus.OK, "ApiKey 변경 성공", null);
     }
 
 }
