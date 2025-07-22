@@ -90,7 +90,7 @@ public class CommentService {
         if (comment.getDeletedAt() == null) {
             comment.delete();
         } else {
-            throw new AlreadyDeletedCommentException(HttpStatus.BAD_REQUEST , "이미 삭제된 댓글입니다.");
+            throw new AlreadyDeletedCommentException(HttpStatus.NOT_FOUND , "이미 삭제된 댓글입니다.");
         }
     }
 }
