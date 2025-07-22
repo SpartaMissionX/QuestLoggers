@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final UserService userService;
-     private final BCryptPasswordEncoder passwordEncoder;
-     private final JwtTokenProvider jwtTokenProvider;
+    private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
     // 회원가입
     @Transactional
@@ -37,7 +37,7 @@ public class AuthService {
 
     // 로그인
     public LoginResponseDto login(LoginRequestDto loginRequestDto) {
-        User user = userService.findByEmail(loginRequestDto.getEmail()).orElseThrow(()-> new UserException("존재하지 않는 이메일입니다."));
+        User user = userService.findActiveUserByEmail(loginRequestDto.getEmail());
         if(!passwordEncoder.matches(loginRequestDto.getPassword(), user.getPassword())) {
             throw new UserException("비밀번호가 일치하지 않습니다.");
         }

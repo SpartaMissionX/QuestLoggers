@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -14,46 +15,55 @@ import java.util.Date;
 public class JwtTokenProvider {
 
     private final SecretKey key;
-    private final long TOKEN_TIME = 60 * 60 * 1000L; // 유효시간 1시간
+    private final long TOKEN_TIME = 60 * 60 * 1000L; // 1시간
 
     public JwtTokenProvider(@Value("${jwt.secret.key}") String secretKey) {
-        this.key = Keys.hmacShaKeyFor(secretKey.getBytes()); // 보안 강화를 위해 키 생성
+        this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
-    // JWT 토큰 생성
     public String createToken(Long userId, String email) {
         Date now = new Date();
-        Date expiration = new Date(now.getTime() + TOKEN_TIME);
+        Date expiry = new Date(now.getTime() + TOKEN_TIME);
 
         return Jwts.builder()
-                .setSubject(email) // 주체를 이메일로 설정
-                .claim("userId", userId) // 사용자 ID도 넣어줌
-                .setIssuedAt(now) // 토큰 발급 시간 설정
-                .setExpiration(expiration) // 토큰 만료 시간 설정(1시간 제한)
-                .signWith(key, SignatureAlgorithm.HS256) // 위조된게 아닌가 확인하는 디지털 서명
-                .compact(); // 토큰을 문자열로 변환
+                .setSubject(email)
+                .claim("userId", userId)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
     }
 
-//    // 나중에 로그인 이후 요청에서 사용자 확인이 필요하거나
-//    // 게시글/댓글 쓸때 작성자 확인용으로 보류
-//    // 토큰에서 userId 추출
-//    public Long extractUserId(String token) {
-//        Claims claims = parseClaims(token);
-//        return claims.get("userId", Long.class);
-//    }
-//
-//    // 토큰에서 email 추출
-//    public String extractEmail(String token) {
-//        return parseClaims(token).getSubject();
-//    }
+    // 토큰 파싱
+    public Claims parseClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
 
-//    // 나중에 필터나 인가 처리할때
-//    // 토큰 파싱 및 유효성 검증
-//    public Claims parseClaims(String token) {
-//        return Jwts.parserBuilder()
-//                .setSigningKey(key)
-//                .build()
-//                .parseClaimsJws(token)
-//                .getBody();
-//    }
+    // 토큰 유효성 검증
+    public boolean validateToken(String token) {
+        try {
+            parseClaims(token); // 파싱이 안되면 예외 발생
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    // 토큰에서 userId 추출
+    public Long getUserIdFromToken(String token) {
+        return parseClaims(token).get("userId", Long.class);
+    }
+
+    // 헤더에서 Bearer 토큰 추출
+    public String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
 }
