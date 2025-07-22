@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,27 +31,6 @@ public class CharacterService {
     private final CharacterRepository characterRepository;
     private final UserService userService;
     private final RestTemplate restTemplate;
-
-    @Transactional
-    public AccountListDto getCharList(Long userId) {
-        User user = userService.findUserById(userId);
-        String url = "https://open.api.nexon.com/maplestory/v1/character/list";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("x-nxopen-api-key", user.getApiKey());
-
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        ResponseEntity<AccountListDto> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                entity,
-                AccountListDto.class
-        );
-
-        return response.getBody();
-    }
-
 
     /**
      * 캐릭터 생성 기능
@@ -96,20 +74,26 @@ public class CharacterService {
     }
 
     /**
-     * 대표캐릭터 설정 기능
-     * 최초 1번만 사용
+     * 캐릭터 조회
      */
-    public SetOwnerCharResponseDto setOwnerChar(Long userId, Long charId) {
+    @Transactional
+    public AccountListDto getCharList(Long userId) {
         User user = userService.findUserById(userId);
-        Character character = characterRepository.findById(charId).orElseThrow(
-                () -> new NotFoundCharException(HttpStatus.NOT_FOUND, "존재하지 않는 캐릭터입니다."));
-        if (character.isOwnerChar() && characterRepository.existsByUserAndOwnerCharTrue(user)) {
-            throw new CharacterException(HttpStatus.BAD_REQUEST, "이미 대표캐릭터 설정이 되어있습니다.");
-        }
+        String url = "https://open.api.nexon.com/maplestory/v1/character/list";
 
-        character.updateOwnerChar(true);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("x-nxopen-api-key", user.getApiKey());
 
-        return new SetOwnerCharResponseDto(character.getCharName(), character.getWorldName(), character.getCharClass(), character.getCharLevel());
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<AccountListDto> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                entity,
+                AccountListDto.class
+        );
+
+        return response.getBody();
     }
 
     /**
@@ -135,10 +119,28 @@ public class CharacterService {
         return new SerchCharResponseDto(foundChar.getCharName(), foundChar.getCharLevel(), foundChar.getWorldName());
     }
 
+    /**
+     * 대표캐릭터 설정 기능
+     * 최초 1번만 사용
+     */
+    @Transactional
+    public SetOwnerCharResponseDto setOwnerChar(Long userId, Long charId) {
+        User user = userService.findUserById(userId);
+        Character character = characterRepository.findById(charId).orElseThrow(
+                () -> new NotFoundCharException(HttpStatus.NOT_FOUND, "존재하지 않는 캐릭터입니다."));
+        if (character.isOwnerChar() && characterRepository.existsByUserAndOwnerCharTrue(user)) {
+            throw new CharacterException(HttpStatus.BAD_REQUEST, "이미 대표캐릭터 설정이 되어있습니다.");
+        }
+
+        character.updateOwnerChar(true);
+
+        return new SetOwnerCharResponseDto(character.getCharName(), character.getWorldName(), character.getCharClass(), character.getCharLevel());
+    }
 
     /**
      * 대표 캐릭터 업데이트
      */
+    @Transactional
     public UpdateOwnerCharResponseDte updateOwnerChar(Long userId ,Long charId) {
         User user = userService.findUserById(userId);
         Character character = findById(charId);
