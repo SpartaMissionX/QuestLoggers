@@ -2,6 +2,7 @@ package com.missionx.questloggers.domain.comment.service;
 
 import com.missionx.questloggers.domain.comment.dto.*;
 import com.missionx.questloggers.domain.comment.entity.Comment;
+import com.missionx.questloggers.domain.comment.exception.AlreadyDeletedCommentException;
 import com.missionx.questloggers.domain.comment.exception.NotFoundCommentException;
 import com.missionx.questloggers.domain.comment.repository.CommentRepository;
 import com.missionx.questloggers.domain.post.entity.Post;
@@ -86,7 +87,10 @@ public class CommentService {
     public void deleteComment(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundCommentException(HttpStatus.NOT_FOUND,"댓글을 찾을 수 없습니다. 다시 확인해주세요"));
-
-        comment.delete();
+        if (comment.getDeletedAt() == null) {
+            comment.delete();
+        } else {
+            throw new AlreadyDeletedCommentException(HttpStatus.BAD_REQUEST , "이미 삭제된 댓글입니다.");
+        }
     }
 }
