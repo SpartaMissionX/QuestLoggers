@@ -13,6 +13,7 @@ import com.missionx.questloggers.domain.characterboss.entity.CharacterBoss;
 import com.missionx.questloggers.domain.characterboss.service.CharacterBossService;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.domain.user.service.UserService;
+import com.missionx.questloggers.global.config.security.LoginUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,12 +39,12 @@ public class CharacterService {
      * 캐릭터 생성 기능
      */
     @Transactional
-    public void createCharList(Long userId) {
-        User user = userService.findUserById(userId);
+    public void createCharList(LoginUser loginUser) {
+        User user = userService.findUserById(loginUser.getUserId());
         String url = "https://open.api.nexon.com/maplestory/v1/character/list";
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("x-nxopen-api-key", user.getApiKey());
+        headers.set("x-nxopen-api-key", loginUser.getApiKey());
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -69,8 +70,6 @@ public class CharacterService {
                                 characterDto.getCharacterLevel()
                         );
                         Character savedCharacter = characterRepository.save(character);
-
-
                     }
                 }
             }
@@ -83,12 +82,11 @@ public class CharacterService {
      * 캐릭터 조회
      */
     @Transactional
-    public AccountListDto getCharList(Long userId) {
-        User user = userService.findUserById(userId);
+    public AccountListDto getCharList(LoginUser loginUser) {
         String url = "https://open.api.nexon.com/maplestory/v1/character/list";
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("x-nxopen-api-key", user.getApiKey());
+        headers.set("x-nxopen-api-key", loginUser.getApiKey());
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -130,11 +128,11 @@ public class CharacterService {
      * 최초 1번만 사용
      */
     @Transactional
-    public SetOwnerCharResponseDto setOwnerChar(Long userId, Long charId) {
-        User user = userService.findUserById(userId);
+    public SetOwnerCharResponseDto setOwnerChar(LoginUser loginUser, Long charId) {
+        User user = userService.findUserById(loginUser.getUserId());
         Character character = characterRepository.findById(charId).orElseThrow(
                 () -> new NotFoundCharException(HttpStatus.NOT_FOUND, "존재하지 않는 캐릭터입니다."));
-        if (character.isOwnerChar() && characterRepository.existsByUserAndOwnerCharTrue(user)) {
+        if (character.isOwnerChar() || characterRepository.existsByUserAndOwnerCharTrue(user)) {
             throw new CharacterException(HttpStatus.BAD_REQUEST, "이미 대표캐릭터 설정이 되어있습니다.");
         }
 
@@ -147,8 +145,8 @@ public class CharacterService {
      * 대표 캐릭터 업데이트
      */
     @Transactional
-    public UpdateOwnerCharResponseDte updateOwnerChar(Long userId ,Long charId) {
-        User user = userService.findUserById(userId);
+    public UpdateOwnerCharResponseDte updateOwnerChar(LoginUser loginUser ,Long charId) {
+        User user = userService.findUserById(loginUser.getUserId());
         Character character = findById(charId);
 
         Character alreadyHaveOwnerChar = characterRepository.findByUserAndOwnerCharTrue(user).orElseThrow(
