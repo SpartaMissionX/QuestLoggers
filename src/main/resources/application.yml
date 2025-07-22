@@ -19,4 +19,4 @@ server:
 
 jwt:
   secret:
-    key:
+    key: ${SECRET_KEY}

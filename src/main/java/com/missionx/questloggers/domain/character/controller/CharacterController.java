@@ -2,6 +2,7 @@ package com.missionx.questloggers.domain.character.controller;
 
 import com.missionx.questloggers.domain.character.dto.GetSerchCharResponseDto;
 import com.missionx.questloggers.domain.character.dto.AccountListDto;
+import com.missionx.questloggers.domain.character.dto.SetOwnerCharResponseDto;
 import com.missionx.questloggers.domain.character.service.CharacterService;
 import com.missionx.questloggers.global.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -10,10 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -47,4 +45,9 @@ public class CharacterController {
         return ApiResponse.success(HttpStatus.OK, "캐릭터 생성이 완료되었습니다.", null);
     }
 
+    @PostMapping("/mychar/{charId}")
+    public void setOwnerChar(@PathVariable Long charId) {
+        SetOwnerCharResponseDto responseDto = characterService.setOwnerChar(charId);
+        ApiResponse.success(HttpStatus.OK, "대표 캐릭터 설정이 완료되었습니다.", responseDto);
+    }
 }
