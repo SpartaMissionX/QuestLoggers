@@ -17,13 +17,16 @@ public class User extends BaseEntity {
     // pk
     private Long id;
 
+    @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Column(nullable = false)
     private String apiKey;
 
     private int point;
@@ -40,5 +43,10 @@ public class User extends BaseEntity {
 
     public void setDeleted(boolean deleted) {
         this.isDeleted = deleted;
+    }
+
+    // API 키 변경
+    public void updateApiKey(String newApiKey) {
+        this.apiKey = newApiKey;
     }
 }

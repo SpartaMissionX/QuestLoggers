@@ -27,20 +27,22 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 나중에 프론트랑 연결하는 기능 추가
+                // 나중에 프론트랑 연결하는 cors? 기능 추가
+                // 커스텀 예외처리도 필요하다면 추가
                 // csrf 보안 비활성
-                .csrf().disable()
+                .csrf(csrf -> csrf.disable())
                 // 세션생성x
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 //url 접근권한
-                .authorizeHttpRequests()
-                .requestMatchers("/api/auth/**").permitAll()
-                .anyRequest().authenticated()
-                // 필터체인 추가
-                .and()
-                .addFilterBefore(new JwtAuthorizationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .anyRequest().authenticated()
+                );
 
+        http.addFilterBefore(new JwtAuthorizationFilter(jwtTokenProvider),
+                UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
