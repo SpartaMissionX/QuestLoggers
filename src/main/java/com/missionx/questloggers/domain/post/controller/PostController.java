@@ -39,7 +39,7 @@ public class PostController {
 
     @GetMapping("/posts")
     public ResponseEntity<ApiResponse<List<GetAllPostResponseDto>>> getAllPost(
-            @RequestParam("keyword") String keyword,
+            @RequestParam(required = false) String keyword,
             @PageableDefault(size = 10,page = 0,sort = "id", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         List<GetAllPostResponseDto> allPostService = postService.getAllPostService(keyword, pageable);

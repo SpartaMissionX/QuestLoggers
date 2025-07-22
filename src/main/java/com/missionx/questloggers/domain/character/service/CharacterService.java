@@ -9,6 +9,8 @@ import com.missionx.questloggers.domain.character.entity.Character;
 import com.missionx.questloggers.domain.character.exception.CharacterException;
 import com.missionx.questloggers.domain.character.exception.NotFoundCharException;
 import com.missionx.questloggers.domain.character.repository.CharacterRepository;
+import com.missionx.questloggers.domain.characterboss.entity.CharacterBoss;
+import com.missionx.questloggers.domain.characterboss.service.CharacterBossService;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -66,11 +68,15 @@ public class CharacterService {
                                 characterDto.getCharacterClass(),
                                 characterDto.getCharacterLevel()
                         );
-                        characterRepository.save(character);
+                        Character savedCharacter = characterRepository.save(character);
+
+
                     }
                 }
             }
         }
+
+
     }
 
     /**
@@ -154,7 +160,6 @@ public class CharacterService {
 
         return new UpdateOwnerCharResponseDte(character.getCharName(), character.getWorldName(), character.getCharClass(), character.getCharLevel());
     }
-
 
     /**
      * 다른 domain에서 사용

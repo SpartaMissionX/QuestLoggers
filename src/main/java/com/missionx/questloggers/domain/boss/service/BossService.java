@@ -4,8 +4,10 @@ import com.missionx.questloggers.domain.boss.dto.CreateBossRequestDto;
 import com.missionx.questloggers.domain.boss.dto.CreateBossResponseDto;
 import com.missionx.questloggers.domain.boss.dto.GetAllBossResponseDto;
 import com.missionx.questloggers.domain.boss.entity.Boss;
+import com.missionx.questloggers.domain.boss.exception.NotFoundBossException;
 import com.missionx.questloggers.domain.boss.repository.BossRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,5 +35,14 @@ public class BossService {
                     return new GetAllBossResponseDto(boss.getId(), boss.getBossName(), boss.getBossImage());
                 })
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 다른 domain 에서 사용
+     */
+    public Boss findById(Long bossId) {
+        return bossRepository.findById(bossId).orElseThrow(
+                () -> new NotFoundBossException(HttpStatus.NOT_FOUND, "보스를 찾을 수 없습니다.")
+        );
     }
 }
