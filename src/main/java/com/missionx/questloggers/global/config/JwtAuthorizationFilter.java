@@ -1,5 +1,6 @@
 package com.missionx.questloggers.global.config;
 
+import com.missionx.questloggers.domain.user.enums.Role;
 import com.missionx.questloggers.global.config.security.LoginUser;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,8 +32,11 @@ public class JwtAuthorizationFilter implements Filter {
         if (token != null && jwtTokenProvider.validateToken(token)) {
             Long userId = jwtTokenProvider.getUserIdFromToken(token);
             String email = jwtTokenProvider.getEmailFromToken(token);
+            Role role = jwtTokenProvider.getRoleFromToken(token);
+            String apiKey = jwtTokenProvider.getApiKeyFromToken(token);
+            int point = jwtTokenProvider.getPointFromToken(token);
 
-            LoginUser loginUser = new LoginUser(userId, email);
+            LoginUser loginUser = new LoginUser(userId, email, role, apiKey, point);
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
