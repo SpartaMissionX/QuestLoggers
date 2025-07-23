@@ -1,7 +1,5 @@
 package com.missionx.questloggers.global.config;
 
-import com.missionx.questloggers.domain.user.entity.User;
-import com.missionx.questloggers.domain.user.enums.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -13,8 +11,6 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.Date;
 
-import static org.springframework.boot.origin.OriginTrackedValue.of;
-
 @Component
 public class JwtTokenProvider {
 
@@ -25,16 +21,16 @@ public class JwtTokenProvider {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
-    public String createToken(User user) {
+    public String createToken(Long userId, String email, String role, String apiKey, Integer point) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + TOKEN_TIME);
 
         return Jwts.builder()
-                .setSubject(user.getEmail())
-                .claim("userId", user.getId())
-                .claim("role", user.getRole())
-                .claim("apiKey", user.getApiKey())
-                .claim("point", user.getPoint())
+                .setSubject(email)
+                .claim("userId", userId)
+                .claim("role", role)
+                .claim("apiKey", apiKey)
+                .claim("point", point)
                 .setIssuedAt(now)
                 .setExpiration(expiry)
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -69,28 +65,23 @@ public class JwtTokenProvider {
         return null;
     }
 
-    // 토큰에서 userId 추출
     public Long getUserIdFromToken(String token) {
         return parseClaims(token).get("userId", Long.class);
     }
 
-    // 토큰에서 email 추출
     public String getEmailFromToken(String token) {
         return parseClaims(token).getSubject();
     }
 
-    // 토큰에서 role 추출
-    public Role getRoleFromToken(String token) {
-        return Role.of(parseClaims(token).get("role", String.class));
+    public String getRoleFromToken(String token) {
+        return parseClaims(token).get("role", String.class);
     }
 
-    // 토큰에서 apiKey 추출
     public String getApiKeyFromToken(String token) {
         return parseClaims(token).get("apiKey", String.class);
     }
 
-    // 토큰에서 point 추출
-    public int getPointFromToken(String token) {
+    public Integer getPointFromToken(String token) {
         return parseClaims(token).get("point", Integer.class);
     }
 }

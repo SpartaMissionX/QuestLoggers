@@ -1,5 +1,6 @@
 package com.missionx.questloggers.global.config;
 
+import com.missionx.questloggers.domain.user.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,9 +13,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final UserRepository userRepository;
 
-    public SecurityConfig(JwtTokenProvider jwtTokenProvider) {
+    public SecurityConfig(JwtTokenProvider jwtTokenProvider, UserRepository userRepository) {
         this.jwtTokenProvider = jwtTokenProvider;
+        this.userRepository = userRepository;
     }
 
     // 비밀번호 암호화
@@ -41,7 +44,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 );
 
-        http.addFilterBefore(new JwtAuthorizationFilter(jwtTokenProvider),
+        http.addFilterBefore(new JwtAuthorizationFilter(jwtTokenProvider, userRepository),
                 UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

@@ -4,6 +4,7 @@ import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.exception.AlreadyDeletedPostException;
 import com.missionx.questloggers.domain.post.exception.NotFoundPostException;
+import com.missionx.questloggers.domain.post.exception.UnauthorizedPostAccessException;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.domain.user.exception.NotFoundUserException;
@@ -39,9 +40,12 @@ public class PostService {
 
     //포스트 수정 기능
     @Transactional
-    public UpdatePostResponseDto updatePostService(Long postId, UpdatePostRequestDto updatePostRequestDto) {
+    public UpdatePostResponseDto updatePostService(Long postId, UpdatePostRequestDto updatePostRequestDto, Long userId) {
         Post foundPost = postRepository.findById(postId)
-                .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND, "post not found"));
+        if (!foundPost.getUser().getId().equals(userId)) {
+            throw new UnauthorizedPostAccessException("게시글 수정 권한이 없습니다.");
+        }
         foundPost.updatePost(updatePostRequestDto);
         return new UpdatePostResponseDto(foundPost.getId(), foundPost.getTitle(), foundPost.getContent());
     }
@@ -68,13 +72,13 @@ public class PostService {
     @Transactional(readOnly = true)
     public GetPostResponseDto getPostService(Long postId) {
         Post foundPost = postRepository.findById(postId)
-                .orElseThrow(()-> new RuntimeException("게시글을 찾을 수 없습니다."));
+                .orElseThrow(()-> new RuntimeException("post not found"));
 
         return new GetPostResponseDto(foundPost.getUser().getId(), foundPost.getId(), foundPost.getTitle(), foundPost.getContent());
     }
 
     @Transactional
-    public void deletePostService(Long postId) {
+    public void deletePostService(Long postId, Long userId) {
         Post foundPost = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
         if (foundPost.getDeletedAt() == null) {
@@ -82,7 +86,10 @@ public class PostService {
         } else {
             throw new AlreadyDeletedPostException(HttpStatus.NOT_FOUND, "이미 삭제된 게시글입니다.");
         }
-
+        if (!foundPost.getUser().getId().equals(userId)) {
+            throw new UnauthorizedPostAccessException("게시글 삭제 권한이 없습니다.");
+        }
+        foundPost.delete();
     }
 
     // 다른 domain에서 사용하는 기능
