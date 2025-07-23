@@ -31,6 +31,9 @@ public class CharacterBossService {
     private final CharacterService characterService;
     private final BossService bossService;
 
+    /**
+     * 캐릭터 보스 생성
+     */
     @Transactional
     public CreateCharBossResponseDto createCharBoss(Long charId, Long bossId) {
         Character character = characterService.findById(charId);
@@ -46,6 +49,9 @@ public class CharacterBossService {
         return new CreateCharBossResponseDto(characterBoss.getCharacter().getId(), characterBoss.getBoss().getId(), characterBoss.isCleared(), characterBoss.getClearCount());
     }
 
+    /**
+     * 캐릭터 보스 조회
+     */
     @Transactional(readOnly = true)
     public List<MyCharInfoResponseDto> myCharInfo(Long charId) {
         Character character = characterService.findById(charId);
