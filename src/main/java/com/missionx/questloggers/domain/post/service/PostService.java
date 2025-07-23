@@ -26,7 +26,9 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
-    //포스트 생성 기능
+    /**
+     * 게시글 생성
+     */
     @Transactional
     public CreatePostResponseDto createPostService(CreatePostRequestDto requestDto, Long userId) {
         User user = userRepository.findById(userId)
@@ -38,11 +40,13 @@ public class PostService {
         return new CreatePostResponseDto(post.getId(), post.getTitle(), post.getContent());
     }
 
-    //포스트 수정 기능
+    /**
+     * 게시글 수정
+     */
     @Transactional
     public UpdatePostResponseDto updatePostService(Long postId, UpdatePostRequestDto updatePostRequestDto, Long userId) {
         Post foundPost = postRepository.findById(postId)
-                .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND, "post not found"));
+                .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
         if (!foundPost.getUser().getId().equals(userId)) {
             throw new UnauthorizedPostAccessException("게시글 수정 권한이 없습니다.");
         }
@@ -50,7 +54,9 @@ public class PostService {
         return new UpdatePostResponseDto(foundPost.getId(), foundPost.getTitle(), foundPost.getContent());
     }
 
-    //포스트 다건조회 페이징 및 키워드 검색
+    /**
+     * 게시글 다건 조회 , 검색 , 페이징
+     */
     @Transactional(readOnly = true)
     public List<GetAllPostResponseDto> getAllPostService(String keyword, Pageable pageable) {
 
@@ -69,14 +75,20 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 게시글 단건 조회
+     */
     @Transactional(readOnly = true)
     public GetPostResponseDto getPostService(Long postId) {
-        Post foundPost = postRepository.findById(postId)
-                .orElseThrow(()-> new RuntimeException("post not found"));
+        Post foundPost = postRepository.findByIdAndDeletedAtNull(postId)
+                .orElseThrow(()-> new RuntimeException("게시글을 찾을 수 없습니다."));
 
         return new GetPostResponseDto(foundPost.getUser().getId(), foundPost.getId(), foundPost.getTitle(), foundPost.getContent());
     }
 
+    /**
+     * 게시글 삭제
+     */
     @Transactional
     public void deletePostService(Long postId, Long userId) {
         Post foundPost = postRepository.findById(postId)

@@ -22,12 +22,18 @@ public class PostController {
 
     private final PostService postService;
 
+    /**
+     * 게시글 생성
+     */
     @PostMapping("/posts")
     public ResponseEntity<ApiResponse<CreatePostResponseDto>> createPost(@RequestBody CreatePostRequestDto createPostRequestDto, @AuthenticationPrincipal LoginUser loginUser) {
         CreatePostResponseDto responseDto = postService.createPostService(createPostRequestDto, loginUser.getUserId());
         return ApiResponse.success(HttpStatus.CREATED, "게시글 작성이 완료되었습니다.", responseDto);
     }
 
+    /**
+     * 게시글 수정
+     */
     @PatchMapping("/posts/{postId}")
     public ResponseEntity<ApiResponse<UpdatePostResponseDto>> updatePost(
             @PathVariable("postId") Long postId,
@@ -38,6 +44,9 @@ public class PostController {
         return ApiResponse.success(HttpStatus.OK, "게시글 수정이 완료되었습니다.", responseDto);
     }
 
+    /**
+     * 게시글 다건 조회 , 검색 , 페이징
+     */
     @GetMapping("/posts")
     public ResponseEntity<ApiResponse<List<GetAllPostResponseDto>>> getAllPost(
             @RequestParam(required = false) String keyword,
@@ -47,12 +56,18 @@ public class PostController {
         return ApiResponse.success(HttpStatus.ACCEPTED,"게시글 전체 조회 성공.", allPostService);
     }
 
+    /**
+     * 게시글 단건 조회
+     */
     @GetMapping("/posts/{postId}")
     public ResponseEntity<ApiResponse<GetPostResponseDto>> getPost (@PathVariable("postId") Long postId) {
         GetPostResponseDto getPostResponseDto = postService.getPostService(postId);
         return ApiResponse.success(HttpStatus.FOUND,"게시글 조회 성공", getPostResponseDto);
     }
 
+    /**
+     * 게시글 삭제
+     */
     @DeleteMapping("/posts/{postId}")
     public ResponseEntity<ApiResponse<Object>> deletePost (@PathVariable("postId") Long postId, @AuthenticationPrincipal LoginUser loginUser) {
         postService.deletePostService(postId, loginUser.getUserId());
