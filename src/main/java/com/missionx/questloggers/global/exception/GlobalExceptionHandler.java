@@ -1,5 +1,6 @@
 package com.missionx.questloggers.global.exception;
 
+import com.missionx.questloggers.domain.auth.exception.NoneTokenException;
 import com.missionx.questloggers.domain.boss.exception.BossException;
 import com.missionx.questloggers.domain.character.exception.CharacterException;
 import com.missionx.questloggers.domain.characterboss.exception.CharacterBossException;
@@ -91,6 +92,12 @@ public class GlobalExceptionHandler {
                 ));
 
         return ApiResponse.error(HttpStatus.BAD_REQUEST, "입력값이 올바르지 않습니다", errors);
+    }
+
+    // 토큰 없을 때 공통응답
+    @ExceptionHandler(NoneTokenException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNoneTokenException(NoneTokenException ex) {
+        return ApiResponse.error(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 
 }

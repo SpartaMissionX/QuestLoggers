@@ -1,9 +1,10 @@
 package com.missionx.questloggers.global.config;
 
+import com.missionx.questloggers.domain.auth.exception.ExpiredTokenException;
+import com.missionx.questloggers.domain.auth.exception.MalformedTokenException;
+import com.missionx.questloggers.domain.auth.exception.NoneTokenException;
 import com.missionx.questloggers.domain.user.entity.User;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,20 +51,24 @@ public class JwtTokenProvider {
     // 토큰 유효성 검증
     public boolean validateToken(String token) {
         try {
-            parseClaims(token); // 파싱이 안되면 예외 발생
+            parseClaims(token);
             return true;
-        } catch (Exception e) {
-            return false;
+        } catch (ExpiredJwtException e) {
+            throw new ExpiredTokenException("토큰이 만료되었습니다.");
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new MalformedTokenException("유효하지 않은 토큰입니다.");
         }
     }
 
     // 헤더에서 Bearer 토큰 추출
     public String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+
+        if (bearerToken == null || bearerToken.isBlank() || !bearerToken.startsWith("Bearer ")) {
+            throw new NoneTokenException("인증 정보가 없습니다. Bearer 토큰을 포함해주세요.");
         }
-        return null;
+
+        return bearerToken.substring(7);
     }
 
     public Long getUserIdFromToken(String token) {
