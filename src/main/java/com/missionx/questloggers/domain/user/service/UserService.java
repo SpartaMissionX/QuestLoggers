@@ -2,12 +2,13 @@ package com.missionx.questloggers.domain.user.service;
 
 import com.missionx.questloggers.domain.user.dto.FindUserResponseDto;
 import com.missionx.questloggers.domain.user.dto.UpdatePasswordRequestDto;
-import com.missionx.questloggers.domain.user.dto.UpdatePasswordResponseDto;
 import com.missionx.questloggers.domain.user.entity.User;
+import com.missionx.questloggers.domain.user.exception.InvalidRequestException;
 import com.missionx.questloggers.domain.user.exception.NotFoundUserException;
 import com.missionx.questloggers.domain.user.exception.UserException;
 import com.missionx.questloggers.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -33,11 +34,11 @@ public class UserService {
         User user = findUserById(userId);
 
         if (!passwordEncoder.matches(updatePasswordRequestDto.getCurrentPassword(), user.getPassword())) {
-            throw new UserException("비밀번호가 일치하지 않습니다.");
+            throw new InvalidRequestException(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다.");
         }
 
         if (passwordEncoder.matches(updatePasswordRequestDto.getNewPassword(), user.getPassword())) {
-            throw new UserException("현재 비밀번호와 새 비밀번호가 동일합니다.");
+            throw new UserException(HttpStatus.BAD_REQUEST, "현재 비밀번호와 새 비밀번호가 동일합니다.");
         }
 
         String newPassword = passwordEncoder.encode(updatePasswordRequestDto.getNewPassword());
@@ -51,7 +52,7 @@ public class UserService {
     // 회원 탈퇴 - soft delete
     public void deleteUserById(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundUserException("유저가 존재하지 않습니다."));
+                .orElseThrow(() -> new NotFoundUserException(HttpStatus.NOT_FOUND, "유저가 존재하지 않습니다."));
 
         user.setDeleted(true);
         userRepository.save(user);
@@ -59,7 +60,7 @@ public class UserService {
 
     public User findUserById(Long userId) {
         return userRepository.findById(userId).orElseThrow(
-                () -> new NotFoundUserException("유저가 존재하지 않습니다.")
+                () -> new NotFoundUserException(HttpStatus.NOT_FOUND, "유저가 존재하지 않습니다.")
         );
     }
 
@@ -74,6 +75,6 @@ public class UserService {
 
     public User findActiveUserByEmail(String email) {
         return userRepository.findByEmailAndIsDeletedFalse(email)
-                .orElseThrow(() -> new NotFoundUserException("이메일 또는 비밀번호가 올바르지 않습니다."));
+                .orElseThrow(() -> new InvalidRequestException(HttpStatus.BAD_REQUEST, "이메일 또는 비밀번호가 올바르지 않습니다."));
     }
 }

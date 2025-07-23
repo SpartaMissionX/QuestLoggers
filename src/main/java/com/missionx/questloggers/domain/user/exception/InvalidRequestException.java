@@ -1,7 +1,9 @@
 package com.missionx.questloggers.domain.user.exception;
 
-public class InvalidRequestException extends RuntimeException {
-    public InvalidRequestException(String message) {
-        super(message);
+import org.springframework.http.HttpStatus;
+
+public class InvalidRequestException extends UserException {
+    public InvalidRequestException(HttpStatus status, String message) {
+        super(status, message);
     }
 }

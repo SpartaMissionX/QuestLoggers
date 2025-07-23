@@ -1,6 +1,7 @@
 package com.missionx.questloggers.domain.user.enums;
 
 import com.missionx.questloggers.domain.user.exception.InvalidRequestException;
+import org.springframework.http.HttpStatus;
 
 import java.util.Arrays;
 
@@ -12,6 +13,6 @@ public enum Role {
         return Arrays.stream(Role.values())
                 .filter(r -> r.name().equalsIgnoreCase(role))
                 .findFirst()
-                .orElseThrow(() -> new InvalidRequestException("유효하지 않은 권한"));
+                .orElseThrow(() -> new InvalidRequestException(HttpStatus.BAD_REQUEST, "유효하지 않은 권한"));
     }
 }

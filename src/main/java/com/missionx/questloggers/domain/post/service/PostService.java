@@ -30,7 +30,7 @@ public class PostService {
     @Transactional
     public CreatePostResponseDto createPostService(CreatePostRequestDto requestDto, Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundUserException("유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundUserException(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."));
 
         Post post = new Post(requestDto.getTitle(), requestDto.getContent(), user);
         postRepository.save(post);
