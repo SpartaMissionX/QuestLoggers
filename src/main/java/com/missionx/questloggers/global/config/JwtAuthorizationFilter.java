@@ -45,7 +45,7 @@ public class JwtAuthorizationFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-        // 토큰 필요없는 url 통화
+        // 토큰 필요없는 url 통과
         if (isExcludedPath(httpRequest)) {
             chain.doFilter(request, response);
             return;
