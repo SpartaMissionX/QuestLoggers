@@ -3,6 +3,7 @@ package com.missionx.questloggers.domain.post.service;
 import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.exception.NotFoundPostException;
+import com.missionx.questloggers.domain.post.exception.UnauthorizedPostAccessException;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.domain.user.exception.NotFoundUserException;
@@ -38,9 +39,12 @@ public class PostService {
 
     //포스트 수정 기능
     @Transactional
-    public UpdatePostResponseDto updatePostService(Long postId, UpdatePostRequestDto updatePostRequestDto) {
+    public UpdatePostResponseDto updatePostService(Long postId, UpdatePostRequestDto updatePostRequestDto, Long userId) {
         Post foundPost = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND, "post not found"));
+        if (!foundPost.getUser().getId().equals(userId)) {
+            throw new UnauthorizedPostAccessException("게시글 수정 권한이 없습니다.");
+        }
         foundPost.updatePost(updatePostRequestDto);
         return new UpdatePostResponseDto(foundPost.getId(), foundPost.getTitle(), foundPost.getContent());
     }
@@ -73,9 +77,12 @@ public class PostService {
     }
 
     @Transactional
-    public void deletePostService(Long postId) {
+    public void deletePostService(Long postId, Long userId) {
         Post foundPost = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("post not found"));
+        if (!foundPost.getUser().getId().equals(userId)) {
+            throw new UnauthorizedPostAccessException("게시글 삭제 권한이 없습니다.");
+        }
         foundPost.delete();
     }
 

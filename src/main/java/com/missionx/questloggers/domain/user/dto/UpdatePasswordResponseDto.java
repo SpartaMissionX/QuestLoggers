@@ -7,9 +7,9 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class UpdatePasswordResponseDto {
-
     private Long userId;
     private String email;
     private int point;
     private Role role;
+    private String token;
 }

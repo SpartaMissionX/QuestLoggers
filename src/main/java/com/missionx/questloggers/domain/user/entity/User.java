@@ -24,12 +24,14 @@ public class User extends BaseEntity {
     private String password;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role = Role.USER;
 
     @Column(nullable = false)
     private String apiKey;
 
-    private int point;
+    @Column(nullable = false)
+    private int point = 0;
 
     //soft delete 추가
     @Column(nullable = false)
@@ -39,6 +41,8 @@ public class User extends BaseEntity {
         this.email = email;
         this.password = password;
         this.apiKey = apiKey;
+        this.role = Role.USER;
+        this.point = 0;
     }
 
     public void setDeleted(boolean deleted) {

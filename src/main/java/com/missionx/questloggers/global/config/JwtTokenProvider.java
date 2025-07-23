@@ -21,13 +21,16 @@ public class JwtTokenProvider {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
-    public String createToken(Long userId, String email) {
+    public String createToken(Long userId, String email, String role, String apiKey, Integer point) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + TOKEN_TIME);
 
         return Jwts.builder()
                 .setSubject(email)
                 .claim("userId", userId)
+                .claim("role", role)
+                .claim("apiKey", apiKey)
+                .claim("point", point)
                 .setIssuedAt(now)
                 .setExpiration(expiry)
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -53,11 +56,6 @@ public class JwtTokenProvider {
         }
     }
 
-    // 토큰에서 userId 추출
-    public Long getUserIdFromToken(String token) {
-        return parseClaims(token).get("userId", Long.class);
-    }
-
     // 헤더에서 Bearer 토큰 추출
     public String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
@@ -67,8 +65,23 @@ public class JwtTokenProvider {
         return null;
     }
 
-    // 토큰에서 email 추출
+    public Long getUserIdFromToken(String token) {
+        return parseClaims(token).get("userId", Long.class);
+    }
+
     public String getEmailFromToken(String token) {
         return parseClaims(token).getSubject();
+    }
+
+    public String getRoleFromToken(String token) {
+        return parseClaims(token).get("role", String.class);
+    }
+
+    public String getApiKeyFromToken(String token) {
+        return parseClaims(token).get("apiKey", String.class);
+    }
+
+    public Integer getPointFromToken(String token) {
+        return parseClaims(token).get("point", Integer.class);
     }
 }

@@ -29,20 +29,19 @@ public class UserService {
     /**
      * 비밀번호 변경
      */
-    public UpdatePasswordResponseDto updatePassword(UpdatePasswordRequestDto requestDto, Long userId) {
+    public void updatePassword(UpdatePasswordRequestDto updatePasswordRequestDto, Long userId) {
         User user = findUserById(userId);
-        if(!passwordEncoder.matches(requestDto.getCurrentPassword(), user.getPassword())) {
+
+        if (!passwordEncoder.matches(updatePasswordRequestDto.getCurrentPassword(), user.getPassword())) {
             throw new UserException("비밀번호가 일치하지 않습니다.");
         }
-        if (passwordEncoder.matches(requestDto.getNewPassword(), user.getPassword())) {
+
+        if (passwordEncoder.matches(updatePasswordRequestDto.getNewPassword(), user.getPassword())) {
             throw new UserException("현재 비밀번호와 새 비밀번호가 동일합니다.");
         }
 
-        String newPassword = passwordEncoder.encode(requestDto.getNewPassword());
-
+        String newPassword = passwordEncoder.encode(updatePasswordRequestDto.getNewPassword());
         user.updatePassword(newPassword);
-
-        return new UpdatePasswordResponseDto(user.getId(), user.getEmail(), user.getPoint(), user.getRole());
     }
 
 

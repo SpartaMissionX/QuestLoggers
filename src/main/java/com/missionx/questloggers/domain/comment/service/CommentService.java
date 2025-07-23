@@ -3,6 +3,7 @@ package com.missionx.questloggers.domain.comment.service;
 import com.missionx.questloggers.domain.comment.dto.*;
 import com.missionx.questloggers.domain.comment.entity.Comment;
 import com.missionx.questloggers.domain.comment.exception.NotFoundCommentException;
+import com.missionx.questloggers.domain.comment.exception.UnauthorizedCommentAccessException;
 import com.missionx.questloggers.domain.comment.repository.CommentRepository;
 import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.service.PostService;
@@ -70,9 +71,13 @@ public class CommentService {
      * 댓글 수정 기능
      */
     @Transactional
-    public UpdateCommentResponseDto updateComment(Long commentId, UpdateCommentRequestDto requestDto) {
+    public UpdateCommentResponseDto updateComment(Long commentId, UpdateCommentRequestDto requestDto, Long userId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundCommentException(HttpStatus.NOT_FOUND,"댓글을 찾을 수 없습니다. 다시 확인해주세요"));
+
+        if (!comment.getUser().getId().equals(userId)) {
+            throw new UnauthorizedCommentAccessException("댓글 수정 권한이 없습니다.");
+        }
 
         comment.updateComment(requestDto.getContent());
 
@@ -83,10 +88,15 @@ public class CommentService {
      * 댓글 삭제 기능
      */
     @Transactional
-    public void deleteComment(Long commentId) {
+    public void deleteComment(Long commentId, Long userId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundCommentException(HttpStatus.NOT_FOUND,"댓글을 찾을 수 없습니다. 다시 확인해주세요"));
 
+        if (!comment.getUser().getId().equals(userId)) {
+            throw new UnauthorizedCommentAccessException("댓글 삭제 권한이 없습니다.");
+        }
+
         comment.delete();
     }
+
 }

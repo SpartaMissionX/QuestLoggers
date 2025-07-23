@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.missionx.questloggers.global.config.security.LoginUser;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RestController
 @RequestMapping("/api")
@@ -19,10 +21,10 @@ public class CommentController {
     @PostMapping("/posts/{postId}/comments")
     public ResponseEntity<ApiResponse<CreateCommentResponseDto>> createComment(
             @PathVariable Long postId,
-            @RequestBody CreateCommentRequestDto requestDto
+            @RequestBody CreateCommentRequestDto requestDto,
+            @AuthenticationPrincipal LoginUser loginUser
     ) {
-        Long userId = 1L;
-        CreateCommentResponseDto responseDto = commentService.createComment(userId, postId, requestDto);
+        CreateCommentResponseDto responseDto = commentService.createComment(loginUser.getUserId(), postId, requestDto);
         return ApiResponse.success(HttpStatus.CREATED, "댓글 작성이 완료되었습니다.", responseDto);
     }
 
@@ -40,15 +42,21 @@ public class CommentController {
     @PatchMapping("/comments/{commentId}")
     public ResponseEntity<ApiResponse<UpdateCommentResponseDto>> updateComment(
             @PathVariable Long commentId,
-            @RequestBody UpdateCommentRequestDto requestDto
+            @RequestBody UpdateCommentRequestDto requestDto,
+            @AuthenticationPrincipal LoginUser loginUser
     ) {
-        UpdateCommentResponseDto responseDto = commentService.updateComment(commentId, requestDto);
+        UpdateCommentResponseDto responseDto = commentService.updateComment(commentId, requestDto, loginUser.getUserId());
         return ApiResponse.success(HttpStatus.OK, "댓글 수정이 완료되었습니다.", responseDto);
     }
 
+
     @DeleteMapping("/comments/{commentId}")
-    public ResponseEntity<ApiResponse<Object>> deleteComment(@PathVariable Long commentId) {
-        commentService.deleteComment(commentId);
+    public ResponseEntity<ApiResponse<Object>> deleteComment(
+            @PathVariable Long commentId,
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        commentService.deleteComment(commentId, loginUser.getUserId());
         return ApiResponse.success(HttpStatus.OK, "댓글 삭제가 완료되었습니다.", null);
     }
+
 }

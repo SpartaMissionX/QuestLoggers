@@ -1,24 +1,26 @@
 package com.missionx.questloggers.global.config;
 
+import com.missionx.questloggers.domain.user.repository.UserRepository;
 import com.missionx.questloggers.global.config.security.LoginUser;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
+import com.missionx.questloggers.domain.user.entity.User;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 public class JwtAuthorizationFilter implements Filter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final UserRepository userRepository;
 
-    public JwtAuthorizationFilter(JwtTokenProvider jwtTokenProvider) {
+    public JwtAuthorizationFilter(JwtTokenProvider jwtTokenProvider, UserRepository userRepository) {
         this.jwtTokenProvider = jwtTokenProvider;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -30,9 +32,19 @@ public class JwtAuthorizationFilter implements Filter {
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
             Long userId = jwtTokenProvider.getUserIdFromToken(token);
-            String email = jwtTokenProvider.getEmailFromToken(token);
 
-            LoginUser loginUser = new LoginUser(userId, email);
+            Optional<User> userOptional = userRepository.findById(userId);
+            if (userOptional.isEmpty() || userOptional.get().isDeleted()) {
+                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 사용자입니다.");
+                return;
+            }
+
+            String email = jwtTokenProvider.getEmailFromToken(token);
+            String role = jwtTokenProvider.getRoleFromToken(token);
+            String apiKey = jwtTokenProvider.getApiKeyFromToken(token);
+            Integer point = jwtTokenProvider.getPointFromToken(token);
+
+            LoginUser loginUser = new LoginUser(userId, email, role, apiKey, point);
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
