@@ -1,22 +1,31 @@
 package com.missionx.questloggers.global.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.domain.user.repository.UserRepository;
 import com.missionx.questloggers.global.config.security.LoginUser;
+import com.missionx.questloggers.global.dto.ApiResponse;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import com.missionx.questloggers.domain.user.entity.User;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class JwtAuthorizationFilter implements Filter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private final Set<String> excludedPaths = Set.of(
+            "/api/auth/login",
+            "/api/auth/signup",
+            "/api/auth/logout"
+    );
 
     public JwtAuthorizationFilter(JwtTokenProvider jwtTokenProvider, UserRepository userRepository) {
         this.jwtTokenProvider = jwtTokenProvider;
@@ -24,39 +33,68 @@ public class JwtAuthorizationFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+    public void doFilter(ServletRequest servletrequest, ServletResponse servletresponse, FilterChain chain)
             throws IOException, ServletException {
 
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
-        String token = jwtTokenProvider.resolveToken(httpRequest);
+        HttpServletRequest httpservletRequest = (HttpServletRequest) servletrequest;
+        HttpServletResponse httpservletResponse = (HttpServletResponse) servletresponse;
 
-        if (token != null && jwtTokenProvider.validateToken(token)) {
-            Long userId = jwtTokenProvider.getUserIdFromToken(token);
-
-            Optional<User> userOptional = userRepository.findById(userId);
-            if (userOptional.isEmpty() || userOptional.get().isDeleted()) {
-                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 사용자입니다.");
-                return;
-            }
-
-            String email = jwtTokenProvider.getEmailFromToken(token);
-            String role = jwtTokenProvider.getRoleFromToken(token);
-            String apiKey = jwtTokenProvider.getApiKeyFromToken(token);
-            Integer point = jwtTokenProvider.getPointFromToken(token);
-
-            LoginUser loginUser = new LoginUser(userId, email, role, apiKey, point);
-
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            loginUser,
-                            null,
-                            loginUser.getAuthorities()  // ROLE_USER 포함
-                    );
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            httpRequest.setAttribute("userId", userId);  // 선택 사항
+        if (isExcludedPath(httpservletRequest)) {
+            chain.doFilter(servletrequest, servletresponse);
+            return;
         }
 
-        chain.doFilter(request, response);
+        try {
+            String token = jwtTokenProvider.resolveToken(httpservletRequest);
+
+            if (token != null && jwtTokenProvider.validateToken(token)) {
+                Long userId = jwtTokenProvider.getUserIdFromToken(token);
+                Optional<User> userOptional = userRepository.findById(userId);
+
+                if (userOptional.isEmpty() || userOptional.get().isDeleted()) {
+                    sendJsonError(httpservletResponse, HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 사용자입니다.");
+                    return;
+                }
+
+                setAuthentication(userOptional.get(), token);
+                httpservletRequest.setAttribute("userId", userId);
+            }
+
+            chain.doFilter(servletrequest, httpservletResponse);
+
+        } catch (Exception ex) {
+            sendJsonError(httpservletResponse, HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
+        }
+    }
+
+    private boolean isExcludedPath(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        return excludedPaths.stream().anyMatch(uri::startsWith);
+    }
+
+    private void setAuthentication(User user, String token) {
+        LoginUser loginUser = new LoginUser(
+                user.getId(),
+                user.getEmail(),
+                jwtTokenProvider.getRoleFromToken(token),
+                jwtTokenProvider.getApiKeyFromToken(token),
+                jwtTokenProvider.getPointFromToken(token)
+        );
+
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                loginUser,
+                null,
+                loginUser.getAuthorities()
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    private void sendJsonError(HttpServletResponse response, int status, String message) throws IOException {
+        response.setStatus(status);
+        response.setContentType("application/json; charset=UTF-8");
+
+        ApiResponse<Void> errorResponse = new ApiResponse<>(message, null);
+        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 }
