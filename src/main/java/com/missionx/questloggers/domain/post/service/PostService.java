@@ -90,7 +90,7 @@ public class PostService {
     @Transactional
     public void deletePostService(Long postId, Long userId) {
         Post foundPost = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
         if (foundPost.getDeletedAt() == null) {
             foundPost.delete();
         } else {
