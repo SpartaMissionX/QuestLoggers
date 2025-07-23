@@ -2,6 +2,7 @@ package com.missionx.questloggers.global.exception;
 
 import com.missionx.questloggers.domain.boss.exception.BossException;
 import com.missionx.questloggers.domain.character.exception.CharacterException;
+import com.missionx.questloggers.domain.auth.exception.AuthException;
 import com.missionx.questloggers.domain.characterboss.exception.CharacterBossException;
 import com.missionx.questloggers.domain.comment.exception.CommentException;
 import com.missionx.questloggers.domain.comment.exception.UnauthorizedCommentAccessException;
@@ -16,6 +17,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -66,6 +68,11 @@ public class GlobalExceptionHandler {
         return ApiResponse.error(e.getStatus(), e.getMessage());
     }
 
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAuthException(AuthException e) {
+        log.warn("{}: {}", e.getClass(), e.getMessage());
+        return ApiResponse.error(e.getStatus(), e.getMessage());
+    }
 
 
     // post 수정,삭제 권한 없을 때(작성자가 아닐 때)
