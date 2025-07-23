@@ -34,7 +34,7 @@ public class CommentController {
     @GetMapping("/posts/{postId}/comments")
     public ResponseEntity<ApiResponse<PageResponseDto<FindAllCommentResponseDto>>> findAllComment(
             @PathVariable Long postId,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         PageResponseDto<FindAllCommentResponseDto> comments = commentService.findAllComment(postId, page, size);

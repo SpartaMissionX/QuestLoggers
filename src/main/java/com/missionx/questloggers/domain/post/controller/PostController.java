@@ -51,11 +51,11 @@ public class PostController {
     @GetMapping("/posts")
     public ResponseEntity<ApiResponse<PageResponseDto<GetAllPostResponseDto>>> getAllPost(
             @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         PageResponseDto<GetAllPostResponseDto> posts = postService.getAllPostService(keyword, page, size);
-        return ApiResponse.success(HttpStatus.ACCEPTED,"게시글 전체 조회 성공.", posts);
+        return ApiResponse.success(HttpStatus.ACCEPTED,"게시글 목록 조회가 완료되었습니다.", posts);
     }
 
     /**
@@ -64,7 +64,7 @@ public class PostController {
     @GetMapping("/posts/{postId}")
     public ResponseEntity<ApiResponse<GetPostResponseDto>> getPost (@PathVariable("postId") Long postId) {
         GetPostResponseDto getPostResponseDto = postService.getPostService(postId);
-        return ApiResponse.success(HttpStatus.FOUND,"게시글 조회 성공", getPostResponseDto);
+        return ApiResponse.success(HttpStatus.FOUND,"게시글 조회가 완료되었습니다.", getPostResponseDto);
     }
 
     /**

@@ -4,6 +4,7 @@ import com.missionx.questloggers.domain.character.dto.*;
 import com.missionx.questloggers.domain.character.service.CharacterService;
 import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.ApiResponse;
+import com.missionx.questloggers.global.dto.PageResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -37,12 +38,13 @@ public class CharacterController {
      * 유저 캐릭터 리스트 검색 API
      */
     @GetMapping("/char")
-    public ResponseEntity<ApiResponse<List<SerchAllCharResponseDto>>> serchAllChar(
+    public ResponseEntity<ApiResponse<PageResponseDto<SerchAllCharResponseDto>>> serchAllChar(
             @RequestParam("keyword") String keyword,
-            @PageableDefault(size = 10,page = 0,sort = "charName", direction = Sort.Direction.DESC) Pageable pageable
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
-        List<SerchAllCharResponseDto> responseDtoList = characterService.serchAllCharService(keyword, pageable);
-        return ApiResponse.success(HttpStatus.OK,"키워드에 포함된 이름들을 불러왔습니다.", responseDtoList);
+        PageResponseDto<SerchAllCharResponseDto> responseDto = characterService.serchAllCharService(keyword, page, size);
+        return ApiResponse.success(HttpStatus.OK, "키워드에 포함된 이름들을 불러왔습니다.", responseDto);
     }
 
     /**
