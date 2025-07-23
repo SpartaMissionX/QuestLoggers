@@ -1,5 +1,6 @@
 package com.missionx.questloggers.global.config;
 
+import com.missionx.questloggers.domain.user.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -21,16 +22,16 @@ public class JwtTokenProvider {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
-    public String createToken(Long userId, String email, String role, String apiKey, Integer point) {
+    public String createToken(User user) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + TOKEN_TIME);
 
         return Jwts.builder()
-                .setSubject(email)
-                .claim("userId", userId)
-                .claim("role", role)
-                .claim("apiKey", apiKey)
-                .claim("point", point)
+                .setSubject(user.getEmail())
+                .claim("userId", user.getId())
+                .claim("role", user.getRole())
+                .claim("apiKey", user.getApiKey())
+                .claim("point", user.getPoint())
                 .setIssuedAt(now)
                 .setExpiration(expiry)
                 .signWith(key, SignatureAlgorithm.HS256)

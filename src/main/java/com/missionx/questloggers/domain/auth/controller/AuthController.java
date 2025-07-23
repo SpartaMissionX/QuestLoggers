@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
-    private final UserService userService;
 
     @PostMapping("/auth/signup")
     public ResponseEntity<ApiResponse<SignupResponseDto>> signup(@Valid @RequestBody SignupRequestDto signupRequestDto) {
@@ -39,14 +38,4 @@ public class AuthController {
         return ApiResponse.success(HttpStatus.OK, "로그아웃이 완료되었습니다.", null);
     }
 
-    @DeleteMapping("/auth/withdrawal")
-    public ResponseEntity<ApiResponse<Void>> withdraw(HttpServletRequest request) {
-        Long userId = (Long) request.getAttribute("userId");
-        if (userId == null) {
-            return ApiResponse.error(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
-        }
-
-        userService.deleteUserById(userId);
-        return ApiResponse.success(HttpStatus.OK, "회원 탈퇴가 정상적으로 처리되었습니다.", null);
-    }
 }
