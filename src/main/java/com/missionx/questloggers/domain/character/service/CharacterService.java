@@ -116,7 +116,7 @@ public class CharacterService {
      */
     public SerchCharResponseDto serchCharService(Long charId) {
         Character foundChar = characterRepository.findById(charId)
-                .orElseThrow(()-> new RuntimeException("캐릭터 정보를 불러왔습니다."));
+                .orElseThrow(()-> new NotFoundCharException(HttpStatus.NOT_FOUND, "캐릭터 정보를 불러왔습니다."));
         return new SerchCharResponseDto(foundChar.getCharName(), foundChar.getCharLevel(), foundChar.getWorldName());
     }
 
