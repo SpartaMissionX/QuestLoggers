@@ -12,6 +12,7 @@ import com.missionx.questloggers.domain.user.exception.InvalidRequestException;
 import com.missionx.questloggers.domain.user.exception.UserException;
 import com.missionx.questloggers.domain.user.service.UserService;
 import com.missionx.questloggers.global.config.JwtTokenProvider;
+import com.missionx.questloggers.global.config.security.LoginUser;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -47,37 +48,14 @@ public class AuthService {
             throw new InvalidRequestException(HttpStatus.BAD_REQUEST, "이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        String jwtToken = jwtTokenProvider.createToken(
-                user.getId(),
-                user.getEmail(),
-                user.getRole().name(), // enum을 string으로 바꿔야함
-                user.getApiKey(),
-                user.getPoint()
-        );
+        String jwtToken = jwtTokenProvider.createToken(user);
 
         return new LoginResponseDto(user.getId(), jwtToken);
     }
 
-    public UpdatePasswordResponseDto updatePassword(UpdatePasswordRequestDto updatePasswordRequestDto, Long userId) {
-        userService.updatePassword(updatePasswordRequestDto, userId);
-        //유저 재조회
-        User updatedUser = userService.findUserById(userId);
+
+    public String updateToken(User user) {
         //JWT 토큰 새로 발급
-        String newToken = jwtTokenProvider.createToken(
-                updatedUser.getId(),
-                updatedUser.getEmail(),
-                updatedUser.getRole().name(),
-                updatedUser.getApiKey(),
-                updatedUser.getPoint()
-        );
-
-        return new UpdatePasswordResponseDto(
-                updatedUser.getId(),
-                updatedUser.getEmail(),
-                updatedUser.getPoint(),
-                updatedUser.getRole(),
-                newToken
-        );
-
+        return jwtTokenProvider.createToken(user);
     }
 }
