@@ -4,6 +4,7 @@ import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.post.service.PostService;
 import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.ApiResponse;
+import com.missionx.questloggers.global.dto.PageResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -48,19 +49,13 @@ public class PostController {
      * 게시글 다건 조회 , 검색 , 페이징
      */
     @GetMapping("/posts")
-    public ResponseEntity<ApiResponse<List<GetAllPostResponseDto>>> getAllPost(
+    public ResponseEntity<ApiResponse<PageResponseDto<GetAllPostResponseDto>>> getAllPost(
             @RequestParam(required = false) String keyword,
-            @PageableDefault(size = 10,page = 0,sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
-        List<GetAllPostResponseDto> allPostService = postService.getAllPostService(keyword, pageable);
-        if (keyword == null && allPostService.isEmpty()) {
-            return ApiResponse.error(HttpStatus.NOT_FOUND, "게시글이 존재하지 않습니다.");
-        } else if (keyword != null && allPostService.isEmpty()) {
-            return ApiResponse.success(HttpStatus.ACCEPTED, "검색 결과가 없습니다.", null);
-        } else {
-            return ApiResponse.success(HttpStatus.ACCEPTED,"게시글 전체 조회 성공.", allPostService);
-        }
-
+        PageResponseDto<GetAllPostResponseDto> posts = postService.getAllPostService(keyword, page, size);
+        return ApiResponse.success(HttpStatus.ACCEPTED,"게시글 전체 조회 성공.", posts);
     }
 
     /**

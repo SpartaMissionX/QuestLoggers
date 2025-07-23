@@ -4,9 +4,11 @@ import com.missionx.questloggers.domain.comment.dto.*;
 import com.missionx.questloggers.domain.comment.service.CommentService;
 import com.missionx.questloggers.global.dto.ApiResponse;
 import com.missionx.questloggers.global.dto.PageResponseDto;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import com.missionx.questloggers.global.config.security.LoginUser;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@Validated
 public class CommentController {
 
     private final CommentService commentService;
@@ -35,7 +38,7 @@ public class CommentController {
             @RequestParam(defaultValue = "10") int size
     ) {
         PageResponseDto<FindAllCommentResponseDto> comments = commentService.findAllComment(postId, page, size);
-        return ApiResponse.success(HttpStatus.OK, "댓글 조회가 완료되었습니다.", comments);
+        return ApiResponse.success(HttpStatus.ACCEPTED, "댓글 조회가 완료되었습니다.", comments);
     }
 
 

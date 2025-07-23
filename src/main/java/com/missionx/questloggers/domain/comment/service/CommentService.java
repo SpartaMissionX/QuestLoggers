@@ -2,13 +2,12 @@ package com.missionx.questloggers.domain.comment.service;
 
 import com.missionx.questloggers.domain.comment.dto.*;
 import com.missionx.questloggers.domain.comment.entity.Comment;
-import com.missionx.questloggers.domain.comment.exception.AlreadyDeletedCommentException;
-import com.missionx.questloggers.domain.comment.exception.NotFoundCommentException;
-import com.missionx.questloggers.domain.comment.exception.UnauthorizedCommentAccessException;
+import com.missionx.questloggers.domain.comment.exception.*;
 import com.missionx.questloggers.domain.comment.repository.CommentRepository;
 import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.service.PostService;
 import com.missionx.questloggers.domain.user.entity.User;
+import com.missionx.questloggers.domain.user.exception.InvalidRequestUserException;
 import com.missionx.questloggers.domain.user.service.UserService;
 import com.missionx.questloggers.global.dto.PageResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -50,9 +49,12 @@ public class CommentService {
      */
     @Transactional(readOnly = true)
     public PageResponseDto<FindAllCommentResponseDto> findAllComment(Long postId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Comment> commentsPage = commentRepository.findByPostIdAndDeletedAtNull(postId, pageable);
 
+        if (commentsPage.isEmpty()) {
+            throw new CommentException(HttpStatus.NOT_FOUND, "요청한 페이지에 댓글이 존재하지 않습니다.");
+        }
 
         List<FindAllCommentResponseDto> responseDtos = commentsPage.stream()
                 .map(comment -> new FindAllCommentResponseDto(comment.getId(), comment.getContent()))
@@ -60,7 +62,7 @@ public class CommentService {
 
         return new PageResponseDto<>(
                 responseDtos,
-                commentsPage.getNumber(),
+                commentsPage.getNumber() + 1,
                 commentsPage.getSize(),
                 commentsPage.getTotalElements(),
                 commentsPage.getTotalPages(),

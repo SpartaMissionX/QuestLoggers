@@ -1,11 +1,10 @@
 package com.missionx.questloggers.domain.user.service;
 
-import com.missionx.questloggers.domain.auth.service.AuthService;
 import com.missionx.questloggers.domain.user.dto.FindUserResponseDto;
 import com.missionx.questloggers.domain.user.dto.UpdatePasswordRequestDto;
 import com.missionx.questloggers.domain.user.dto.UpdatePasswordResponseDto;
 import com.missionx.questloggers.domain.user.entity.User;
-import com.missionx.questloggers.domain.user.exception.InvalidRequestException;
+import com.missionx.questloggers.domain.user.exception.InvalidRequestUserException;
 import com.missionx.questloggers.domain.user.exception.NotFoundUserException;
 import com.missionx.questloggers.domain.user.exception.UserException;
 import com.missionx.questloggers.domain.user.repository.UserRepository;
@@ -16,8 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +41,7 @@ public class UserService {
         User user = findUserById(loginUser.getUserId());
 
         if (!passwordEncoder.matches(updatePasswordRequestDto.getCurrentPassword(), user.getPassword())) {
-            throw new InvalidRequestException(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다.");
+            throw new InvalidRequestUserException(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다.");
         }
 
         if (passwordEncoder.matches(updatePasswordRequestDto.getNewPassword(), user.getPassword())) {
@@ -92,6 +89,6 @@ public class UserService {
 
     public User findActiveUserByEmail(String email) {
         return userRepository.findByEmailAndIsDeletedFalse(email)
-                .orElseThrow(() -> new InvalidRequestException(HttpStatus.BAD_REQUEST, "이메일 또는 비밀번호가 올바르지 않습니다."));
+                .orElseThrow(() -> new InvalidRequestUserException(HttpStatus.BAD_REQUEST, "이메일 또는 비밀번호가 올바르지 않습니다."));
     }
 }
