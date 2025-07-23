@@ -59,8 +59,6 @@ public class PostService {
      */
     @Transactional(readOnly = true)
     public List<GetAllPostResponseDto> getAllPostService(String keyword, Pageable pageable) {
-
-
         Page<Post> foundPostList;
         if (keyword == null) {
             foundPostList = postRepository.findByDeletedAtNull(pageable);

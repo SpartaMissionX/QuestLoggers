@@ -53,7 +53,14 @@ public class PostController {
             @PageableDefault(size = 10,page = 0,sort = "id", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         List<GetAllPostResponseDto> allPostService = postService.getAllPostService(keyword, pageable);
-        return ApiResponse.success(HttpStatus.ACCEPTED,"게시글 전체 조회 성공.", allPostService);
+        if (keyword == null && allPostService.isEmpty()) {
+            return ApiResponse.error(HttpStatus.NOT_FOUND, "게시글이 존재하지 않습니다.");
+        } else if (keyword != null && allPostService.isEmpty()) {
+            return ApiResponse.success(HttpStatus.ACCEPTED, "검색 결과가 없습니다.", null);
+        } else {
+            return ApiResponse.success(HttpStatus.ACCEPTED,"게시글 전체 조회 성공.", allPostService);
+        }
+
     }
 
     /**
