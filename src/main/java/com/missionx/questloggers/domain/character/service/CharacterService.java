@@ -38,12 +38,11 @@ public class CharacterService {
      * 캐릭터 생성 기능
      */
     @Transactional
-    public void createCharList(LoginUser loginUser) {
-        User user = userService.findUserById(loginUser.getUserId());
+    public void createCharList(User user) {
         String url = "https://open.api.nexon.com/maplestory/v1/character/list";
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("x-nxopen-api-key", loginUser.getApiKey());
+        headers.set("x-nxopen-api-key", user.getApiKey());
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
 

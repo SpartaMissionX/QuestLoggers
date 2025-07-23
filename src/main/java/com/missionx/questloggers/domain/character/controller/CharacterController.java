@@ -25,15 +25,6 @@ public class CharacterController {
     private final CharacterService characterService;
 
     /**
-     * 캐릭터 생성 API
-     */
-    @PostMapping("/mychar")
-    public ResponseEntity<ApiResponse<AccountListDto>> saveCharList(@AuthenticationPrincipal LoginUser loginUser) {
-        characterService.createCharList(loginUser);
-        return ApiResponse.success(HttpStatus.OK, "캐릭터 생성이 완료되었습니다.", null);
-    }
-
-    /**
      * 본인 캐릭터 조회 API
      */
     @GetMapping("/mychar")

@@ -4,6 +4,7 @@ import com.missionx.questloggers.domain.auth.dto.LoginRequestDto;
 import com.missionx.questloggers.domain.auth.dto.LoginResponseDto;
 import com.missionx.questloggers.domain.auth.dto.SignupRequestDto;
 import com.missionx.questloggers.domain.auth.dto.SignupResponseDto;
+import com.missionx.questloggers.domain.character.service.CharacterService;
 import com.missionx.questloggers.domain.user.dto.UpdatePasswordRequestDto;
 import com.missionx.questloggers.domain.user.dto.UpdatePasswordResponseDto;
 import com.missionx.questloggers.domain.user.entity.User;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final UserService userService;
+    private final CharacterService characterService;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -38,6 +40,7 @@ public class AuthService {
         String encodedPassword = passwordEncoder.encode(signupRequestDto.getPassword());
         User savedUser = userService.createUser(new User(signupRequestDto.getEmail(), encodedPassword, signupRequestDto.getApiKey()));
 
+        characterService.createCharList(savedUser);
         return new SignupResponseDto(savedUser.getId(), savedUser.getEmail());
     }
 
