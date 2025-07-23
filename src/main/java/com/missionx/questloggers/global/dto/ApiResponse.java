@@ -24,4 +24,8 @@ public class ApiResponse<T> {
     public static <T> ResponseEntity<ApiResponse<T>> error(HttpStatus code, String message) {
         return ResponseEntity.status(code).body(new ApiResponse<>(message, null));
     }
+
+    public static <T> ResponseEntity<ApiResponse<T>> error(HttpStatus code, String message, T data) {
+        return ResponseEntity.status(code).body(new ApiResponse<>(message, data));
+    }
 }

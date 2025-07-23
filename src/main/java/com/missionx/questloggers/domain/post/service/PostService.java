@@ -2,6 +2,7 @@ package com.missionx.questloggers.domain.post.service;
 
 import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.post.entity.Post;
+import com.missionx.questloggers.domain.post.exception.AlreadyDeletedPostException;
 import com.missionx.questloggers.domain.post.exception.NotFoundPostException;
 import com.missionx.questloggers.domain.post.exception.UnauthorizedPostAccessException;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
@@ -29,7 +30,7 @@ public class PostService {
     @Transactional
     public CreatePostResponseDto createPostService(CreatePostRequestDto requestDto, Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundUserException("유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundUserException(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."));
 
         Post post = new Post(requestDto.getTitle(), requestDto.getContent(), user);
         postRepository.save(post);
@@ -56,9 +57,9 @@ public class PostService {
 
         Page<Post> foundPostList;
         if (keyword == null) {
-            foundPostList = postRepository.findAll(pageable);
+            foundPostList = postRepository.findByDeletedAtNull(pageable);
         } else {
-            foundPostList = postRepository.findByTitleContaining(keyword, pageable);
+            foundPostList = postRepository.findByTitleContainingAndDeletedAtNull(keyword, pageable);
         }
 
         return foundPostList.stream()
@@ -79,7 +80,12 @@ public class PostService {
     @Transactional
     public void deletePostService(Long postId, Long userId) {
         Post foundPost = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("post not found"));
+                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+        if (foundPost.getDeletedAt() == null) {
+            foundPost.delete();
+        } else {
+            throw new AlreadyDeletedPostException(HttpStatus.NOT_FOUND, "이미 삭제된 게시글입니다.");
+        }
         if (!foundPost.getUser().getId().equals(userId)) {
             throw new UnauthorizedPostAccessException("게시글 삭제 권한이 없습니다.");
         }

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
     // 게시물 페이징 및 키워드 검색에서 사용
-    Page<Post> findByTitleContaining(String title,Pageable pageable);
+    Page<Post> findByTitleContainingAndDeletedAtNull(String title,Pageable pageable);
+    Page<Post> findByDeletedAtNull(Pageable pageable);
 
 }

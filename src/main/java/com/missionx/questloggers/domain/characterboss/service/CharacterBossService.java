@@ -8,16 +8,21 @@ import com.missionx.questloggers.domain.characterboss.dto.CreateCharBossResponse
 import com.missionx.questloggers.domain.characterboss.dto.MyCharInfoResponseDto;
 import com.missionx.questloggers.domain.characterboss.dto.UpdateIsClearedResponseDto;
 import com.missionx.questloggers.domain.characterboss.entity.CharacterBoss;
+import com.missionx.questloggers.domain.characterboss.exception.AlreadyCharacterBossException;
 import com.missionx.questloggers.domain.characterboss.exception.NotFoundCharacterBossExceoption;
 import com.missionx.questloggers.domain.characterboss.repository.CharacterBossRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CharacterBossService {
@@ -30,6 +35,10 @@ public class CharacterBossService {
     public CreateCharBossResponseDto createCharBoss(Long charId, Long bossId) {
         Character character = characterService.findById(charId);
         Boss boss = bossService.findById(bossId);
+
+        if (characterBossRepository.findByCharacterAndBoss(character, boss).isPresent()) {
+            throw new AlreadyCharacterBossException(HttpStatus.BAD_REQUEST, "이미 존재하는 캐릭터 보스 입니다.");
+        }
 
         CharacterBoss characterBoss = new CharacterBoss(character, boss);
         characterBossRepository.save(characterBoss);
@@ -51,10 +60,26 @@ public class CharacterBossService {
         Character character = characterService.findById(charId);
         Boss boss = bossService.findById(bossId);
 
-        CharacterBoss cb = characterBossRepository.findByCharacterAndBoss(character, boss);
-        cb.updateIsCleared(true);
+        CharacterBoss cb = characterBossRepository.findByCharacterAndBoss(character, boss).orElseThrow(
+                () -> new NotFoundCharacterBossExceoption(HttpStatus.NOT_FOUND,"캐릭터 보스 정보를 찾을 수 없습니다.")
+        );
+        if (cb.isCleared()) {
+            throw new AlreadyCharacterBossException(HttpStatus.BAD_REQUEST, "이미 클리어한 보스입니다.");
+        } else {
+            cb.updateIsCleared(true);
+        }
 
         return new UpdateIsClearedResponseDto(cb.getCharacter().getId(), cb.getBoss().getId(), cb.isCleared(), cb.getClearCount());
+    }
+
+    // 스케쥴 ( 월요일 AM 06:00 마다 클리어 여부 초기화 )
+    @Scheduled(cron = "0 0 6 * * 1")
+    @Transactional
+    public void updateIsClearedToFalse() {
+        List<CharacterBoss> characterBossList = characterBossRepository.findAll();
+        for (CharacterBoss characterBoss : characterBossList) {
+            characterBoss.updateIsClearedToFalse();
+        }
     }
 
     /**

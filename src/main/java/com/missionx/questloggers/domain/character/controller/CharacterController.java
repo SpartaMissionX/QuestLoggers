@@ -2,6 +2,7 @@ package com.missionx.questloggers.domain.character.controller;
 
 import com.missionx.questloggers.domain.character.dto.*;
 import com.missionx.questloggers.domain.character.service.CharacterService;
+import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,28 +26,24 @@ public class CharacterController {
 
     /**
      * 캐릭터 생성 API
-     * 수정 필요
      */
     @PostMapping("/mychar")
-    public ResponseEntity<ApiResponse<AccountListDto>> saveCharList() {
-        Long userId = 1L;
-        characterService.createCharList(userId);
+    public ResponseEntity<ApiResponse<AccountListDto>> saveCharList(@AuthenticationPrincipal LoginUser loginUser) {
+        characterService.createCharList(loginUser);
         return ApiResponse.success(HttpStatus.OK, "캐릭터 생성이 완료되었습니다.", null);
     }
 
     /**
      * 본인 캐릭터 조회 API
-     * 수정 필요
      */
     @GetMapping("/mychar")
-    public ResponseEntity<ApiResponse<AccountListDto>> getCharList() {
-        Long userId = 1L;
-        AccountListDto charList = characterService.getCharList(userId);
+    public ResponseEntity<ApiResponse<AccountListDto>> getCharList(@AuthenticationPrincipal LoginUser loginUser) {
+        AccountListDto charList = characterService.getCharList(loginUser);
         return ApiResponse.success(HttpStatus.OK, "조회가 완료되었습니다.", charList);
     }
 
     /**
-     * 유저 리스트 검색 API
+     * 유저 캐릭터 리스트 검색 API
      */
     @GetMapping("/char")
     public ResponseEntity<ApiResponse<List<SerchAllCharResponseDto>>> serchAllChar(
@@ -57,7 +55,7 @@ public class CharacterController {
     }
 
     /**
-     * 유저 단건 검색 API
+     * 유저 캐릭터 단건 검색 API
      */
     @GetMapping("/char/{charId}")
     public ResponseEntity<ApiResponse<SerchCharResponseDto>> serchChar(@PathVariable Long charId) {
@@ -67,23 +65,25 @@ public class CharacterController {
 
     /**
      * 대표캐릭터 설정
-     * 수정 필요
      */
     @PostMapping("/mychar/owner/{charId}")
-    public ResponseEntity<ApiResponse<SetOwnerCharResponseDto>> setOwnerChar(@PathVariable Long charId) {
-        Long userId = 1L;
-        SetOwnerCharResponseDto responseDto = characterService.setOwnerChar(userId , charId);
+    public ResponseEntity<ApiResponse<SetOwnerCharResponseDto>> setOwnerChar(
+            @PathVariable Long charId,
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        SetOwnerCharResponseDto responseDto = characterService.setOwnerChar(loginUser , charId);
         return ApiResponse.success(HttpStatus.OK, "대표 캐릭터 설정이 완료되었습니다.", responseDto);
     }
 
     /**
      * 대표캐릭터 업데이트
-     * 수정 필요
      */
     @PatchMapping("/mychar/owner/{charId}")
-    public ResponseEntity<ApiResponse<UpdateOwnerCharResponseDte>> updateOwnerChar(@PathVariable Long charId) {
-        Long userId = 1L;
-        UpdateOwnerCharResponseDte responseDte = characterService.updateOwnerChar(userId, charId);
+    public ResponseEntity<ApiResponse<UpdateOwnerCharResponseDte>> updateOwnerChar(
+            @PathVariable Long charId,
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        UpdateOwnerCharResponseDte responseDte = characterService.updateOwnerChar(loginUser, charId);
         return ApiResponse.success(HttpStatus.OK, "대표 캐릭터 변경이 완료되었습니다.", responseDte);
     }
 

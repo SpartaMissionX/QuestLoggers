@@ -42,4 +42,8 @@ public class CharacterBoss {
         this.isCleared = isCleared;
         this.clearCount = clearCount + 1;
     }
+
+    public void updateIsClearedToFalse() {
+        this.isCleared = false;
+    }
 }

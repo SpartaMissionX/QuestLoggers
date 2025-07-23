@@ -20,18 +20,30 @@ public class CharacterBossController {
 
     private final CharacterBossService characterBossService;
 
+    /**
+     * 캐릭터의 보스 생성
+     */
     @PostMapping("/mychar/{charId}/boss/{bossId}")
-    public ResponseEntity<ApiResponse<CreateCharBossResponseDto>> createCharBoss(@PathVariable Long charId, @PathVariable Long bossId) {
+    public ResponseEntity<ApiResponse<CreateCharBossResponseDto>> createCharBoss(
+            @PathVariable Long charId,
+            @PathVariable Long bossId
+    ) {
         CreateCharBossResponseDto responseDto = characterBossService.createCharBoss(charId, bossId);
         return ApiResponse.success(HttpStatus.OK, "캐릭터의 보스 생성 완료", responseDto);
     }
 
+    /**
+     * 캐릭터의 보스 클리어 정보 조회
+     */
     @GetMapping("/mychar/{charId}")
     public ResponseEntity<ApiResponse<List<MyCharInfoResponseDto>>> myCharInfo(@PathVariable Long charId) {
         List<MyCharInfoResponseDto> responseDtoList = characterBossService.myCharInfo(charId);
         return ApiResponse.success(HttpStatus.OK, "캐릭터 정보 조회 완료", responseDtoList);
     }
 
+    /**
+     * 캐릭터의 보스 클리어 여부 수정
+     */
     @PatchMapping("/mychar/{charId}/boss/{bossId}")
     public ResponseEntity<ApiResponse<UpdateIsClearedResponseDto>> updateIsCleared(@PathVariable Long charId, @PathVariable Long bossId) {
         UpdateIsClearedResponseDto responseDto = characterBossService.updateIsCleared(charId, bossId);

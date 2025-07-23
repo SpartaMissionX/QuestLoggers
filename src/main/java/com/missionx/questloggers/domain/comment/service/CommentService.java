@@ -2,6 +2,7 @@ package com.missionx.questloggers.domain.comment.service;
 
 import com.missionx.questloggers.domain.comment.dto.*;
 import com.missionx.questloggers.domain.comment.entity.Comment;
+import com.missionx.questloggers.domain.comment.exception.AlreadyDeletedCommentException;
 import com.missionx.questloggers.domain.comment.exception.NotFoundCommentException;
 import com.missionx.questloggers.domain.comment.exception.UnauthorizedCommentAccessException;
 import com.missionx.questloggers.domain.comment.repository.CommentRepository;
@@ -50,7 +51,7 @@ public class CommentService {
     @Transactional(readOnly = true)
     public PageResponseDto<FindAllCommentResponseDto> findAllComment(Long postId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<Comment> commentsPage = commentRepository.findByPostId(postId, pageable);
+        Page<Comment> commentsPage = commentRepository.findByPostIdAndDeletedAtNull(postId, pageable);
 
 
         List<FindAllCommentResponseDto> responseDtos = commentsPage.stream()
@@ -91,6 +92,11 @@ public class CommentService {
     public void deleteComment(Long commentId, Long userId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundCommentException(HttpStatus.NOT_FOUND,"댓글을 찾을 수 없습니다. 다시 확인해주세요"));
+        if (comment.getDeletedAt() == null) {
+            comment.delete();
+        } else {
+            throw new AlreadyDeletedCommentException(HttpStatus.NOT_FOUND , "이미 삭제된 댓글입니다.");
+        }
 
         if (!comment.getUser().getId().equals(userId)) {
             throw new UnauthorizedCommentAccessException("댓글 삭제 권한이 없습니다.");

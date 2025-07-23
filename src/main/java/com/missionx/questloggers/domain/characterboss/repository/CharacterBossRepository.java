@@ -6,8 +6,10 @@ import com.missionx.questloggers.domain.characterboss.entity.CharacterBoss;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CharacterBossRepository extends JpaRepository<CharacterBoss, Long> {
     List<CharacterBoss> findByCharacter(Character character);
-    CharacterBoss findByCharacterAndBoss(Character character, Boss boss);
+    Optional<CharacterBoss> findByCharacterAndBoss(Character character, Boss boss);
+
 }
