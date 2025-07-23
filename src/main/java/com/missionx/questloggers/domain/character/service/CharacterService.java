@@ -13,10 +13,13 @@ import com.missionx.questloggers.domain.character.repository.CharacterRepository
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.domain.user.service.UserService;
 import com.missionx.questloggers.global.config.security.LoginUser;
+import com.missionx.questloggers.global.dto.PageResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -89,14 +92,22 @@ public class CharacterService {
     /**
      * 유저 리스트 검색
      */
-    public List<SerchAllCharResponseDto> serchAllCharService(String keyword, Pageable pageable) {
-        Page<Character> foundCharList = characterRepository.findByCharNameContaining(keyword, pageable);
+    public PageResponseDto<SerchAllCharResponseDto> serchAllCharService(String keyword, int page , int size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.ASC, "id"));
+        Page<Character> charactersPage = characterRepository.findByCharNameContaining(keyword, pageable);
 
-        return foundCharList.stream()
-                .map(character -> {
-                    return new SerchAllCharResponseDto(character.getCharName(), character.getCharLevel());
-                })
+        List<SerchAllCharResponseDto> responseDtos = charactersPage.stream()
+                .map(character -> new SerchAllCharResponseDto(character.getCharName(), character.getCharLevel()))
                 .collect(Collectors.toList());
+
+        return new PageResponseDto<>(
+                responseDtos,
+                charactersPage.getNumber() + 1,
+                charactersPage.getSize(),
+                charactersPage.getTotalElements(),
+                charactersPage.getTotalPages(),
+                charactersPage.isLast()
+        );
 
     }
 
@@ -105,7 +116,7 @@ public class CharacterService {
      */
     public SerchCharResponseDto serchCharService(Long charId) {
         Character foundChar = characterRepository.findById(charId)
-                .orElseThrow(()-> new RuntimeException("캐릭터 정보를 불러왔습니다."));
+                .orElseThrow(()-> new NotFoundCharException(HttpStatus.NOT_FOUND, "캐릭터 정보를 불러왔습니다."));
         return new SerchCharResponseDto(foundChar.getCharName(), foundChar.getCharLevel(), foundChar.getWorldName());
     }
 
