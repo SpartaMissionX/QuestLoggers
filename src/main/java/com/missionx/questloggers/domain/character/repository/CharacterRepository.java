@@ -13,6 +13,6 @@ public interface CharacterRepository extends JpaRepository<Character, Long> {
     Page<Character> findByCharNameContaining(String charName, Pageable pageable);
     Optional<Character> findByUserAndOwnerCharTrue(User user);
     boolean existsByUserAndOwnerCharTrue(User user);
-
+    List<Character> findByUser(User user);
 
 }
