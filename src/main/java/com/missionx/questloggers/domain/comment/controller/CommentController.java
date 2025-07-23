@@ -38,7 +38,7 @@ public class CommentController {
             @RequestParam(defaultValue = "10") int size
     ) {
         PageResponseDto<FindAllCommentResponseDto> comments = commentService.findAllComment(postId, page, size);
-        return ApiResponse.success(HttpStatus.OK, "댓글 조회가 완료되었습니다.", comments);
+        return ApiResponse.success(HttpStatus.ACCEPTED, "댓글 조회가 완료되었습니다.", comments);
     }
 
 

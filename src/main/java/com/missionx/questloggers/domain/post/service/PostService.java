@@ -4,14 +4,18 @@ import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.exception.AlreadyDeletedPostException;
 import com.missionx.questloggers.domain.post.exception.NotFoundPostException;
+import com.missionx.questloggers.domain.post.exception.PostException;
 import com.missionx.questloggers.domain.post.exception.UnauthorizedPostAccessException;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.domain.user.exception.NotFoundUserException;
 import com.missionx.questloggers.domain.user.repository.UserRepository;
+import com.missionx.questloggers.global.dto.PageResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,19 +62,31 @@ public class PostService {
      * 게시글 다건 조회 , 검색 , 페이징
      */
     @Transactional(readOnly = true)
-    public List<GetAllPostResponseDto> getAllPostService(String keyword, Pageable pageable) {
-        Page<Post> foundPostList;
+    public PageResponseDto<GetAllPostResponseDto> getAllPostService(String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Post> postsPage;
         if (keyword == null) {
-            foundPostList = postRepository.findByDeletedAtNull(pageable);
+            postsPage = postRepository.findByDeletedAtNull(pageable);
         } else {
-            foundPostList = postRepository.findByTitleContainingAndDeletedAtNull(keyword, pageable);
+            postsPage = postRepository.findByTitleContainingAndDeletedAtNull(keyword, pageable);
         }
 
-        return foundPostList.stream()
-                .map((post) -> {
-                    return new GetAllPostResponseDto(post.getId(), post.getTitle(), post.getContent());
-                })
+        if (postsPage.isEmpty()) {
+            throw new PostException(HttpStatus.NOT_FOUND, "요청한 페이지에 게시글이 존재하지 않습니다.");
+        };
+
+        List<GetAllPostResponseDto> responseDtos = postsPage.stream()
+                .map(post -> new GetAllPostResponseDto(post.getId(), post.getTitle(), post.getContent()))
                 .collect(Collectors.toList());
+
+        return new PageResponseDto<>(
+                responseDtos,
+                postsPage.getNumber() +1,
+                postsPage.getSize(),
+                postsPage.getTotalElements(),
+                postsPage.getTotalPages(),
+                postsPage.isLast()
+        );
     }
 
     /**
