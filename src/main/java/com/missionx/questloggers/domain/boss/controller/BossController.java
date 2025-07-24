@@ -21,6 +21,9 @@ public class BossController {
 
     private final BossService bossService;
 
+    /**
+     * 보스 생성 API
+     */
     @PostMapping("/boss")
     public ResponseEntity<ApiResponse<CreateBossResponseDto>> createBoss(@RequestBody CreateBossRequestDto createBossRequestDto, @AuthenticationPrincipal LoginUser loginUser) {
         if (!loginUser.getRole().equals("ADMIN")) {
@@ -30,12 +33,18 @@ public class BossController {
         return ApiResponse.success(HttpStatus.CREATED,"보스 생성이 완료되었습니다.",responseDto);
     }
 
+    /**
+     * 보스 조회 API
+     */
     @GetMapping("/boss")
     public ResponseEntity<ApiResponse<List<GetAllBossResponseDto>>> getAllBoss() {
         List<GetAllBossResponseDto> responseDtoList = bossService.getAllbossService();
         return ApiResponse.success(HttpStatus.FOUND,"보스 전체 조회 성공",responseDtoList);
     }
 
+    /**
+     * 보스 삭제 API
+     */
     @DeleteMapping("/boss/{bossId}")
     public ResponseEntity<ApiResponse<String>> deleteBoss(
             @PathVariable Long bossId,

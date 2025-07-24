@@ -11,6 +11,10 @@ import com.missionx.questloggers.domain.characterboss.entity.CharacterBoss;
 import com.missionx.questloggers.domain.characterboss.exception.AlreadyCharacterBossException;
 import com.missionx.questloggers.domain.characterboss.exception.NotFoundCharacterBossExceoption;
 import com.missionx.questloggers.domain.characterboss.repository.CharacterBossRepository;
+import com.missionx.questloggers.domain.user.dto.FindUserResponseDto;
+import com.missionx.questloggers.domain.user.entity.User;
+import com.missionx.questloggers.domain.user.service.UserService;
+import com.missionx.questloggers.global.config.security.LoginUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,6 +32,7 @@ import java.util.stream.Collectors;
 public class CharacterBossService {
 
     private final CharacterBossRepository characterBossRepository;
+    private final UserService userService;
     private final CharacterService characterService;
     private final BossService bossService;
 
@@ -35,8 +40,9 @@ public class CharacterBossService {
      * 캐릭터 보스 생성
      */
     @Transactional
-    public CreateCharBossResponseDto createCharBoss(Long charId, Long bossId) {
-        Character character = characterService.findById(charId);
+    public CreateCharBossResponseDto createCharBoss(LoginUser loginUser, Long bossId) {
+        User user = userService.findUserById(loginUser.getUserId());
+        Character character = characterService.findById(user.getOwnerCharId());
         Boss boss = bossService.findById(bossId);
 
         if (characterBossRepository.findByCharacterAndBoss(character, boss).isPresent()) {
@@ -53,17 +59,23 @@ public class CharacterBossService {
      * 캐릭터 보스 조회
      */
     @Transactional(readOnly = true)
-    public List<MyCharInfoResponseDto> myCharInfo(Long charId) {
-        Character character = characterService.findById(charId);
+    public List<MyCharInfoResponseDto> myCharInfo(LoginUser loginUser) {
+        User user = userService.findUserById(loginUser.getUserId());
+        Character character = characterService.findById(user.getOwnerCharId());
         List<CharacterBoss> characterBossList = characterBossRepository.findByCharacter(character);
         return characterBossList.stream()
                 .map(characterBoss -> new MyCharInfoResponseDto(characterBoss.getId(), characterBoss.getCharacter().getId(), characterBoss.getBoss().getId(), characterBoss.isCleared(), characterBoss.getClearCount()))
                 .collect(Collectors.toList());
     }
 
+
+    /**
+     * 캐릭터의 보스 클리어 여부 수정
+     */
     @Transactional
-    public UpdateIsClearedResponseDto updateIsCleared(Long charId, Long bossId) {
-        Character character = characterService.findById(charId);
+    public UpdateIsClearedResponseDto updateIsCleared(LoginUser loginUser, Long bossId) {
+        User user = userService.findUserById(loginUser.getUserId());
+        Character character = characterService.findById(user.getOwnerCharId());
         Boss boss = bossService.findById(bossId);
 
         CharacterBoss cb = characterBossRepository.findByCharacterAndBoss(character, boss).orElseThrow(
