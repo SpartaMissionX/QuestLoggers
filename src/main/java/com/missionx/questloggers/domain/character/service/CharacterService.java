@@ -127,15 +127,21 @@ public class CharacterService {
     @Transactional
     public SetOwnerCharResponseDto setOwnerChar(LoginUser loginUser, Long charId) {
         User user = userService.findUserById(loginUser.getUserId());
-        Character character = characterRepository.findById(charId).orElseThrow(
-                () -> new NotFoundCharException(HttpStatus.NOT_FOUND, "존재하지 않는 캐릭터입니다."));
-        if (character.isOwnerChar() || characterRepository.existsByUserAndOwnerCharTrue(user)) {
-            throw new CharacterException(HttpStatus.BAD_REQUEST, "이미 대표캐릭터 설정이 되어있습니다.");
+        List<Character> byUser = characterRepository.findByUser(user);
+
+        for (Character c : byUser) {
+            if (c.isOwnerChar()) {
+                throw new CharacterException(HttpStatus.BAD_REQUEST, "이미 대표 캐릭터가 설정되어 있습니다.");
+            }
         }
 
-        character.updateOwnerChar(true);
-
-        return new SetOwnerCharResponseDto(character.getCharName(), character.getWorldName(), character.getCharClass(), character.getCharLevel());
+        for (Character c : byUser) {
+            if (c.getId().equals(charId)) {
+                c.updateOwnerChar(true);
+                return new SetOwnerCharResponseDto(c.getCharName(), c.getWorldName(), c.getCharClass(), c.getCharLevel());
+            }
+        }
+        throw new NotFoundCharException(HttpStatus.NOT_FOUND, "캐릭터를 찾을 수 없습니다.");
     }
 
     /**
