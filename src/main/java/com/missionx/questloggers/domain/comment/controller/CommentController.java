@@ -27,7 +27,7 @@ public class CommentController {
             @RequestBody CreateCommentRequestDto requestDto,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
-        CreateCommentResponseDto responseDto = commentService.createComment(loginUser.getUserId(), postId, requestDto);
+        CreateCommentResponseDto responseDto = commentService.createComment(postId, requestDto, loginUser);
         return ApiResponse.success(HttpStatus.CREATED, "댓글 작성이 완료되었습니다.", responseDto);
     }
 

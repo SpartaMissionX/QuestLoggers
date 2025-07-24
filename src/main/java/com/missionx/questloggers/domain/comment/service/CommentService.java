@@ -9,6 +9,7 @@ import com.missionx.questloggers.domain.post.service.PostService;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.domain.user.exception.InvalidRequestUserException;
 import com.missionx.questloggers.domain.user.service.UserService;
+import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.PageResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -34,14 +35,14 @@ public class CommentService {
      * 댓글 생성 기능
      */
     @Transactional
-    public CreateCommentResponseDto createComment(Long userId, Long postId, CreateCommentRequestDto requestDto) {
-        User user = userService.findUserById(userId);
+    public CreateCommentResponseDto createComment(Long postId, CreateCommentRequestDto requestDto, LoginUser loginUser) {
+        User user = userService.findUserById(loginUser.getUserId());
         Post post = postService.findPostById(postId);
 
         Comment comment = new Comment(requestDto.getContent(), user, post);
         Comment savedComment = commentRepository.save(comment);
 
-        return new CreateCommentResponseDto(savedComment.getId(), savedComment.getContent());
+        return new CreateCommentResponseDto(user.getOwnerCharId(), user.getOwnerCharName(),savedComment.getId(), savedComment.getContent());
     }
 
     /**

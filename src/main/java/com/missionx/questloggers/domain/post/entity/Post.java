@@ -1,5 +1,6 @@
 package com.missionx.questloggers.domain.post.entity;
 
+import com.missionx.questloggers.domain.character.entity.Character;
 import com.missionx.questloggers.domain.post.dto.UpdatePostRequestDto;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.global.entity.BaseEntity;
@@ -22,13 +23,13 @@ public class Post extends BaseEntity {
     private String content;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "char_id")
+    private Character character;
 
-    public Post (String title, String content, User user) {
+    public Post (String title, String content, Character character) {
         this.title = title;
         this.content = content;
-        this.user = user;
+        this.character = character;
     }
 
     public void updatePost(UpdatePostRequestDto updatePostRequestDto) {

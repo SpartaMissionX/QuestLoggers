@@ -1,13 +1,16 @@
 package com.missionx.questloggers.domain.post.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class GetAllPostResponseDto {
-    private final Long id;
-    private final String title;
-    private final String content;
+    private Long ownerCharId;
+    private String ownerCharName;
+    private Long postId;
+    private String title;
+    private String content;
 
 }
