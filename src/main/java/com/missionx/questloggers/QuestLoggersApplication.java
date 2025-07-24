@@ -1,9 +1,12 @@
 package com.missionx.questloggers;
 
+import com.missionx.questloggers.global.config.AdminEmailProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+@EnableConfigurationProperties(AdminEmailProperties.class)
 @SpringBootApplication
 @EnableScheduling
 public class QuestLoggersApplication {
@@ -11,5 +14,4 @@ public class QuestLoggersApplication {
     public static void main(String[] args) {
         SpringApplication.run(QuestLoggersApplication.class, args);
     }
-
 }

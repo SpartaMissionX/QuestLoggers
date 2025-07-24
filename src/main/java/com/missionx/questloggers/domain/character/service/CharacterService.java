@@ -62,6 +62,9 @@ public class CharacterService {
             for (AccountListDto.AccountInfo accountInfo : accountListDto.getAccountList()) {
                 if (accountInfo.getCharacterList() != null) {
                     for (CharacterDto characterDto : accountInfo.getCharacterList()) {
+                        if (characterRepository.existsByOcid(characterDto.getOcid())) {
+                            continue;
+                        }
                         Character character = new Character(
                                 user,
                                 characterDto.getOcid(),
