@@ -26,12 +26,23 @@ public class CharacterController {
     private final CharacterService characterService;
 
     /**
-     * 본인 캐릭터 조회 API
+     * 본인 캐릭터 전체 조회 API
      */
     @GetMapping("/mychar")
     public ResponseEntity<ApiResponse<List<CharacterListRespnseDto>>> getCharList(@AuthenticationPrincipal LoginUser loginUser) {
         List<CharacterListRespnseDto> charList = characterService.getCharList(loginUser);
         return ApiResponse.success(HttpStatus.OK, "조회가 완료되었습니다.", charList);
+    }
+
+    /**
+     * 본인 대표 캐릭터 조회 API
+     */
+    @GetMapping("/mychar/owner")
+    public ResponseEntity<ApiResponse<GetOwnerCharResponseDto>> getOwnerChar(
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        GetOwnerCharResponseDto responseDto = characterService.getOwnerChar(loginUser);
+        return ApiResponse.success(HttpStatus.OK, "조회가 완료되었습니다.", responseDto);
     }
 
     /**
