@@ -6,9 +6,11 @@ import com.missionx.questloggers.domain.auth.dto.SignupRequestDto;
 import com.missionx.questloggers.domain.auth.dto.SignupResponseDto;
 import com.missionx.questloggers.domain.character.service.CharacterService;
 import com.missionx.questloggers.domain.user.entity.User;
+import com.missionx.questloggers.domain.user.enums.Role;
 import com.missionx.questloggers.domain.user.exception.DuplicateUserException;
 import com.missionx.questloggers.domain.user.exception.InvalidRequestUserException;
 import com.missionx.questloggers.domain.user.service.UserService;
+import com.missionx.questloggers.global.config.AdminEmailProperties;
 import com.missionx.questloggers.global.config.JwtTokenProvider;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -24,19 +26,27 @@ public class AuthService {
     private final CharacterService characterService;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AdminEmailProperties adminEmailProperties;
 
-    // 회원가입
     @Transactional
     public SignupResponseDto signup(SignupRequestDto signupRequestDto) {
-        if (userService.existsByEmail(signupRequestDto.getEmail())) {
+        String email = signupRequestDto.getEmail();
+
+        if (userService.existsByEmail(email)) {
             throw new DuplicateUserException(HttpStatus.CONFLICT, "이미 존재하는 이메일입니다.");
         }
 
-        // 암호화(해싱)
+        // 암호화
         String encodedPassword = passwordEncoder.encode(signupRequestDto.getPassword());
-        User savedUser = userService.createUser(new User(signupRequestDto.getEmail(), encodedPassword, signupRequestDto.getApiKey()));
+
+        // 관리자 이메일이면 ADMIN, 아니면 USER
+        Role role = adminEmailProperties.getEmails().contains(email) ? Role.ADMIN : Role.USER;
+
+        User user = new User(email, encodedPassword, signupRequestDto.getApiKey(), role);
+        User savedUser = userService.createUser(user);
 
         characterService.createCharList(savedUser);
+
         return new SignupResponseDto(savedUser.getId(), savedUser.getEmail());
     }
 

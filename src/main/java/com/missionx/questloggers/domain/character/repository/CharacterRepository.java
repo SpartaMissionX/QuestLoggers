@@ -14,5 +14,6 @@ public interface CharacterRepository extends JpaRepository<Character, Long> {
     Optional<Character> findByUserAndOwnerCharTrue(User user);
     boolean existsByUserAndOwnerCharTrue(User user);
     List<Character> findByUser(User user);
+    boolean existsByOcid(String ocid);
 
 }

@@ -20,3 +20,9 @@ server:
 jwt:
   secret:
     key: ${SECRET_KEY}
+
+admin:
+  emails:
+    - dPwls123@example.com
+    - alsdud123@example.com
+    - dmsgur123@example.com

@@ -50,6 +50,9 @@ public class Character {
     @ColumnDefault("false")
     private boolean ownerChar;
 
+    @Column(name = "char_power")
+    private Integer charPower;
+
 
     public Character(User user, String ocid, String charName, String worldName, String charClass, int charLevel) {
         this.user = user;
@@ -58,6 +61,7 @@ public class Character {
         this.worldName = worldName;
         this.charClass = charClass;
         this.charLevel = charLevel;
+        this.charPower = charPower;
     }
 
     public void updateOwnerChar(boolean ownerChar) {

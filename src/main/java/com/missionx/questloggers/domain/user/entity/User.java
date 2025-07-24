@@ -25,7 +25,7 @@ public class User extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role = Role.USER;
+    private Role role;
 
     @Column(nullable = false)
     private String apiKey;
@@ -37,11 +37,11 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private boolean isDeleted = false;
 
-    public User(String email, String password, String apiKey) {
+    public User(String email, String password, String apiKey, Role role) {
         this.email = email;
         this.password = password;
         this.apiKey = apiKey;
-        this.role = Role.USER;
+        this.role = role;
         this.point = 0;
     }
 
