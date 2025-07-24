@@ -33,6 +33,10 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private int point = 0;
 
+    private Long ownerCharId;
+
+    private String ownerCharName;
+
     //soft delete 추가
     @Column(nullable = false)
     private boolean isDeleted = false;
@@ -51,5 +55,10 @@ public class User extends BaseEntity {
 
     public void updatePassword(String newPassword) {
         this.password = newPassword;
+    }
+
+    public void updateOwnerChar(Long ownerCharId, String ownerCharName) {
+        this.ownerCharId = ownerCharId;
+        this.ownerCharName = ownerCharName;
     }
 }

@@ -38,15 +38,32 @@ public class CharacterService {
     private final RestTemplate restTemplate;
 
     /**
-     * 캐릭터 조회
+     * 본인 캐릭터 전체 조회
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public List<CharacterListRespnseDto> getCharList(LoginUser loginUser) {
         User user = userService.findUserById(loginUser.getUserId());
         List<Character> characterList = characterRepository.findByUser(user);
         return characterList.stream()
                 .map(character -> new CharacterListRespnseDto(character.getId(), character.getOcid(), character.getCharName(), character.getWorldName(), character.getCharClass(), character.getCharLevel()))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 본인 대표 캐릭터 조회
+     */
+    @Transactional
+    public GetOwnerCharResponseDto getOwnerChar(LoginUser loginUser) {
+        User user = userService.findUserById(loginUser.getUserId());
+        if (user.getOwnerCharId() == null) {
+            throw new NotFoundCharException(HttpStatus.NOT_FOUND, "대표 캐릭터를 설정해 주세요.");
+        } else {
+            Character character = characterRepository.findById(user.getOwnerCharId()).orElseThrow(
+                    () -> new NotFoundCharException(HttpStatus.NOT_FOUND, "대표 캐릭터를 찾을 수 없습니다. 다시 설정해주세요")
+            );
+            return new GetOwnerCharResponseDto(character);
+        }
+
     }
 
     /**
@@ -98,6 +115,7 @@ public class CharacterService {
                     }
                 }
                 c.updateOwnerChar(true);
+                user.updateOwnerChar(c.getId(), c.getCharName());
                 return new SetOwnerCharResponseDto(c.getCharName(), c.getWorldName(), c.getCharClass(), c.getCharLevel());
             }
         }

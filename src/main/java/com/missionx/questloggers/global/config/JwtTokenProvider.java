@@ -18,7 +18,7 @@ import java.util.Date;
 public class JwtTokenProvider {
 
     private final SecretKey key;
-    private final long TOKEN_TIME = 60 * 60 * 1000L; // 1시간
+    private final long TOKEN_TIME = 60 * 60 * 3000L; // 1시간
 
     public JwtTokenProvider(@Value("${jwt.secret.key}") String secretKey) {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());

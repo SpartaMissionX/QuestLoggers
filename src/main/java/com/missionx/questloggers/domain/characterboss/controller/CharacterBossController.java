@@ -5,10 +5,12 @@ import com.missionx.questloggers.domain.characterboss.dto.CreateCharBossResponse
 import com.missionx.questloggers.domain.characterboss.dto.MyCharInfoResponseDto;
 import com.missionx.questloggers.domain.characterboss.dto.UpdateIsClearedResponseDto;
 import com.missionx.questloggers.domain.characterboss.service.CharacterBossService;
+import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,32 +23,37 @@ public class CharacterBossController {
     private final CharacterBossService characterBossService;
 
     /**
-     * 캐릭터의 보스 생성
+     * 대표 캐릭터의 보스 생성
      */
-    @PostMapping("/mychar/{charId}/boss/{bossId}")
+    @PostMapping("/mychar/owner/boss/{bossId}")
     public ResponseEntity<ApiResponse<CreateCharBossResponseDto>> createCharBoss(
-            @PathVariable Long charId,
+            @AuthenticationPrincipal LoginUser loginUser,
             @PathVariable Long bossId
     ) {
-        CreateCharBossResponseDto responseDto = characterBossService.createCharBoss(charId, bossId);
+        CreateCharBossResponseDto responseDto = characterBossService.createCharBoss(loginUser, bossId);
         return ApiResponse.success(HttpStatus.OK, "캐릭터의 보스 생성 완료", responseDto);
     }
 
     /**
-     * 캐릭터의 보스 클리어 정보 조회
+     * 대표 캐릭터의 보스 클리어 정보 조회
      */
-    @GetMapping("/mychar/{charId}")
-    public ResponseEntity<ApiResponse<List<MyCharInfoResponseDto>>> myCharInfo(@PathVariable Long charId) {
-        List<MyCharInfoResponseDto> responseDtoList = characterBossService.myCharInfo(charId);
+    @GetMapping("/mychar/owner/boss")
+    public ResponseEntity<ApiResponse<List<MyCharInfoResponseDto>>> myCharInfo(
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        List<MyCharInfoResponseDto> responseDtoList = characterBossService.myCharInfo(loginUser);
         return ApiResponse.success(HttpStatus.OK, "캐릭터 정보 조회 완료", responseDtoList);
     }
 
     /**
-     * 캐릭터의 보스 클리어 여부 수정
+     * 대표 캐릭터의 보스 클리어 여부 수정
      */
-    @PatchMapping("/mychar/{charId}/boss/{bossId}")
-    public ResponseEntity<ApiResponse<UpdateIsClearedResponseDto>> updateIsCleared(@PathVariable Long charId, @PathVariable Long bossId) {
-        UpdateIsClearedResponseDto responseDto = characterBossService.updateIsCleared(charId, bossId);
+    @PatchMapping("/mychar/owner/boss/{bossId}")
+    public ResponseEntity<ApiResponse<UpdateIsClearedResponseDto>> updateIsCleared(
+            @AuthenticationPrincipal LoginUser loginUser,
+            @PathVariable Long bossId
+    ) {
+        UpdateIsClearedResponseDto responseDto = characterBossService.updateIsCleared(loginUser, bossId);
         return ApiResponse.success(HttpStatus.OK, "캐릭터 보스 클리어 여부가 변경되었습니다.", responseDto);
     }
 }
