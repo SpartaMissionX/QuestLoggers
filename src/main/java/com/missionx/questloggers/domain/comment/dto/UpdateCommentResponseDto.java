@@ -1,13 +1,15 @@
 package com.missionx.questloggers.domain.comment.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class UpdateCommentResponseDto {
-
-    private final Long id;
-    private final String content;
+    private Long ownerCharId;
+    private String ownerCharName;
+    private Long id;
+    private String content;
 
 }

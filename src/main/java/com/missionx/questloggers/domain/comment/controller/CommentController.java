@@ -27,7 +27,7 @@ public class CommentController {
             @RequestBody CreateCommentRequestDto requestDto,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
-        CreateCommentResponseDto responseDto = commentService.createComment(loginUser.getUserId(), postId, requestDto);
+        CreateCommentResponseDto responseDto = commentService.createComment(postId, requestDto, loginUser);
         return ApiResponse.success(HttpStatus.CREATED, "댓글 작성이 완료되었습니다.", responseDto);
     }
 
@@ -48,7 +48,7 @@ public class CommentController {
             @RequestBody UpdateCommentRequestDto requestDto,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
-        UpdateCommentResponseDto responseDto = commentService.updateComment(commentId, requestDto, loginUser.getUserId());
+        UpdateCommentResponseDto responseDto = commentService.updateComment(commentId, requestDto, loginUser);
         return ApiResponse.success(HttpStatus.OK, "댓글 수정이 완료되었습니다.", responseDto);
     }
 
@@ -58,7 +58,7 @@ public class CommentController {
             @PathVariable Long commentId,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
-        commentService.deleteComment(commentId, loginUser.getUserId());
+        commentService.deleteComment(commentId, loginUser);
         return ApiResponse.success(HttpStatus.OK, "댓글 삭제가 완료되었습니다.", null);
     }
 

@@ -1,5 +1,7 @@
 package com.missionx.questloggers.domain.post.service;
 
+import com.missionx.questloggers.domain.character.entity.Character;
+import com.missionx.questloggers.domain.character.service.CharacterService;
 import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.exception.AlreadyDeletedPostException;
@@ -8,8 +10,8 @@ import com.missionx.questloggers.domain.post.exception.PostException;
 import com.missionx.questloggers.domain.post.exception.UnauthorizedPostAccessException;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
 import com.missionx.questloggers.domain.user.entity.User;
-import com.missionx.questloggers.domain.user.exception.NotFoundUserException;
-import com.missionx.questloggers.domain.user.repository.UserRepository;
+import com.missionx.questloggers.domain.user.service.UserService;
+import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.PageResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,34 +30,36 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
+    private final CharacterService characterService;
 
     /**
      * 게시글 생성
      */
     @Transactional
-    public CreatePostResponseDto createPostService(CreatePostRequestDto requestDto, Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundUserException(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."));
-
-        Post post = new Post(requestDto.getTitle(), requestDto.getContent(), user);
+    public CreatePostResponseDto createPostService(CreatePostRequestDto requestDto, LoginUser loginUser) {
+        User user = userService.findUserById(loginUser.getUserId());
+        Character ownerCharacter = characterService.findById(user.getOwnerCharId());
+        Post post = new Post(requestDto.getTitle(), requestDto.getContent(), ownerCharacter);
         postRepository.save(post);
 
-        return new CreatePostResponseDto(post.getId(), post.getTitle(), post.getContent());
+        return new CreatePostResponseDto(ownerCharacter.getId(), ownerCharacter.getCharName(), post.getId(), post.getTitle(), post.getContent());
     }
 
     /**
      * 게시글 수정
      */
     @Transactional
-    public UpdatePostResponseDto updatePostService(Long postId, UpdatePostRequestDto updatePostRequestDto, Long userId) {
+    public UpdatePostResponseDto updatePostService(Long postId, UpdatePostRequestDto updatePostRequestDto, LoginUser loginUser) {
+        User user = userService.findUserById(loginUser.getUserId());
+        Character ownerCharacter = characterService.findById(user.getOwnerCharId());
         Post foundPost = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
-        if (!foundPost.getUser().getId().equals(userId)) {
+        if (!foundPost.getCharacter().getId().equals(ownerCharacter.getId())) {
             throw new UnauthorizedPostAccessException("게시글 수정 권한이 없습니다.");
         }
         foundPost.updatePost(updatePostRequestDto);
-        return new UpdatePostResponseDto(foundPost.getId(), foundPost.getTitle(), foundPost.getContent());
+        return new UpdatePostResponseDto(ownerCharacter.getId(), ownerCharacter.getCharName(), foundPost.getId(), foundPost.getTitle(), foundPost.getContent());
     }
 
     /**
@@ -76,7 +80,7 @@ public class PostService {
         };
 
         List<GetAllPostResponseDto> responseDtos = postsPage.stream()
-                .map(post -> new GetAllPostResponseDto(post.getId(), post.getTitle(), post.getContent()))
+                .map(post -> new GetAllPostResponseDto(post.getCharacter().getId(), post.getCharacter().getCharName(), post.getId(), post.getTitle(), post.getContent()))
                 .collect(Collectors.toList());
 
         return new PageResponseDto<>(
@@ -97,14 +101,15 @@ public class PostService {
         Post foundPost = postRepository.findByIdAndDeletedAtNull(postId)
                 .orElseThrow(()-> new RuntimeException("게시글을 찾을 수 없습니다."));
 
-        return new GetPostResponseDto(foundPost.getUser().getId(), foundPost.getId(), foundPost.getTitle(), foundPost.getContent());
+        return new GetPostResponseDto(foundPost.getCharacter().getId(), foundPost.getCharacter().getCharName(), foundPost.getId(), foundPost.getTitle(), foundPost.getContent());
     }
 
     /**
      * 게시글 삭제
      */
     @Transactional
-    public void deletePostService(Long postId, Long userId) {
+    public void deletePostService(Long postId, LoginUser loginUser) {
+        User user = userService.findUserById(loginUser.getUserId());
         Post foundPost = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
         if (foundPost.getDeletedAt() == null) {
@@ -112,7 +117,7 @@ public class PostService {
         } else {
             throw new AlreadyDeletedPostException(HttpStatus.NOT_FOUND, "이미 삭제된 게시글입니다.");
         }
-        if (!foundPost.getUser().getId().equals(userId)) {
+        if (!foundPost.getCharacter().getId().equals(user.getOwnerCharId())) {
             throw new UnauthorizedPostAccessException("게시글 삭제 권한이 없습니다.");
         }
         foundPost.delete();

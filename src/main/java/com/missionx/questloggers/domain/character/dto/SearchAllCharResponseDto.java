@@ -5,10 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class SerchCharResponseDto {
+public class SearchAllCharResponseDto {
     private final String charName;
     private final int charLevel;
-    //private final Long charPower;
-    //private final String charImage;
-    private final String charServer;
 }

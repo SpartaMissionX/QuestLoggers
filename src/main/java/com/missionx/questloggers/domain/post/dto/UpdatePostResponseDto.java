@@ -1,12 +1,15 @@
 package com.missionx.questloggers.domain.post.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class UpdatePostResponseDto {
-    private final Long id;
-    private final String title;
-    private final String content;
+    private Long OwnerCharId;
+    private String OwnerCharName;
+    private Long id;
+    private String title;
+    private String content;
 }

@@ -1,13 +1,12 @@
 package com.missionx.questloggers.domain.character.service;
 
-import com.missionx.questloggers.domain.character.dto.SerchCharResponseDto;
+import com.missionx.questloggers.domain.character.dto.SearchCharResponseDto;
 import com.missionx.questloggers.domain.character.dto.*;
-import com.missionx.questloggers.domain.character.dto.SerchAllCharResponseDto;
+import com.missionx.questloggers.domain.character.dto.SearchAllCharResponseDto;
 import com.missionx.questloggers.domain.character.dto.AccountListDto;
 import com.missionx.questloggers.domain.character.dto.CharacterDto;
 import com.missionx.questloggers.domain.character.entity.Character;
 import com.missionx.questloggers.domain.character.exception.AlreadyHaveOwnerCharacterException;
-import com.missionx.questloggers.domain.character.exception.CharacterException;
 import com.missionx.questloggers.domain.character.exception.NotFoundCharException;
 import com.missionx.questloggers.domain.character.repository.CharacterRepository;
 import com.missionx.questloggers.domain.user.entity.User;
@@ -69,12 +68,12 @@ public class CharacterService {
     /**
      * 유저 리스트 검색
      */
-    public PageResponseDto<SerchAllCharResponseDto> serchAllCharService(String keyword, int page , int size) {
+    public PageResponseDto<SearchAllCharResponseDto> serchAllCharService(String keyword, int page , int size) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.ASC, "id"));
         Page<Character> charactersPage = characterRepository.findByCharNameContaining(keyword, pageable);
 
-        List<SerchAllCharResponseDto> responseDtos = charactersPage.stream()
-                .map(character -> new SerchAllCharResponseDto(character.getCharName(), character.getCharLevel()))
+        List<SearchAllCharResponseDto> responseDtos = charactersPage.stream()
+                .map(character -> new SearchAllCharResponseDto(character.getCharName(), character.getCharLevel()))
                 .collect(Collectors.toList());
 
         return new PageResponseDto<>(
@@ -91,10 +90,10 @@ public class CharacterService {
     /**
      * 유저 단건 검색
      */
-    public SerchCharResponseDto serchCharService(Long charId) {
+    public SearchCharResponseDto serchCharService(Long charId) {
         Character foundChar = characterRepository.findById(charId)
                 .orElseThrow(()-> new NotFoundCharException(HttpStatus.NOT_FOUND, "캐릭터 정보를 불러왔습니다."));
-        return new SerchCharResponseDto(foundChar.getCharName(), foundChar.getCharLevel(), foundChar.getWorldName());
+        return new SearchCharResponseDto(foundChar.getId(), foundChar.getCharName(), foundChar.getWorldName(), foundChar.getCharClass(), foundChar.getCharLevel());
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.missionx.questloggers.domain.comment.entity;
 
+import com.missionx.questloggers.domain.character.entity.Character;
 import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.global.entity.BaseEntity;
@@ -20,16 +21,16 @@ public class Comment extends BaseEntity {
     private String content;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "char_id")
+    private Character character;
 
     @ManyToOne
     @JoinColumn(name = "post_id")
     private Post post;
 
-    public Comment(String content, User user, Post post) {
+    public Comment(String content, Character character, Post post) {
         this.content = content;
-        this.user = user;
+        this.character = character;
         this.post = post;
     }
 

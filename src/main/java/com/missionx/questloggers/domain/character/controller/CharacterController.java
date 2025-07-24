@@ -6,9 +6,6 @@ import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.ApiResponse;
 import com.missionx.questloggers.global.dto.PageResponseDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,7 +26,9 @@ public class CharacterController {
      * 본인 캐릭터 전체 조회 API
      */
     @GetMapping("/mychar")
-    public ResponseEntity<ApiResponse<List<CharacterListRespnseDto>>> getCharList(@AuthenticationPrincipal LoginUser loginUser) {
+    public ResponseEntity<ApiResponse<List<CharacterListRespnseDto>>> getCharList(
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
         List<CharacterListRespnseDto> charList = characterService.getCharList(loginUser);
         return ApiResponse.success(HttpStatus.OK, "조회가 완료되었습니다.", charList);
     }
@@ -49,12 +48,12 @@ public class CharacterController {
      * 유저 캐릭터 리스트 검색 API
      */
     @GetMapping("/char")
-    public ResponseEntity<ApiResponse<PageResponseDto<SerchAllCharResponseDto>>> serchAllChar(
+    public ResponseEntity<ApiResponse<PageResponseDto<SearchAllCharResponseDto>>> searchAllChar(
             @RequestParam("keyword") String keyword,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        PageResponseDto<SerchAllCharResponseDto> responseDto = characterService.serchAllCharService(keyword, page, size);
+        PageResponseDto<SearchAllCharResponseDto> responseDto = characterService.serchAllCharService(keyword, page, size);
         return ApiResponse.success(HttpStatus.OK, "키워드에 포함된 이름들을 불러왔습니다.", responseDto);
     }
 
@@ -62,9 +61,9 @@ public class CharacterController {
      * 유저 캐릭터 단건 검색 API
      */
     @GetMapping("/char/{charId}")
-    public ResponseEntity<ApiResponse<SerchCharResponseDto>> serchChar(@PathVariable Long charId) {
-        SerchCharResponseDto serchCharResponseDto = characterService.serchCharService(charId);
-        return ApiResponse.success(HttpStatus.FOUND,"캐릭터 정보를 불러왔습니다.",serchCharResponseDto);
+    public ResponseEntity<ApiResponse<SearchCharResponseDto>> searchChar(@PathVariable Long charId) {
+        SearchCharResponseDto searchCharResponseDto = characterService.serchCharService(charId);
+        return ApiResponse.success(HttpStatus.FOUND,"캐릭터 정보를 불러왔습니다.", searchCharResponseDto);
     }
 
     /**

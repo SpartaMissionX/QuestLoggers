@@ -1,5 +1,7 @@
 package com.missionx.questloggers.domain.comment.service;
 
+import com.missionx.questloggers.domain.character.entity.Character;
+import com.missionx.questloggers.domain.character.service.CharacterService;
 import com.missionx.questloggers.domain.comment.dto.*;
 import com.missionx.questloggers.domain.comment.entity.Comment;
 import com.missionx.questloggers.domain.comment.exception.*;
@@ -9,6 +11,7 @@ import com.missionx.questloggers.domain.post.service.PostService;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.domain.user.exception.InvalidRequestUserException;
 import com.missionx.questloggers.domain.user.service.UserService;
+import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.PageResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,19 +32,21 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final UserService userService;
     private final PostService postService;
+    private final CharacterService characterService;
 
     /**
      * 댓글 생성 기능
      */
     @Transactional
-    public CreateCommentResponseDto createComment(Long userId, Long postId, CreateCommentRequestDto requestDto) {
-        User user = userService.findUserById(userId);
+    public CreateCommentResponseDto createComment(Long postId, CreateCommentRequestDto requestDto, LoginUser loginUser) {
+        User user = userService.findUserById(loginUser.getUserId());
+        Character character = characterService.findById(user.getOwnerCharId());
         Post post = postService.findPostById(postId);
 
-        Comment comment = new Comment(requestDto.getContent(), user, post);
+        Comment comment = new Comment(requestDto.getContent(), character, post);
         Comment savedComment = commentRepository.save(comment);
 
-        return new CreateCommentResponseDto(savedComment.getId(), savedComment.getContent());
+        return new CreateCommentResponseDto(character.getId(), character.getCharName(), savedComment.getId(), savedComment.getContent());
     }
 
     /**
@@ -57,7 +62,7 @@ public class CommentService {
         }
 
         List<FindAllCommentResponseDto> responseDtos = commentsPage.stream()
-                .map(comment -> new FindAllCommentResponseDto(comment.getId(), comment.getContent()))
+                .map(comment -> new FindAllCommentResponseDto(comment.getCharacter().getId(), comment.getCharacter().getCharName(), comment.getId(), comment.getContent()))
                 .collect(Collectors.toList());
 
         return new PageResponseDto<>(
@@ -74,24 +79,28 @@ public class CommentService {
      * 댓글 수정 기능
      */
     @Transactional
-    public UpdateCommentResponseDto updateComment(Long commentId, UpdateCommentRequestDto requestDto, Long userId) {
+    public UpdateCommentResponseDto updateComment(Long commentId, UpdateCommentRequestDto requestDto, LoginUser loginUser) {
+        User user = userService.findUserById(loginUser.getUserId());
+        Character character = characterService.findById(user.getOwnerCharId());
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundCommentException(HttpStatus.NOT_FOUND,"댓글을 찾을 수 없습니다. 다시 확인해주세요"));
 
-        if (!comment.getUser().getId().equals(userId)) {
+        if (!comment.getCharacter().getId().equals(character.getId())) {
             throw new UnauthorizedCommentAccessException("댓글 수정 권한이 없습니다.");
         }
 
         comment.updateComment(requestDto.getContent());
 
-        return new UpdateCommentResponseDto(comment.getId(), comment.getContent());
+        return new UpdateCommentResponseDto(comment.getCharacter().getId(), comment.getCharacter().getCharName(), comment.getId(), comment.getContent());
     }
 
     /**
      * 댓글 삭제 기능
      */
     @Transactional
-    public void deleteComment(Long commentId, Long userId) {
+    public void deleteComment(Long commentId, LoginUser loginUser) {
+        User user = userService.findUserById(loginUser.getUserId());
+        Character character = characterService.findById(user.getOwnerCharId());
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundCommentException(HttpStatus.NOT_FOUND,"댓글을 찾을 수 없습니다. 다시 확인해주세요"));
         if (comment.getDeletedAt() == null) {
@@ -100,7 +109,7 @@ public class CommentService {
             throw new AlreadyDeletedCommentException(HttpStatus.NOT_FOUND , "이미 삭제된 댓글입니다.");
         }
 
-        if (!comment.getUser().getId().equals(userId)) {
+        if (!comment.getCharacter().getId().equals(character.getId())) {
             throw new UnauthorizedCommentAccessException("댓글 삭제 권한이 없습니다.");
         }
 
