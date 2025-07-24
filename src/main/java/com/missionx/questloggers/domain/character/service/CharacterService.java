@@ -38,46 +38,6 @@ public class CharacterService {
     private final RestTemplate restTemplate;
 
     /**
-     * 캐릭터 생성 기능
-     */
-    @Transactional
-    public void createCharList(User user) {
-        String url = "https://open.api.nexon.com/maplestory/v1/character/list";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("x-nxopen-api-key", user.getApiKey());
-
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        ResponseEntity<AccountListDto> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                entity,
-                AccountListDto.class
-        );
-
-        AccountListDto accountListDto = response.getBody();
-
-        if (accountListDto != null && accountListDto.getAccountList() != null) {
-            for (AccountListDto.AccountInfo accountInfo : accountListDto.getAccountList()) {
-                if (accountInfo.getCharacterList() != null) {
-                    for (CharacterDto characterDto : accountInfo.getCharacterList()) {
-                        Character character = new Character(
-                                user,
-                                characterDto.getOcid(),
-                                characterDto.getCharacterName(),
-                                characterDto.getWorldName(),
-                                characterDto.getCharacterClass(),
-                                characterDto.getCharacterLevel()
-                        );
-                        Character savedCharacter = characterRepository.save(character);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * 캐릭터 조회
      */
     @Transactional
@@ -122,46 +82,74 @@ public class CharacterService {
 
     /**
      * 대표캐릭터 설정 기능
-     * 최초 1번만 사용
      */
     @Transactional
     public SetOwnerCharResponseDto setOwnerChar(LoginUser loginUser, Long charId) {
         User user = userService.findUserById(loginUser.getUserId());
-        Character character = characterRepository.findById(charId).orElseThrow(
-                () -> new NotFoundCharException(HttpStatus.NOT_FOUND, "존재하지 않는 캐릭터입니다."));
-        if (character.isOwnerChar() || characterRepository.existsByUserAndOwnerCharTrue(user)) {
-            throw new CharacterException(HttpStatus.BAD_REQUEST, "이미 대표캐릭터 설정이 되어있습니다.");
+        List<Character> byUser = characterRepository.findByUser(user);
+
+        for (Character c : byUser) {
+            if (c.getId().equals(charId) && c.isOwnerChar()) {
+                throw new AlreadyHaveOwnerCharacterException(HttpStatus.BAD_REQUEST, "이미 대표 캐릭터로 설정되어 있습니다.");
+            } else if (c.getId().equals(charId)) {
+                for (Character c1 : byUser) {
+                    if (c1.isOwnerChar()) {
+                        c1.updateOwnerChar(false);
+                    }
+                }
+                c.updateOwnerChar(true);
+                return new SetOwnerCharResponseDto(c.getCharName(), c.getWorldName(), c.getCharClass(), c.getCharLevel());
+            }
         }
-
-        character.updateOwnerChar(true);
-
-        return new SetOwnerCharResponseDto(character.getCharName(), character.getWorldName(), character.getCharClass(), character.getCharLevel());
+        throw new NotFoundCharException(HttpStatus.NOT_FOUND, "캐릭터를 찾을 수 없습니다.");
     }
 
-    /**
-     * 대표 캐릭터 업데이트
-     */
-    @Transactional
-    public UpdateOwnerCharResponseDte updateOwnerChar(LoginUser loginUser ,Long charId) {
-        User user = userService.findUserById(loginUser.getUserId());
-        Character character = findById(charId);
 
-        if (character.isOwnerChar()) {
-            throw new AlreadyHaveOwnerCharacterException(HttpStatus.BAD_REQUEST, "이미 대표로 설정된 캐릭터입니다.");
-        }
-        Character alreadyHaveOwnerChar = characterRepository.findByUserAndOwnerCharTrue(user).orElseThrow(
-                () -> new CharacterException(HttpStatus.NOT_FOUND, "대표캐릭터가 존재하지 않습니다.")
-        );
-
-        alreadyHaveOwnerChar.updateOwnerChar(false);
-        character.updateOwnerChar(true);
-
-        return new UpdateOwnerCharResponseDte(character.getCharName(), character.getWorldName(), character.getCharClass(), character.getCharLevel());
-    }
 
     /**
      * 다른 domain에서 사용
      */
+
+    /**
+     * 캐릭터 생성 기능
+     */
+    @Transactional
+    public void createCharList(User user) {
+        String url = "https://open.api.nexon.com/maplestory/v1/character/list";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("x-nxopen-api-key", user.getApiKey());
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<AccountListDto> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                entity,
+                AccountListDto.class
+        );
+
+        AccountListDto accountListDto = response.getBody();
+
+        if (accountListDto != null && accountListDto.getAccountList() != null) {
+            for (AccountListDto.AccountInfo accountInfo : accountListDto.getAccountList()) {
+                if (accountInfo.getCharacterList() != null) {
+                    for (CharacterDto characterDto : accountInfo.getCharacterList()) {
+                        Character character = new Character(
+                                user,
+                                characterDto.getOcid(),
+                                characterDto.getCharacterName(),
+                                characterDto.getWorldName(),
+                                characterDto.getCharacterClass(),
+                                characterDto.getCharacterLevel()
+                        );
+                        Character savedCharacter = characterRepository.save(character);
+                    }
+                }
+            }
+        }
+    }
+
     public Character findById(Long charId) {
         return characterRepository.findById(charId).orElseThrow(
                 () -> new NotFoundCharException(HttpStatus.NOT_FOUND, "존재하지 않는 캐릭터입니다.")

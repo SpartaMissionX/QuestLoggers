@@ -68,16 +68,4 @@ public class CharacterController {
         return ApiResponse.success(HttpStatus.OK, "대표 캐릭터 설정이 완료되었습니다.", responseDto);
     }
 
-    /**
-     * 대표캐릭터 업데이트
-     */
-    @PatchMapping("/mychar/owner/{charId}")
-    public ResponseEntity<ApiResponse<UpdateOwnerCharResponseDte>> updateOwnerChar(
-            @PathVariable Long charId,
-            @AuthenticationPrincipal LoginUser loginUser
-    ) {
-        UpdateOwnerCharResponseDte responseDte = characterService.updateOwnerChar(loginUser, charId);
-        return ApiResponse.success(HttpStatus.OK, "대표 캐릭터 변경이 완료되었습니다.", responseDte);
-    }
-
 }
