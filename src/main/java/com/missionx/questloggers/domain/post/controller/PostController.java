@@ -27,8 +27,11 @@ public class PostController {
      * 게시글 생성
      */
     @PostMapping("/posts")
-    public ResponseEntity<ApiResponse<CreatePostResponseDto>> createPost(@RequestBody CreatePostRequestDto createPostRequestDto, @AuthenticationPrincipal LoginUser loginUser) {
-        CreatePostResponseDto responseDto = postService.createPostService(createPostRequestDto, loginUser.getUserId());
+    public ResponseEntity<ApiResponse<CreatePostResponseDto>> createPost(
+            @RequestBody CreatePostRequestDto createPostRequestDto,
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        CreatePostResponseDto responseDto = postService.createPostService(createPostRequestDto, loginUser);
         return ApiResponse.success(HttpStatus.CREATED, "게시글 작성이 완료되었습니다.", responseDto);
     }
 
@@ -37,11 +40,11 @@ public class PostController {
      */
     @PatchMapping("/posts/{postId}")
     public ResponseEntity<ApiResponse<UpdatePostResponseDto>> updatePost(
-            @PathVariable("postId") Long postId,
+            @PathVariable Long postId,
             @RequestBody UpdatePostRequestDto updatePostRequestDto,
             @AuthenticationPrincipal LoginUser loginUser
             ) {
-        UpdatePostResponseDto responseDto = postService.updatePostService(postId, updatePostRequestDto, loginUser.getUserId());
+        UpdatePostResponseDto responseDto = postService.updatePostService(postId, updatePostRequestDto, loginUser);
         return ApiResponse.success(HttpStatus.OK, "게시글 수정이 완료되었습니다.", responseDto);
     }
 
@@ -71,8 +74,10 @@ public class PostController {
      * 게시글 삭제
      */
     @DeleteMapping("/posts/{postId}")
-    public ResponseEntity<ApiResponse<Object>> deletePost (@PathVariable("postId") Long postId, @AuthenticationPrincipal LoginUser loginUser) {
-        postService.deletePostService(postId, loginUser.getUserId());
+    public ResponseEntity<ApiResponse<Object>> deletePost (
+            @PathVariable Long postId,
+            @AuthenticationPrincipal LoginUser loginUser) {
+        postService.deletePostService(postId, loginUser);
         return ApiResponse.success(HttpStatus.OK,"게시글 삭제가 완료되었습니다.", null);
     }
 

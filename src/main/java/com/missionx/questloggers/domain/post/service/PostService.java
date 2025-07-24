@@ -8,8 +8,8 @@ import com.missionx.questloggers.domain.post.exception.PostException;
 import com.missionx.questloggers.domain.post.exception.UnauthorizedPostAccessException;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
 import com.missionx.questloggers.domain.user.entity.User;
-import com.missionx.questloggers.domain.user.exception.NotFoundUserException;
-import com.missionx.questloggers.domain.user.repository.UserRepository;
+import com.missionx.questloggers.domain.user.service.UserService;
+import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.PageResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,34 +28,33 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     /**
      * 게시글 생성
      */
     @Transactional
-    public CreatePostResponseDto createPostService(CreatePostRequestDto requestDto, Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundUserException(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."));
-
+    public CreatePostResponseDto createPostService(CreatePostRequestDto requestDto, LoginUser loginUser) {
+        User user = userService.findUserById(loginUser.getUserId());
         Post post = new Post(requestDto.getTitle(), requestDto.getContent(), user);
         postRepository.save(post);
 
-        return new CreatePostResponseDto(post.getId(), post.getTitle(), post.getContent());
+        return new CreatePostResponseDto(user.getOwnerCharId(), user.getOwnerCharName(),post.getId(), post.getTitle(), post.getContent());
     }
 
     /**
      * 게시글 수정
      */
     @Transactional
-    public UpdatePostResponseDto updatePostService(Long postId, UpdatePostRequestDto updatePostRequestDto, Long userId) {
+    public UpdatePostResponseDto updatePostService(Long postId, UpdatePostRequestDto updatePostRequestDto, LoginUser loginUser) {
+        User user = userService.findUserById(loginUser.getUserId());
         Post foundPost = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
-        if (!foundPost.getUser().getId().equals(userId)) {
+        if (!foundPost.getUser().getId().equals(user.getId())) {
             throw new UnauthorizedPostAccessException("게시글 수정 권한이 없습니다.");
         }
         foundPost.updatePost(updatePostRequestDto);
-        return new UpdatePostResponseDto(foundPost.getId(), foundPost.getTitle(), foundPost.getContent());
+        return new UpdatePostResponseDto(user.getOwnerCharId(), user.getOwnerCharName(), foundPost.getId(), foundPost.getTitle(), foundPost.getContent());
     }
 
     /**
@@ -104,7 +103,8 @@ public class PostService {
      * 게시글 삭제
      */
     @Transactional
-    public void deletePostService(Long postId, Long userId) {
+    public void deletePostService(Long postId, LoginUser loginUser) {
+        User user = userService.findUserById(loginUser.getUserId());
         Post foundPost = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
         if (foundPost.getDeletedAt() == null) {
@@ -112,7 +112,7 @@ public class PostService {
         } else {
             throw new AlreadyDeletedPostException(HttpStatus.NOT_FOUND, "이미 삭제된 게시글입니다.");
         }
-        if (!foundPost.getUser().getId().equals(userId)) {
+        if (!foundPost.getUser().getId().equals(user.getId())) {
             throw new UnauthorizedPostAccessException("게시글 삭제 권한이 없습니다.");
         }
         foundPost.delete();
