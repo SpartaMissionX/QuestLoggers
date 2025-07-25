@@ -4,6 +4,7 @@ import com.missionx.questloggers.domain.comment.dto.*;
 import com.missionx.questloggers.domain.comment.service.CommentService;
 import com.missionx.questloggers.global.dto.ApiResponse;
 import com.missionx.questloggers.global.dto.PageResponseDto;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,7 +25,7 @@ public class CommentController {
     @PostMapping("/posts/{postId}/comments")
     public ResponseEntity<ApiResponse<CreateCommentResponseDto>> createComment(
             @PathVariable Long postId,
-            @RequestBody CreateCommentRequestDto requestDto,
+            @RequestBody @Valid CreateCommentRequestDto requestDto,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
         CreateCommentResponseDto responseDto = commentService.createComment(postId, requestDto, loginUser);
@@ -45,7 +46,7 @@ public class CommentController {
     @PatchMapping("/comments/{commentId}")
     public ResponseEntity<ApiResponse<UpdateCommentResponseDto>> updateComment(
             @PathVariable Long commentId,
-            @RequestBody UpdateCommentRequestDto requestDto,
+            @RequestBody @Valid UpdateCommentRequestDto requestDto,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
         UpdateCommentResponseDto responseDto = commentService.updateComment(commentId, requestDto, loginUser);
