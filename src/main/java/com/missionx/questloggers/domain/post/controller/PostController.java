@@ -5,6 +5,7 @@ import com.missionx.questloggers.domain.post.service.PostService;
 import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.ApiResponse;
 import com.missionx.questloggers.global.dto.PageResponseDto;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -28,7 +29,7 @@ public class PostController {
      */
     @PostMapping("/posts")
     public ResponseEntity<ApiResponse<CreatePostResponseDto>> createPost(
-            @RequestBody CreatePostRequestDto createPostRequestDto,
+            @RequestBody @Valid CreatePostRequestDto createPostRequestDto,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
         CreatePostResponseDto responseDto = postService.createPostService(createPostRequestDto, loginUser);
