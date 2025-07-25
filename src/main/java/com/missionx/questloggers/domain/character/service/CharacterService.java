@@ -92,7 +92,7 @@ public class CharacterService {
      */
     public SearchCharResponseDto serchCharService(Long charId) {
         Character foundChar = characterRepository.findById(charId)
-                .orElseThrow(()-> new NotFoundCharException(HttpStatus.NOT_FOUND, "캐릭터 정보를 불러왔습니다."));
+                .orElseThrow(()-> new NotFoundCharException(HttpStatus.NOT_FOUND, "존재하지 않는 캐릭터입니다."));
         return new SearchCharResponseDto(foundChar.getId(), foundChar.getCharName(), foundChar.getWorldName(), foundChar.getCharClass(), foundChar.getCharLevel());
     }
 
