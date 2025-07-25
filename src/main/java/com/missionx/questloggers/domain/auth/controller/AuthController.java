@@ -6,6 +6,7 @@ import com.missionx.questloggers.domain.auth.dto.SignupResponseDto;
 import com.missionx.questloggers.domain.auth.service.AuthService;
 import com.missionx.questloggers.domain.auth.dto.SignupRequestDto;
 import com.missionx.questloggers.domain.user.service.UserService;
+import com.missionx.questloggers.global.config.JwtTokenProvider;
 import com.missionx.questloggers.global.dto.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/auth/signup")
     public ResponseEntity<ApiResponse<SignupResponseDto>> signup(@Valid @RequestBody SignupRequestDto signupRequestDto) {
@@ -34,7 +36,9 @@ public class AuthController {
     }
 
     @PostMapping("/auth/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest httpServletRequest) {
+        String token = jwtTokenProvider.resolveToken(httpServletRequest);
+        jwtTokenProvider.validateToken(token);
         return ApiResponse.success(HttpStatus.OK, "로그아웃이 완료되었습니다.", null);
     }
 
