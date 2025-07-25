@@ -63,7 +63,6 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundUserException(HttpStatus.NOT_FOUND, "유저가 존재하지 않습니다."));
 
-        user.setDeleted(true);
         user.delete();
         userRepository.save(user);
     }
@@ -88,7 +87,7 @@ public class UserService {
     }
 
     public User findActiveUserByEmail(String email) {
-        return userRepository.findByEmailAndIsDeletedFalse(email)
+        return userRepository.findByEmailAndDeletedAtNull(email)
                 .orElseThrow(() -> new InvalidRequestUserException(HttpStatus.BAD_REQUEST, "이메일 또는 비밀번호가 올바르지 않습니다."));
     }
 }
