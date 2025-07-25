@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: ${DB_URL}?rewriteBatchedStatements=true
+    username: ${DB_USERNAME}
+
+  jpa:
+    show-sql: true
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+
+server:
+  error:
+    include-message: always
+  port: 8080
+
+jwt:
+  secret:
+    key: ${SECRET_KEY}

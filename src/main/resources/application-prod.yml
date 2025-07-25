@@ -1,0 +1,24 @@
+ spring:
+  datasource:
+    url: jdbc:mysql://database-1.ch6q6gw2u23h.ap-northeast-2.rds.amazonaws.com:3306
+    username: admin
+    password: lee027423
+
+  jpa:
+    show-sql: false
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+server:
+  error:
+    include-message: always
+  port: 8000
+
+jwt:
+  secret:
+    key: /v8AbQBvAG4AZwA5AHMAcwBpAGkAcwBtAHkAcwBlAGMAcgBlAHQAawBlAHk=
