@@ -51,7 +51,7 @@ public class JwtAuthorizationFilter implements Filter {
                 Long userId = jwtTokenProvider.getUserIdFromToken(token);
                 Optional<User> userOptional = userRepository.findById(userId);
 
-                if (userOptional.isEmpty() || userOptional.get().isDeleted()) {
+                if (userOptional.isEmpty() || userOptional.get().getDeletedAt() != null) {
                     sendJsonError(httpservletResponse, HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 사용자입니다.");
                     return;
                 }

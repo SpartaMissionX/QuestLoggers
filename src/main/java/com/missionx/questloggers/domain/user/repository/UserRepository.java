@@ -10,7 +10,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // email 중복 체크용
     boolean existsByEmail(String email);
     // 이메일로 유저조회
-    Optional<User> findByEmailAndIsDeletedFalse(String email);
-    // 비밀번호,api 수정 시
-    Optional<User> findByIdAndIsDeletedFalse(Long userId);
+    Optional<User> findByEmailAndDeletedAtNull(String email);
+
 }
