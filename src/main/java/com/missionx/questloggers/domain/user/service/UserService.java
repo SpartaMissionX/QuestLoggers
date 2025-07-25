@@ -30,7 +30,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public FindUserResponseDto findUser(LoginUser loginUser) {
         User user = findUserById(loginUser.getUserId());
-        return new FindUserResponseDto(user.getId(), user.getEmail(), user.getPoint(), user.getRole());
+        return new FindUserResponseDto(user.getId(), user.getEmail(), user.getPoint(), user.getRole(), user.getOwnerCharId(), user.getOwnerCharName());
     }
 
     /**
