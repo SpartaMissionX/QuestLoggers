@@ -66,14 +66,14 @@ public class CharacterService {
     }
 
     /**
-     * 유저 리스트 검색
+     * 유저 캐릭터 리스트 검색
      */
     public PageResponseDto<SearchAllCharResponseDto> serchAllCharService(String keyword, int page , int size) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.ASC, "id"));
         Page<Character> charactersPage = characterRepository.findByCharNameContaining(keyword, pageable);
 
         List<SearchAllCharResponseDto> responseDtos = charactersPage.stream()
-                .map(character -> new SearchAllCharResponseDto(character.getCharName(), character.getCharLevel()))
+                .map(character -> new SearchAllCharResponseDto(character.getId(), character.getCharName(), character.getWorldName(), character.getCharClass(), character.getCharLevel()))
                 .collect(Collectors.toList());
 
         return new PageResponseDto<>(
@@ -88,7 +88,7 @@ public class CharacterService {
     }
 
     /**
-     * 유저 단건 검색
+     * 유저 캐릭터 단건 검색
      */
     public SearchCharResponseDto serchCharService(Long charId) {
         Character foundChar = characterRepository.findById(charId)

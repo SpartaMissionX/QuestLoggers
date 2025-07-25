@@ -1,11 +1,15 @@
 package com.missionx.questloggers.domain.character.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class SearchAllCharResponseDto {
-    private final String charName;
-    private final int charLevel;
+    private Long charId;
+    private String charName;
+    private String worldName;
+    private String charClass;
+    private int charLevel;
 }
