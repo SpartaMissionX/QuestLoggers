@@ -1,7 +1,7 @@
 spring:
   datasource:
-    url: ${DB_URL}?rewriteBatchedStatements=true
-    username: ${DB_USERNAME}
+    url: ${DB_URL1}?rewriteBatchedStatements=true
+    username: ${DB_USERNAME1}
 
   jpa:
     show-sql: true

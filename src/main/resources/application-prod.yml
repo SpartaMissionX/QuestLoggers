@@ -1,8 +1,8 @@
- spring:
+spring:
   datasource:
-    url: jdbc:mysql://database-1.ch6q6gw2u23h.ap-northeast-2.rds.amazonaws.com:3306
-    username: admin
-    password: lee027423
+    url: ${DB_URL2}
+    username: ${DB_USERNAME2}
+    password: ${DB_PASSWORD2}
 
   jpa:
     show-sql: false
@@ -21,4 +21,4 @@ server:
 
 jwt:
   secret:
-    key: /v8AbQBvAG4AZwA5AHMAcwBpAGkAcwBtAHkAcwBlAGMAcgBlAHQAawBlAHk=
+    key: ${SECRET_KEY}
