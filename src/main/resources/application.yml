@@ -1,25 +1,6 @@
 spring:
-  application:
-    name: QuestLoggers
-
-  datasource:
-    url: ${DB_URL}?rewriteBatchedStatements=true
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-
-  jpa:
-    show-sql: true
-    open-in-view: false
-    hibernate:
-      ddl-auto: update
-
-server:
-  error:
-    include-message: always
-
-jwt:
-  secret:
-    key: ${SECRET_KEY}
+  profiles:
+    active: local
 
 admin:
   emails:
