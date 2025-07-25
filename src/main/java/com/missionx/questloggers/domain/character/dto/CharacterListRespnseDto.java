@@ -12,4 +12,5 @@ public class CharacterListRespnseDto {
     private String worldName;
     private String charClass;
     private int charLevel;
+    private boolean ownerChar;
 }

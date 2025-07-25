@@ -12,4 +12,6 @@ public class FindUserResponseDto {
     private String email;
     private int point;
     private Role role;
+    private Long ownerCharId;
+    private String ownerCharName;
 }

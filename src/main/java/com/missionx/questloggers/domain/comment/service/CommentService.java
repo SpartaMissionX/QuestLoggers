@@ -54,7 +54,7 @@ public class CommentService {
      */
     @Transactional(readOnly = true)
     public PageResponseDto<FindAllCommentResponseDto> findAllComment(Long postId, int page, int size) {
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.ASC, "createdAt"));
         Page<Comment> commentsPage = commentRepository.findByPostIdAndDeletedAtNull(postId, pageable);
 
         if (commentsPage.isEmpty()) {
