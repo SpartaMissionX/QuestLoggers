@@ -44,7 +44,7 @@ public class CharacterService {
         User user = userService.findUserById(loginUser.getUserId());
         List<Character> characterList = characterRepository.findByUser(user);
         return characterList.stream()
-                .map(character -> new CharacterListRespnseDto(character.getId(), character.getOcid(), character.getCharName(), character.getWorldName(), character.getCharClass(), character.getCharLevel()))
+                .map(character -> new CharacterListRespnseDto(character.getId(), character.getOcid(), character.getCharName(), character.getWorldName(), character.getCharClass(), character.getCharLevel(), character.isOwnerChar()))
                 .collect(Collectors.toList());
     }
 
