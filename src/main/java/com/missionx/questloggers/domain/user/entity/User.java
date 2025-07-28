@@ -14,7 +14,7 @@ public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    // pk
+    // 회원탈퇴기능 추가
     private Long id;
 
     @Column(nullable = false, unique = true)
