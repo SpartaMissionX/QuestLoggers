@@ -25,7 +25,7 @@ public class CharacterBossController {
     /**
      * 대표 캐릭터의 보스 생성
      */
-    @PostMapping("/mycharacters/main/bosses")
+    @PostMapping("/characters/me/main/bosses")
     public ResponseEntity<ApiResponse<CreateCharBossResponseDto>> createCharBoss(
             @AuthenticationPrincipal LoginUser loginUser,
             @PathVariable Long bossId
@@ -37,7 +37,7 @@ public class CharacterBossController {
     /**
      * 대표 캐릭터의 보스 클리어 정보 조회
      */
-    @GetMapping("/mycharacters/main/bosses")
+    @GetMapping("/characters/me/main/bosses")
     public ResponseEntity<ApiResponse<List<MyCharInfoResponseDto>>> myCharInfo(
             @AuthenticationPrincipal LoginUser loginUser
     ) {
@@ -48,7 +48,7 @@ public class CharacterBossController {
     /**
      * 대표 캐릭터의 보스 클리어 여부 수정
      */
-    @PatchMapping("/mycharacters/main/bosses/{bossId}")
+    @PatchMapping("/characters/me/main/bosses/{bossId}")
     public ResponseEntity<ApiResponse<UpdateIsClearedResponseDto>> updateIsCleared(
             @AuthenticationPrincipal LoginUser loginUser,
             @PathVariable Long bossId

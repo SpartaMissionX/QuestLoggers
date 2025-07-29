@@ -25,7 +25,7 @@ public class CharacterController {
     /**
      * 본인 캐릭터 전체 조회 API
      */
-    @GetMapping("/mycharacters")
+    @GetMapping("/characters/me")
     public ResponseEntity<ApiResponse<List<CharacterListRespnseDto>>> getCharList(
             @AuthenticationPrincipal LoginUser loginUser
     ) {
@@ -36,7 +36,7 @@ public class CharacterController {
     /**
      * 본인 대표 캐릭터 조회 API
      */
-    @GetMapping("/mycharacters/main")
+    @GetMapping("/characters/me/main")
     public ResponseEntity<ApiResponse<GetOwnerCharResponseDto>> getOwnerChar(
             @AuthenticationPrincipal LoginUser loginUser
     ) {
@@ -69,7 +69,7 @@ public class CharacterController {
     /**
      * 대표캐릭터 설정
      */
-    @PostMapping("/mycharacters/main")
+    @PostMapping("/characters/me/main")
     public ResponseEntity<ApiResponse<SetOwnerCharResponseDto>> setOwnerChar(
             @PathVariable Long charId,
             @AuthenticationPrincipal LoginUser loginUser

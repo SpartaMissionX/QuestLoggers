@@ -39,7 +39,7 @@ public class PostService {
     @Transactional
     public void createPostService(CreatePostRequestDto requestDto, LoginUser loginUser) {
         User user = userService.findUserById(loginUser.getUserId());
-        Character ownerCharacter = characterService.findById(user.getOwnerCharId());
+        Character ownerCharacter = characterService.findByMainCharId(user.getOwnerCharId());
         Post post = new Post(requestDto.getTitle(), requestDto.getContent(), ownerCharacter);
         postRepository.save(post);
     }
@@ -50,7 +50,7 @@ public class PostService {
     @Transactional
     public UpdatePostResponseDto updatePostService(Long postId, UpdatePostRequestDto updatePostRequestDto, LoginUser loginUser) {
         User user = userService.findUserById(loginUser.getUserId());
-        Character ownerCharacter = characterService.findById(user.getOwnerCharId());
+        Character ownerCharacter = characterService.findByMainCharId(user.getOwnerCharId());
         Post foundPost = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
         if (!foundPost.getCharacter().getId().equals(ownerCharacter.getId())) {
