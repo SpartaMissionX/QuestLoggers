@@ -25,7 +25,7 @@ public class CharacterController {
     /**
      * 본인 캐릭터 전체 조회 API
      */
-    @GetMapping("/mychar")
+    @GetMapping("/characters/me")
     public ResponseEntity<ApiResponse<List<CharacterListRespnseDto>>> getCharList(
             @AuthenticationPrincipal LoginUser loginUser
     ) {
@@ -36,7 +36,7 @@ public class CharacterController {
     /**
      * 본인 대표 캐릭터 조회 API
      */
-    @GetMapping("/mychar/owner")
+    @GetMapping("/characters/me/main")
     public ResponseEntity<ApiResponse<GetOwnerCharResponseDto>> getOwnerChar(
             @AuthenticationPrincipal LoginUser loginUser
     ) {
@@ -47,7 +47,7 @@ public class CharacterController {
     /**
      * 유저 캐릭터 리스트 검색 API
      */
-    @GetMapping("/char")
+    @GetMapping("/characters")
     public ResponseEntity<ApiResponse<PageResponseDto<SearchAllCharResponseDto>>> searchAllChar(
             @RequestParam("keyword") String keyword,
             @RequestParam(defaultValue = "1") int page,
@@ -60,7 +60,7 @@ public class CharacterController {
     /**
      * 유저 캐릭터 단건 검색 API
      */
-    @GetMapping("/char/{charId}")
+    @GetMapping("/characters/{charId}")
     public ResponseEntity<ApiResponse<SearchCharResponseDto>> searchChar(@PathVariable Long charId) {
         SearchCharResponseDto searchCharResponseDto = characterService.serchCharService(charId);
         return ApiResponse.success(HttpStatus.FOUND,"캐릭터 정보를 불러왔습니다.", searchCharResponseDto);
@@ -69,7 +69,7 @@ public class CharacterController {
     /**
      * 대표캐릭터 설정
      */
-    @PostMapping("/mychar/owner/{charId}")
+    @PostMapping("/characters/me/main")
     public ResponseEntity<ApiResponse<SetOwnerCharResponseDto>> setOwnerChar(
             @PathVariable Long charId,
             @AuthenticationPrincipal LoginUser loginUser

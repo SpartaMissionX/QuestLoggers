@@ -14,6 +14,7 @@ import com.missionx.questloggers.domain.user.service.UserService;
 import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.PageResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -118,7 +119,7 @@ public class CharacterService {
                 return new SetOwnerCharResponseDto(c.getCharName(), c.getWorldName(), c.getCharClass(), c.getCharLevel());
             }
         }
-        throw new NotFoundCharException(HttpStatus.NOT_FOUND, "캐릭터를 찾을 수 없습니다.");
+        throw new NotFoundCharException(HttpStatus.NOT_FOUND, "본인 캐릭터만 대표캐릭터로 설정할 수 있습니다.");
     }
 
 
@@ -170,6 +171,15 @@ public class CharacterService {
     public Character findById(Long charId) {
         return characterRepository.findById(charId).orElseThrow(
                 () -> new NotFoundCharException(HttpStatus.NOT_FOUND, "존재하지 않는 캐릭터입니다.")
+        );
+    }
+
+    public Character findByMainCharId(Long mainCharId) {
+        if (mainCharId == null) {
+            throw new NotFoundCharException(HttpStatus.NOT_FOUND, "대표 캐릭터를 설정해주세요");
+        }
+        return characterRepository.findById(mainCharId).orElseThrow(
+                () -> new NotFoundCharException(HttpStatus.NOT_FOUND, "대표 캐릭터를 찾을 수 없습니다.")
         );
     }
 }
