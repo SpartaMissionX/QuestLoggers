@@ -2,7 +2,7 @@ spring:
   datasource:
     url: ${DB_URL1}?rewriteBatchedStatements=true
     username: ${DB_USERNAME1}
-    password : ${DB_PASSWORD1}
+    password: ${DB_PASSWORD1}
 
   jpa:
     show-sql: true

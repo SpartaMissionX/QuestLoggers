@@ -28,8 +28,8 @@ public class CommentController {
             @RequestBody @Valid CreateCommentRequestDto requestDto,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
-        CreateCommentResponseDto responseDto = commentService.createComment(postId, requestDto, loginUser);
-        return ApiResponse.success(HttpStatus.CREATED, "댓글 작성이 완료되었습니다.", responseDto);
+        commentService.createComment(postId, requestDto, loginUser);
+        return ApiResponse.success(HttpStatus.CREATED, "댓글 작성이 완료되었습니다.", null);
     }
 
     @GetMapping("/posts/{postId}/comments")

@@ -38,15 +38,13 @@ public class CommentService {
      * 댓글 생성 기능
      */
     @Transactional
-    public CreateCommentResponseDto createComment(Long postId, CreateCommentRequestDto requestDto, LoginUser loginUser) {
+    public void createComment(Long postId, CreateCommentRequestDto requestDto, LoginUser loginUser) {
         User user = userService.findUserById(loginUser.getUserId());
-        Character character = characterService.findById(user.getOwnerCharId());
+        Character character = characterService.findByMainCharId(user.getOwnerCharId());
         Post post = postService.findPostById(postId);
 
         Comment comment = new Comment(requestDto.getContent(), character, post);
-        Comment savedComment = commentRepository.save(comment);
-
-        return new CreateCommentResponseDto(character.getId(), character.getCharName(), savedComment.getId(), savedComment.getContent());
+        commentRepository.save(comment);
     }
 
     /**
@@ -58,7 +56,7 @@ public class CommentService {
         Page<Comment> commentsPage = commentRepository.findByPostIdAndDeletedAtNull(postId, pageable);
 
         if (commentsPage.isEmpty()) {
-            throw new CommentException(HttpStatus.NOT_FOUND, "요청한 페이지에 댓글이 존재하지 않습니다.");
+            throw new CommentException(HttpStatus.ACCEPTED, "요청한 페이지에 댓글이 존재하지 않습니다.");
         }
 
         List<FindAllCommentResponseDto> responseDtos = commentsPage.stream()
@@ -81,7 +79,7 @@ public class CommentService {
     @Transactional
     public UpdateCommentResponseDto updateComment(Long commentId, UpdateCommentRequestDto requestDto, LoginUser loginUser) {
         User user = userService.findUserById(loginUser.getUserId());
-        Character character = characterService.findById(user.getOwnerCharId());
+        Character character = characterService.findByMainCharId(user.getOwnerCharId());
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundCommentException(HttpStatus.NOT_FOUND,"댓글을 찾을 수 없습니다. 다시 확인해주세요"));
 
@@ -100,7 +98,7 @@ public class CommentService {
     @Transactional
     public void deleteComment(Long commentId, LoginUser loginUser) {
         User user = userService.findUserById(loginUser.getUserId());
-        Character character = characterService.findById(user.getOwnerCharId());
+        Character character = characterService.findByMainCharId(user.getOwnerCharId());
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundCommentException(HttpStatus.NOT_FOUND,"댓글을 찾을 수 없습니다. 다시 확인해주세요"));
         if (comment.getDeletedAt() == null) {
