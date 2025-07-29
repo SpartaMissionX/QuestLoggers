@@ -39,7 +39,7 @@ public class PostService {
     @Transactional
     public CreatePostResponseDto createPostService(CreatePostRequestDto requestDto, LoginUser loginUser) {
         User user = userService.findUserById(loginUser.getUserId());
-        Character ownerCharacter = characterService.findById(user.getOwnerCharId());
+        Character ownerCharacter = characterService.findByMainCharId(user.getOwnerCharId());
         Post post = new Post(requestDto.getTitle(), requestDto.getContent(), ownerCharacter);
         postRepository.save(post);
 

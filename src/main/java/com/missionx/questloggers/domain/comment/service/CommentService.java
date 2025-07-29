@@ -40,7 +40,7 @@ public class CommentService {
     @Transactional
     public CreateCommentResponseDto createComment(Long postId, CreateCommentRequestDto requestDto, LoginUser loginUser) {
         User user = userService.findUserById(loginUser.getUserId());
-        Character character = characterService.findById(user.getOwnerCharId());
+        Character character = characterService.findByMainCharId(user.getOwnerCharId());
         Post post = postService.findPostById(postId);
 
         Comment comment = new Comment(requestDto.getContent(), character, post);
