@@ -42,7 +42,7 @@ public class CharacterBossService {
     @Transactional
     public CreateCharBossResponseDto createCharBoss(LoginUser loginUser, Long bossId) {
         User user = userService.findUserById(loginUser.getUserId());
-        Character character = characterService.findById(user.getOwnerCharId());
+        Character character = characterService.findByMainCharId(user.getOwnerCharId());
         Boss boss = bossService.findById(bossId);
 
         if (characterBossRepository.findByCharacterAndBoss(character, boss).isPresent()) {
@@ -61,7 +61,7 @@ public class CharacterBossService {
     @Transactional(readOnly = true)
     public List<MyCharInfoResponseDto> myCharInfo(LoginUser loginUser) {
         User user = userService.findUserById(loginUser.getUserId());
-        Character character = characterService.findById(user.getOwnerCharId());
+        Character character = characterService.findByMainCharId(user.getOwnerCharId());
         List<CharacterBoss> characterBossList = characterBossRepository.findByCharacter(character);
         return characterBossList.stream()
                 .map(characterBoss -> new MyCharInfoResponseDto(characterBoss.getId(), characterBoss.getCharacter().getId(), characterBoss.getBoss().getId(), characterBoss.isCleared(), characterBoss.getClearCount()))
@@ -75,7 +75,7 @@ public class CharacterBossService {
     @Transactional
     public UpdateIsClearedResponseDto updateIsCleared(LoginUser loginUser, Long bossId) {
         User user = userService.findUserById(loginUser.getUserId());
-        Character character = characterService.findById(user.getOwnerCharId());
+        Character character = characterService.findByMainCharId(user.getOwnerCharId());
         Boss boss = bossService.findById(bossId);
 
         CharacterBoss cb = characterBossRepository.findByCharacterAndBoss(character, boss).orElseThrow(
