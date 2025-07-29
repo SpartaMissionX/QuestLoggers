@@ -40,7 +40,8 @@ public class PostService {
     public void createPostService(CreatePostRequestDto requestDto, LoginUser loginUser) {
         User user = userService.findUserById(loginUser.getUserId());
         Character ownerCharacter = characterService.findByMainCharId(user.getOwnerCharId());
-        Post post = new Post(requestDto.getTitle(), requestDto.getContent(), ownerCharacter);
+        Post post = new Post(requestDto.getTitle(), requestDto.getContent(), ownerCharacter, requestDto.getBossId(),
+                requestDto.getDifficulty(), requestDto.getPartySize());
         postRepository.save(post);
     }
 
@@ -57,7 +58,8 @@ public class PostService {
             throw new UnauthorizedPostAccessException("게시글 수정 권한이 없습니다.");
         }
         foundPost.updatePost(updatePostRequestDto);
-        return new UpdatePostResponseDto(ownerCharacter.getId(), ownerCharacter.getCharName(), foundPost.getId(), foundPost.getTitle(), foundPost.getContent());
+        return new UpdatePostResponseDto(ownerCharacter.getId(), ownerCharacter.getCharName(), foundPost.getId(),
+                foundPost.getTitle(), foundPost.getContent(), foundPost.getPartySize());
     }
 
     /**
@@ -78,7 +80,9 @@ public class PostService {
         };
 
         List<GetAllPostResponseDto> responseDtos = postsPage.stream()
-                .map(post -> new GetAllPostResponseDto(post.getCharacter().getId(), post.getCharacter().getCharName(), post.getId(), post.getTitle(), post.getContent()))
+                .map(post -> new GetAllPostResponseDto(post.getCharacter().getId(),
+                        post.getCharacter().getCharName(),post.getId(), post.getTitle(), post.getContent(),
+                        post.getBossId(), post.getDifficulty(), post.getPartySize()))
                 .collect(Collectors.toList());
 
         return new PageResponseDto<>(
@@ -99,7 +103,9 @@ public class PostService {
         Post foundPost = postRepository.findByIdAndDeletedAtNull(postId)
                 .orElseThrow(()-> new RuntimeException("게시글을 찾을 수 없습니다."));
 
-        return new GetPostResponseDto(foundPost.getCharacter().getId(), foundPost.getCharacter().getCharName(), foundPost.getId(), foundPost.getTitle(), foundPost.getContent());
+        return new GetPostResponseDto(foundPost.getCharacter().getId(), foundPost.getCharacter().getCharName(),
+                foundPost.getId(), foundPost.getTitle(), foundPost.getContent(), foundPost.getBossId(),
+                foundPost.getDifficulty(), foundPost.getPartySize());
     }
 
     /**
