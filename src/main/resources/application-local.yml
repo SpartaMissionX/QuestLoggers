@@ -2,12 +2,13 @@ spring:
   datasource:
     url: ${DB_URL1}?rewriteBatchedStatements=true
     username: ${DB_USERNAME1}
+    password: ${DB_PASSWORD1}
 
   jpa:
     show-sql: true
     open-in-view: false
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
 
 server:
   error:

@@ -52,7 +52,7 @@ public class CharacterBossService {
         CharacterBoss characterBoss = new CharacterBoss(character, boss);
         characterBossRepository.save(characterBoss);
 
-        return new CreateCharBossResponseDto(characterBoss.getCharacter().getId(), characterBoss.getBoss().getId(), characterBoss.isCleared(), characterBoss.getClearCount());
+        return new CreateCharBossResponseDto(characterBoss.getCharacter().getId(), characterBoss.getBoss().getId(), characterBoss.getBoss().getBossName(), characterBoss.isCleared(), characterBoss.getClearCount());
     }
 
     /**

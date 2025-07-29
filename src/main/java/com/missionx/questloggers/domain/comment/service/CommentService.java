@@ -58,7 +58,7 @@ public class CommentService {
         Page<Comment> commentsPage = commentRepository.findByPostIdAndDeletedAtNull(postId, pageable);
 
         if (commentsPage.isEmpty()) {
-            throw new CommentException(HttpStatus.NOT_FOUND, "요청한 페이지에 댓글이 존재하지 않습니다.");
+            throw new CommentException(HttpStatus.ACCEPTED, "요청한 페이지에 댓글이 존재하지 않습니다.");
         }
 
         List<FindAllCommentResponseDto> responseDtos = commentsPage.stream()

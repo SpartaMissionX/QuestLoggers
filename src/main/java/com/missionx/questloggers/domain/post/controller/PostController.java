@@ -28,12 +28,12 @@ public class PostController {
      * 게시글 생성
      */
     @PostMapping("/posts")
-    public ResponseEntity<ApiResponse<CreatePostResponseDto>> createPost(
+    public ResponseEntity<ApiResponse<Object>> createPost(
             @RequestBody @Valid CreatePostRequestDto createPostRequestDto,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
-        CreatePostResponseDto responseDto = postService.createPostService(createPostRequestDto, loginUser);
-        return ApiResponse.success(HttpStatus.CREATED, "게시글 작성이 완료되었습니다.", responseDto);
+        postService.createPostService(createPostRequestDto, loginUser);
+        return ApiResponse.success(HttpStatus.CREATED, "게시글 작성이 완료되었습니다.", null);
     }
 
     /**

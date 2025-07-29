@@ -11,6 +11,5 @@ public class GetAllPostResponseDto {
     private String ownerCharName;
     private Long postId;
     private String title;
-    private String content;
 
 }

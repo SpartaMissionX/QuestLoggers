@@ -37,13 +37,11 @@ public class PostService {
      * 게시글 생성
      */
     @Transactional
-    public CreatePostResponseDto createPostService(CreatePostRequestDto requestDto, LoginUser loginUser) {
+    public void createPostService(CreatePostRequestDto requestDto, LoginUser loginUser) {
         User user = userService.findUserById(loginUser.getUserId());
         Character ownerCharacter = characterService.findById(user.getOwnerCharId());
         Post post = new Post(requestDto.getTitle(), requestDto.getContent(), ownerCharacter);
         postRepository.save(post);
-
-        return new CreatePostResponseDto(ownerCharacter.getId(), ownerCharacter.getCharName(), post.getId(), post.getTitle(), post.getContent());
     }
 
     /**
@@ -76,11 +74,11 @@ public class PostService {
         }
 
         if (postsPage.isEmpty()) {
-            throw new PostException(HttpStatus.NOT_FOUND, "요청한 페이지에 게시글이 존재하지 않습니다.");
+            throw new PostException(HttpStatus.ACCEPTED, "요청한 페이지에 게시글이 존재하지 않습니다.");
         };
 
         List<GetAllPostResponseDto> responseDtos = postsPage.stream()
-                .map(post -> new GetAllPostResponseDto(post.getCharacter().getId(), post.getCharacter().getCharName(), post.getId(), post.getTitle(), post.getContent()))
+                .map(post -> new GetAllPostResponseDto(post.getCharacter().getId(), post.getCharacter().getCharName(), post.getId(), post.getTitle()))
                 .collect(Collectors.toList());
 
         return new PageResponseDto<>(
