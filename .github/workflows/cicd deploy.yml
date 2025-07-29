@@ -30,7 +30,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app
-          path: build/libs/demo-[0-9.]*-SNAPSHOT.jar
+          path: build/libs/QuestLoggers-0.0.1-SNAPSHOT.jar
 
   deploy:
     needs: build
