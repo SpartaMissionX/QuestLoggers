@@ -119,7 +119,7 @@ public class CharacterService {
                 return new SetOwnerCharResponseDto(c.getCharName(), c.getWorldName(), c.getCharClass(), c.getCharLevel());
             }
         }
-        throw new NotFoundCharException(HttpStatus.NOT_FOUND, "캐릭터를 찾을 수 없습니다.");
+        throw new NotFoundCharException(HttpStatus.NOT_FOUND, "본인 캐릭터만 대표캐릭터로 설정할 수 있습니다.");
     }
 
 
