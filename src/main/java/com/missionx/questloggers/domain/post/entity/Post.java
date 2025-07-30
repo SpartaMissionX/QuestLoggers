@@ -1,10 +1,9 @@
 package com.missionx.questloggers.domain.post.entity;
 
 import com.missionx.questloggers.domain.character.entity.Character;
-import com.missionx.questloggers.domain.post.dto.UpdatePostRequestDto;
+import com.missionx.questloggers.domain.partyapplicant.dto.UpdatePostRequestDto;
 import com.missionx.questloggers.domain.post.enums.Difficulty;
 import com.missionx.questloggers.domain.post.enums.PartySize;
-import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;

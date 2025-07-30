@@ -1,5 +1,7 @@
 package com.missionx.questloggers.domain.post.controller;
 
+import com.missionx.questloggers.domain.partyapplicant.dto.UpdatePostRequestDto;
+import com.missionx.questloggers.domain.partymember.dto.KickPartyMemberRequestDto;
 import com.missionx.questloggers.domain.partymember.dto.PartyMemberResponseDto;
 import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.post.service.PostService;
@@ -8,12 +10,10 @@ import com.missionx.questloggers.global.dto.ApiResponse;
 import com.missionx.questloggers.global.dto.PageResponseDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -142,5 +142,30 @@ public class PostController {
     ) {
         List<PartyMemberResponseDto> partyMemberResponseDto = postService.getPartyMembers(postId);
         return ApiResponse.success(HttpStatus.ACCEPTED, "파티원 조회가 완료되었습니다.", partyMemberResponseDto);
+    }
+
+    /**
+     * 파티원 추방
+     */
+    @DeleteMapping("/posts/{postId}/party-members/kick")
+    public ResponseEntity<ApiResponse<Object>> kickPartyMember(
+            @PathVariable Long postId,
+            @RequestBody KickPartyMemberRequestDto requestDto,
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        postService.kickPartyMember(postId, requestDto, loginUser);
+        return ApiResponse.success(HttpStatus.OK, "파티원을 추방했습니다.", null);
+    }
+
+    /**
+     * 파티 탈퇴
+     */
+    @DeleteMapping("/posts/{postId}/party-members")
+    public ResponseEntity<ApiResponse<Object>> leaveParty(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        postService.leaveParty(postId, loginUser);
+        return ApiResponse.success(HttpStatus.OK, "파티를 탈퇴했습니다.", null);
     }
 }

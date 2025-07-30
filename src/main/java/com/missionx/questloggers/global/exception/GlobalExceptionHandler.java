@@ -6,6 +6,7 @@ import com.missionx.questloggers.domain.auth.exception.AuthException;
 import com.missionx.questloggers.domain.characterboss.exception.CharacterBossException;
 import com.missionx.questloggers.domain.comment.exception.CommentException;
 import com.missionx.questloggers.domain.comment.exception.UnauthorizedCommentAccessException;
+import com.missionx.questloggers.domain.partymember.exception.PartyMemberException;
 import com.missionx.questloggers.domain.post.exception.InvalidPartyActionException;
 import com.missionx.questloggers.domain.post.exception.PostException;
 import com.missionx.questloggers.domain.post.exception.UnauthorizedPostAccessException;
@@ -65,6 +66,13 @@ public class GlobalExceptionHandler {
     // CharacterBoss
     @ExceptionHandler(CharacterBossException.class)
     public ResponseEntity<ApiResponse<Void>> handlePostException(CharacterBossException e) {
+        log.warn("{}: {}", e.getClass(), e.getMessage());
+        return ApiResponse.error(e.getStatus(), e.getMessage());
+    }
+
+    // PartyMember
+    @ExceptionHandler(PartyMemberException.class)
+    public ResponseEntity<ApiResponse<Void>> handlePostException(PartyMemberException e) {
         log.warn("{}: {}", e.getClass(), e.getMessage());
         return ApiResponse.error(e.getStatus(), e.getMessage());
     }
