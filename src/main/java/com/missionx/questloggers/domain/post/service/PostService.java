@@ -3,11 +3,10 @@ package com.missionx.questloggers.domain.post.service;
 import com.missionx.questloggers.domain.character.entity.Character;
 import com.missionx.questloggers.domain.character.service.CharacterService;
 import com.missionx.questloggers.domain.post.dto.*;
+import com.missionx.questloggers.domain.post.entity.PartyApplicant;
 import com.missionx.questloggers.domain.post.entity.Post;
-import com.missionx.questloggers.domain.post.exception.AlreadyDeletedPostException;
-import com.missionx.questloggers.domain.post.exception.NotFoundPostException;
-import com.missionx.questloggers.domain.post.exception.PostException;
-import com.missionx.questloggers.domain.post.exception.UnauthorizedPostAccessException;
+import com.missionx.questloggers.domain.post.exception.*;
+import com.missionx.questloggers.domain.post.repository.PartyApplicantRepository;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.domain.user.service.UserService;
@@ -32,6 +31,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserService userService;
     private final CharacterService characterService;
+    private final PartyApplicantRepository partyApplicantRepository;
 
     /**
      * 게시글 생성
@@ -40,7 +40,8 @@ public class PostService {
     public void createPostService(CreatePostRequestDto requestDto, LoginUser loginUser) {
         User user = userService.findUserById(loginUser.getUserId());
         Character ownerCharacter = characterService.findByMainCharId(user.getOwnerCharId());
-        Post post = new Post(requestDto.getTitle(), requestDto.getContent(), ownerCharacter);
+        Post post = new Post(requestDto.getTitle(), requestDto.getContent(), ownerCharacter, requestDto.getBossId(),
+                requestDto.getDifficulty(), requestDto.getPartySize());
         postRepository.save(post);
     }
 
@@ -57,7 +58,8 @@ public class PostService {
             throw new UnauthorizedPostAccessException("게시글 수정 권한이 없습니다.");
         }
         foundPost.updatePost(updatePostRequestDto);
-        return new UpdatePostResponseDto(ownerCharacter.getId(), ownerCharacter.getCharName(), foundPost.getId(), foundPost.getTitle(), foundPost.getContent());
+        return new UpdatePostResponseDto(ownerCharacter.getId(), ownerCharacter.getCharName(), foundPost.getId(),
+                foundPost.getTitle(), foundPost.getContent(), foundPost.getPartySize());
     }
 
     /**
@@ -78,7 +80,9 @@ public class PostService {
         };
 
         List<GetAllPostResponseDto> responseDtos = postsPage.stream()
-                .map(post -> new GetAllPostResponseDto(post.getCharacter().getId(), post.getCharacter().getCharName(), post.getId(), post.getTitle(), post.getContent()))
+                .map(post -> new GetAllPostResponseDto(post.getCharacter().getId(),
+                        post.getCharacter().getCharName(),post.getId(), post.getTitle(), post.getContent(),
+                        post.getBossId(), post.getDifficulty(), post.getPartySize()))
                 .collect(Collectors.toList());
 
         return new PageResponseDto<>(
@@ -99,7 +103,9 @@ public class PostService {
         Post foundPost = postRepository.findByIdAndDeletedAtNull(postId)
                 .orElseThrow(()-> new RuntimeException("게시글을 찾을 수 없습니다."));
 
-        return new GetPostResponseDto(foundPost.getCharacter().getId(), foundPost.getCharacter().getCharName(), foundPost.getId(), foundPost.getTitle(), foundPost.getContent());
+        return new GetPostResponseDto(foundPost.getCharacter().getId(), foundPost.getCharacter().getCharName(),
+                foundPost.getId(), foundPost.getTitle(), foundPost.getContent(), foundPost.getBossId(),
+                foundPost.getDifficulty(), foundPost.getPartySize());
     }
 
     /**
@@ -119,6 +125,24 @@ public class PostService {
             throw new UnauthorizedPostAccessException("게시글 삭제 권한이 없습니다.");
         }
         foundPost.delete();
+    }
+
+    @Transactional
+    public ApplyPartyResponseDto applyPartyResponseDto(Long postId, LoginUser loginUser) {
+        User user = userService.findUserById(loginUser.getUserId());
+        Character character = characterService.findById(user.getOwnerCharId());
+        Post post = postRepository.findById(postId).orElseThrow(()-> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
+        if (post.getCharacter().getId().equals(character.getId())) {
+            throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "자신의 파티에는 신청할 수 없습니다.");
+        }
+        if (partyApplicantRepository.existsByPostIdAndCharacterId(postId, character.getId())) {
+            throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 신청한 파티입니다.");
+        }
+
+        PartyApplicant applicant = new PartyApplicant(post, character);
+        partyApplicantRepository.save(applicant);
+
+        return new ApplyPartyResponseDto(post.getId(), character.getId(), character.getCharName());
     }
 
     // 다른 domain에서 사용하는 기능

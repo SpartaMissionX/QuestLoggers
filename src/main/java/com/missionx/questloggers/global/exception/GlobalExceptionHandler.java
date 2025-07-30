@@ -6,6 +6,7 @@ import com.missionx.questloggers.domain.auth.exception.AuthException;
 import com.missionx.questloggers.domain.characterboss.exception.CharacterBossException;
 import com.missionx.questloggers.domain.comment.exception.CommentException;
 import com.missionx.questloggers.domain.comment.exception.UnauthorizedCommentAccessException;
+import com.missionx.questloggers.domain.post.exception.InvalidPartyActionException;
 import com.missionx.questloggers.domain.post.exception.PostException;
 import com.missionx.questloggers.domain.post.exception.UnauthorizedPostAccessException;
 import com.missionx.questloggers.domain.user.exception.UserException;
@@ -78,13 +79,18 @@ public class GlobalExceptionHandler {
     // post 수정,삭제 권한 없을 때(작성자가 아닐 때)
     @ExceptionHandler(UnauthorizedPostAccessException.class)
     public ResponseEntity<ApiResponse<Object>> handleUnauthorizedPostAccess(UnauthorizedPostAccessException ex) {
-        return ApiResponse.error(HttpStatus.FORBIDDEN, ex.getMessage());
+        return ApiResponse.error(ex.getStatus(), ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidPartyActionException.class)
+    public ResponseEntity<ApiResponse<Object>> handleInvalidPartyAction(InvalidPartyActionException ex) {
+        return ApiResponse.error(ex.getStatus(), ex.getMessage());
     }
 
     // comment 수정, 삭제 권한 없을 때(댓글 작성자가 아닐 때)
     @ExceptionHandler(UnauthorizedCommentAccessException.class)
     public ResponseEntity<ApiResponse<Object>> handleUnauthorizedCommentAccess(UnauthorizedCommentAccessException ex) {
-        return ApiResponse.error(HttpStatus.FORBIDDEN, ex.getMessage());
+        return ApiResponse.error(ex.getStatus(), ex.getMessage());
     }
 
     // vaildation 오류
