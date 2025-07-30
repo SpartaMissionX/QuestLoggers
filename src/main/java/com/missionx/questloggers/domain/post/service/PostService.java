@@ -127,6 +127,7 @@ public class PostService {
         foundPost.delete();
     }
 
+    @Transactional
     public ApplyPartyResponseDto applyPartyResponseDto(Long postId, LoginUser loginUser) {
         User user = userService.findUserById(loginUser.getUserId());
         Character character = characterService.findById(user.getOwnerCharId());
