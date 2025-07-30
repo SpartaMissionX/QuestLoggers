@@ -97,6 +97,7 @@ public class PostController {
     /**
      * 파티원 신청자 조회
      */
+    @GetMapping("/posts/{postId}/applicants")
     public ResponseEntity<ApiResponse<List<PartyApplicantResponseDto>>> getPartyApplicants(
             @PathVariable Long postId,
             @AuthenticationPrincipal LoginUser loginUser
@@ -105,4 +106,16 @@ public class PostController {
         return ApiResponse.success(HttpStatus.OK, "파티 신청자 조회 성공", partyApplicantResponseDto);
     }
 
+    /**
+     * 파티 신청 수락
+     */
+    @PatchMapping("/posts/{postId}/applicants/{charId}")
+    public ResponseEntity<ApiResponse<Object>> acceptParty(
+            @PathVariable Long postId,
+            @PathVariable Long charId,
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        postService.accpetParty(postId, charId, loginUser);
+        return ApiResponse.success(HttpStatus.OK, "파티 신청을 수락했습니다.", null);
+    }
 }

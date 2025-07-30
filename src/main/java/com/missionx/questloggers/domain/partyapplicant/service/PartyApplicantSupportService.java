@@ -17,11 +17,15 @@ public class PartyApplicantSupportService {
         partyApplicantRepository.save(partyApplicant);
     }
 
-    public boolean existsByPostIdAndCharacterId(Long postId, Long id) {
-        return partyApplicantRepository.existsByPostIdAndCharacterId(postId, id);
+    public boolean existsByPostIdAndCharacterId(Long postId, Long charId) {
+        return partyApplicantRepository.existsByPostIdAndCharacterId(postId, charId);
     }
 
     public List<PartyApplicant> findAllByPostId(Long postId) {
         return partyApplicantRepository.findAllByPostId(postId);
+    }
+
+    public PartyApplicant findByPostIdAndCharacterId(Long postId, Long charId) {
+        return partyApplicantRepository.findByPostIdAndCharacterId(postId, charId);
     }
 }
