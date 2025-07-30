@@ -30,8 +30,10 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final UserSupporService userSupporService;
+    private final PostSupporService postSupporService;
     private final CharacterSupporService characterSupporService;
     private final PartyApplicantRepository partyApplicantRepository;
+
 
     /**
      * 게시글 생성
@@ -42,6 +44,7 @@ public class PostService {
         Character ownerCharacter = characterSupporService.findByMainCharId(user.getOwnerCharId());
         Post post = new Post(requestDto.getTitle(), requestDto.getContent(), ownerCharacter, requestDto.getBossId(),
                 requestDto.getDifficulty(), requestDto.getPartySize());
+        new PartyApplicant(post, ownerCharacter);
         postRepository.save(post);
     }
 
@@ -52,8 +55,7 @@ public class PostService {
     public UpdatePostResponseDto updatePostService(Long postId, UpdatePostRequestDto updatePostRequestDto, LoginUser loginUser) {
         User user = userSupporService.findUserById(loginUser.getUserId());
         Character ownerCharacter = characterSupporService.findByMainCharId(user.getOwnerCharId());
-        Post foundPost = postRepository.findById(postId)
-                .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
+        Post foundPost = postSupporService.findById(postId);
         if (!foundPost.getCharacter().getId().equals(ownerCharacter.getId())) {
             throw new UnauthorizedPostAccessException("게시글 수정 권한이 없습니다.");
         }
@@ -100,9 +102,7 @@ public class PostService {
      */
     @Transactional(readOnly = true)
     public GetPostResponseDto getPostService(Long postId) {
-        Post foundPost = postRepository.findByIdAndDeletedAtNull(postId)
-                .orElseThrow(()-> new RuntimeException("게시글을 찾을 수 없습니다."));
-
+        Post foundPost = postSupporService.findById(postId);
         return new GetPostResponseDto(foundPost.getCharacter().getId(), foundPost.getCharacter().getCharName(),
                 foundPost.getId(), foundPost.getTitle(), foundPost.getContent(), foundPost.getBossId(),
                 foundPost.getDifficulty(), foundPost.getPartySize());
@@ -114,13 +114,7 @@ public class PostService {
     @Transactional
     public void deletePostService(Long postId, LoginUser loginUser) {
         User user = userSupporService.findUserById(loginUser.getUserId());
-        Post foundPost = postRepository.findById(postId)
-                .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
-        if (foundPost.getDeletedAt() == null) {
-            foundPost.delete();
-        } else {
-            throw new AlreadyDeletedPostException(HttpStatus.NOT_FOUND, "이미 삭제된 게시글입니다.");
-        }
+        Post foundPost = postSupporService.findById(postId);
         if (!foundPost.getCharacter().getId().equals(user.getOwnerCharId())) {
             throw new UnauthorizedPostAccessException("게시글 삭제 권한이 없습니다.");
         }
@@ -132,7 +126,7 @@ public class PostService {
     public ApplyPartyResponseDto applyPartyResponseDto(Long postId, LoginUser loginUser) {
         User user = userSupporService.findUserById(loginUser.getUserId());
         Character character = characterSupporService.findById(user.getOwnerCharId());
-        Post post = postRepository.findById(postId).orElseThrow(()-> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
+        Post post = postSupporService.findById(postId);
         if (post.getCharacter().getId().equals(character.getId())) {
             throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "자신의 파티에는 신청할 수 없습니다.");
         }
