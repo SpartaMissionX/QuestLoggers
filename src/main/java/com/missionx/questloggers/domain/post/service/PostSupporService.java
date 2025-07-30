@@ -16,9 +16,13 @@ public class PostSupporService {
 
     // 다른 domain에서 사용하는 기능
     @Transactional
-    public Post findPostById(Long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND,
-                        "게시글을 찾을 수 없습니다. 다시 확인해주세요"));
+    public Post findById(Long postId) {
+        Post post = postRepository.findById(postId).orElseThrow(
+                () -> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다. 다시 확인해주세요.")
+        );
+        if (post.getDeletedAt() != null) {
+            throw new NotFoundPostException(HttpStatus.NOT_FOUND, "삭제된 게시글 입니다. 다시 확인해주세요.");
+        }
+        return post;
     }
 }
