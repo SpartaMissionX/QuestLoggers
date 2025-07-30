@@ -50,6 +50,7 @@ public class AuthService {
 
         List<Character> charList = mapleOpenApiClient.createCharList(savedUser);
         mapleOpenApiClient.updateCharImage(savedUser, charList);
+        mapleOpenApiClient.updateCharPower(savedUser, charList);
 
         return new SignupResponseDto(savedUser.getId(), savedUser.getEmail());
     }

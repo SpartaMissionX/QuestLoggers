@@ -1,9 +1,6 @@
 package com.missionx.questloggers.global.client;
 
-import com.missionx.questloggers.domain.character.exception.CharacterException;
-import com.missionx.questloggers.global.dto.client.AccountListDto;
-import com.missionx.questloggers.global.dto.client.CharacterBasicDto;
-import com.missionx.questloggers.global.dto.client.CharacterDto;
+import com.missionx.questloggers.global.dto.client.*;
 import com.missionx.questloggers.domain.character.entity.Character;
 import com.missionx.questloggers.domain.character.repository.CharacterRepository;
 import com.missionx.questloggers.domain.user.entity.User;
@@ -16,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -56,7 +52,7 @@ public class MapleOpenApiClient {
             for (AccountListDto.AccountInfo accountInfo : accountListDto.getAccountList()) {
                 if (accountInfo.getCharacterList() != null) {
                     for (CharacterDto characterDto : accountInfo.getCharacterList()) {
-                        com.missionx.questloggers.domain.character.entity.Character character = new com.missionx.questloggers.domain.character.entity.Character(
+                        Character character = new Character(
                                 user,
                                 characterDto.getOcid(),
                                 characterDto.getCharacterName(),
@@ -75,9 +71,12 @@ public class MapleOpenApiClient {
 
     }
 
+    /**
+     * 캐릭터 이미지 저장 기능
+     */
     @Transactional
-    public void updateCharImage(User user, List<Character> charList) {
-        for (Character character : charList) {
+    public void updateCharImage(User user, List<Character> characterList) {
+        for (Character character : characterList) {
             String url = "https://open.api.nexon.com/maplestory/v1/character/basic?ocid=" + character.getOcid();
 
             HttpHeaders headers = new HttpHeaders();
@@ -86,7 +85,6 @@ public class MapleOpenApiClient {
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             String characterImage = null;
-
             try {
                 ResponseEntity<CharacterBasicDto> response = restTemplate.exchange(
                         url,
@@ -96,10 +94,53 @@ public class MapleOpenApiClient {
                 );
                 characterImage = response.getBody().getCharacterImage();
             } catch (HttpClientErrorException e) {
-                log.warn("데이터를 불러오는데 실패했습니다. warn : {}" , e);
+                log.warn("데이터를 불러오는데 실패했습니다.");
+            }
+            character.updateCharImage(characterImage);
+
+            try {
+                Thread.sleep(250);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /**
+     * 캐릭터 전투력 저장 기능
+     */
+    @Transactional
+    public void updateCharPower(User user, List<Character> characterList) {
+        for (Character character : characterList) {
+            String url = "https://open.api.nexon.com/maplestory/v1/character/stat?ocid=" + character.getOcid();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("x-nxopen-api-key", user.getApiKey());
+
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            String charPower = null;
+
+            try {
+                ResponseEntity<CharacterStatDto> response = restTemplate.exchange(
+                        url,
+                        HttpMethod.GET,
+                        entity,
+                        CharacterStatDto.class
+                );
+                List<CharacterStatDetailDto> finalStat = response.getBody().getFinalStat();
+                for (CharacterStatDetailDto characterStatDetailDto : finalStat) {
+                    if (characterStatDetailDto.getStatName().equals("전투력")) {
+                        charPower = characterStatDetailDto.getStatValue();
+                    }
+                }
+                character.updateCharPower(charPower);
+            } catch (NumberFormatException e) {
+                log.warn("데이터를 불러오는데 실패했습니다.");
+            } catch (HttpClientErrorException e) {
+                log.warn("데이터를 불러오는데 실패했습니다.");
             }
 
-            character.updateCharImage(characterImage);
             try {
                 Thread.sleep(250);
             } catch (InterruptedException e) {
