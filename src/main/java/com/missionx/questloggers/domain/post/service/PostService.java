@@ -1,7 +1,7 @@
 package com.missionx.questloggers.domain.post.service;
 
 import com.missionx.questloggers.domain.character.entity.Character;
-import com.missionx.questloggers.domain.character.service.CharacterSupporService;
+import com.missionx.questloggers.domain.character.service.CharacterSupportService;
 import com.missionx.questloggers.domain.partyapplicant.service.PartyApplicantSupportService;
 import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.partyapplicant.entity.PartyApplicant;
@@ -9,7 +9,7 @@ import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.exception.*;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
 import com.missionx.questloggers.domain.user.entity.User;
-import com.missionx.questloggers.domain.user.service.UserSupporService;
+import com.missionx.questloggers.domain.user.service.UserSupportService;
 import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.PageResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -29,9 +29,9 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
-    private final UserSupporService userSupporService;
-    private final PostSupporService postSupporService;
-    private final CharacterSupporService characterSupporService;
+    private final UserSupportService userSupportService;
+    private final PostSupportService postSupportService;
+    private final CharacterSupportService characterSupportService;
     private final PartyApplicantSupportService partyApplicantSupportService;
 
 
@@ -40,8 +40,8 @@ public class PostService {
      */
     @Transactional
     public void createPostService(CreatePostRequestDto requestDto, LoginUser loginUser) {
-        User user = userSupporService.findUserById(loginUser.getUserId());
-        Character ownerCharacter = characterSupporService.findByMainCharId(user.getOwnerCharId());
+        User user = userSupportService.findUserById(loginUser.getUserId());
+        Character ownerCharacter = characterSupportService.findByMainCharId(user.getOwnerCharId());
         Post post = new Post(requestDto.getTitle(), requestDto.getContent(), ownerCharacter, requestDto.getBossId(),
                 requestDto.getDifficulty(), requestDto.getPartySize());
         new PartyApplicant(post, ownerCharacter);
@@ -53,9 +53,9 @@ public class PostService {
      */
     @Transactional
     public UpdatePostResponseDto updatePostService(Long postId, UpdatePostRequestDto updatePostRequestDto, LoginUser loginUser) {
-        User user = userSupporService.findUserById(loginUser.getUserId());
-        Character ownerCharacter = characterSupporService.findByMainCharId(user.getOwnerCharId());
-        Post foundPost = postSupporService.findById(postId);
+        User user = userSupportService.findUserById(loginUser.getUserId());
+        Character ownerCharacter = characterSupportService.findByMainCharId(user.getOwnerCharId());
+        Post foundPost = postSupportService.findById(postId);
         if (!foundPost.getCharacter().getId().equals(ownerCharacter.getId())) {
             throw new UnauthorizedPostAccessException("게시글 수정 권한이 없습니다.");
         }
@@ -102,7 +102,7 @@ public class PostService {
      */
     @Transactional(readOnly = true)
     public GetPostResponseDto getPostService(Long postId) {
-        Post foundPost = postSupporService.findById(postId);
+        Post foundPost = postSupportService.findById(postId);
         return new GetPostResponseDto(foundPost.getCharacter().getId(), foundPost.getCharacter().getCharName(),
                 foundPost.getId(), foundPost.getTitle(), foundPost.getContent(), foundPost.getBossId(),
                 foundPost.getDifficulty(), foundPost.getPartySize());
@@ -113,8 +113,8 @@ public class PostService {
      */
     @Transactional
     public void deletePostService(Long postId, LoginUser loginUser) {
-        User user = userSupporService.findUserById(loginUser.getUserId());
-        Post foundPost = postSupporService.findById(postId);
+        User user = userSupportService.findUserById(loginUser.getUserId());
+        Post foundPost = postSupportService.findById(postId);
         if (!foundPost.getCharacter().getId().equals(user.getOwnerCharId())) {
             throw new UnauthorizedPostAccessException("게시글 삭제 권한이 없습니다.");
         }
@@ -126,9 +126,9 @@ public class PostService {
      */
     @Transactional
     public ApplyPartyResponseDto applyPartyResponseDto(Long postId, LoginUser loginUser) {
-        User user = userSupporService.findUserById(loginUser.getUserId());
-        Character character = characterSupporService.findById(user.getOwnerCharId());
-        Post post = postSupporService.findById(postId);
+        User user = userSupportService.findUserById(loginUser.getUserId());
+        Character character = characterSupportService.findById(user.getOwnerCharId());
+        Post post = postSupportService.findById(postId);
         if (post.getCharacter().getId().equals(character.getId())) {
             throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "자신의 파티에는 신청할 수 없습니다.");
         }
@@ -147,8 +147,8 @@ public class PostService {
      */
     @Transactional
     public List<PartyApplicantResponseDto> getPartyApplicantResponseDto(Long postId, LoginUser loginUser) {
-        User user = userSupporService.findUserById(loginUser.getUserId());
-        Character character = characterSupporService.findById(user.getOwnerCharId());
+        User user = userSupportService.findUserById(loginUser.getUserId());
+        Character character = characterSupportService.findById(user.getOwnerCharId());
         Post post = postRepository.findById(postId).orElseThrow(()-> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
 
         boolean isLeader = post.getCharacter().getId().equals(character.getId());
