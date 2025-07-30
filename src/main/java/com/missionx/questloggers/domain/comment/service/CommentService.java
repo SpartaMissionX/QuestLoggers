@@ -40,7 +40,7 @@ public class CommentService {
     public void createComment(Long postId, CreateCommentRequestDto requestDto, LoginUser loginUser) {
         User user = userSupporService.findUserById(loginUser.getUserId());
         Character character = characterSupporService.findByMainCharId(user.getOwnerCharId());
-        Post post = postSupporService.findPostById(postId);
+        Post post = postSupporService.findById(postId);
 
         Comment comment = new Comment(requestDto.getContent(), character, post);
         commentRepository.save(comment);
