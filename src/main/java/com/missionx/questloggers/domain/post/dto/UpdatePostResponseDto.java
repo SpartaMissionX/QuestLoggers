@@ -1,5 +1,6 @@
 package com.missionx.questloggers.domain.post.dto;
 
+import com.missionx.questloggers.domain.post.enums.PartySize;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -12,4 +13,5 @@ public class UpdatePostResponseDto {
     private Long id;
     private String title;
     private String content;
+    private PartySize partySize;
 }
