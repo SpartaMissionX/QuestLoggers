@@ -82,7 +82,9 @@ public class PostController {
         return ApiResponse.success(HttpStatus.OK,"게시글 삭제가 완료되었습니다.", null);
     }
 
-    // 파티원 신청
+    /**
+     * 파티원 신청
+     */
     @PostMapping("/posts/{postId}/applicants")
     public ResponseEntity<ApiResponse<ApplyPartyResponseDto>> applyToParty(
             @PathVariable Long postId,
@@ -92,7 +94,9 @@ public class PostController {
         return ApiResponse.success(HttpStatus.CREATED, "파티 신청이 완료되었습니다.", responseDto);
     }
 
-    // 파티원 신청자 조회
+    /**
+     * 파티원 신청자 조회
+     */
     public ResponseEntity<ApiResponse<List<PartyApplicantResponseDto>>> getPartyApplicants(
             @PathVariable Long postId,
             @AuthenticationPrincipal LoginUser loginUser

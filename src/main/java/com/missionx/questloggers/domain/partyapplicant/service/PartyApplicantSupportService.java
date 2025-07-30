@@ -5,6 +5,8 @@ import com.missionx.questloggers.domain.partyapplicant.repository.PartyApplicant
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class PartyApplicantSupportService {
@@ -19,5 +21,7 @@ public class PartyApplicantSupportService {
         return partyApplicantRepository.existsByPostIdAndCharacterId(postId, id);
     }
 
-
+    public List<PartyApplicant> findAllByPostId(Long postId) {
+        return partyApplicantRepository.findAllByPostId(postId);
+    }
 }
