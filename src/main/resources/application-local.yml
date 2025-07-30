@@ -8,7 +8,7 @@ spring:
     show-sql: true
     open-in-view: false
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
 
 server:
   error:
