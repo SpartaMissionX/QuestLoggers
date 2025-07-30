@@ -1,6 +1,6 @@
-package com.missionx.questloggers.domain.post.repository;
+package com.missionx.questloggers.domain.partyapplicant.repository;
 
-import com.missionx.questloggers.domain.post.entity.PartyApplicant;
+import com.missionx.questloggers.domain.partyapplicant.entity.PartyApplicant;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PartyApplicantRepository extends JpaRepository<PartyApplicant, Long> {

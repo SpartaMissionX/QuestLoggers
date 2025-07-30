@@ -1,5 +1,6 @@
-package com.missionx.questloggers.domain.post.entity;
+package com.missionx.questloggers.domain.partyapplicant.entity;
 
+import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.enums.ApplicantStatus;
 import com.missionx.questloggers.domain.character.entity.Character;
 import jakarta.persistence.*;

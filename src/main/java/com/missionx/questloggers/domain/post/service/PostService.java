@@ -2,11 +2,12 @@ package com.missionx.questloggers.domain.post.service;
 
 import com.missionx.questloggers.domain.character.entity.Character;
 import com.missionx.questloggers.domain.character.service.CharacterSupporService;
+import com.missionx.questloggers.domain.partyapplicant.service.PartyApplicantSupportService;
 import com.missionx.questloggers.domain.post.dto.*;
-import com.missionx.questloggers.domain.post.entity.PartyApplicant;
+import com.missionx.questloggers.domain.partyapplicant.entity.PartyApplicant;
 import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.exception.*;
-import com.missionx.questloggers.domain.post.repository.PartyApplicantRepository;
+import com.missionx.questloggers.domain.partyapplicant.repository.PartyApplicantRepository;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.domain.user.service.UserSupporService;
@@ -32,7 +33,7 @@ public class PostService {
     private final UserSupporService userSupporService;
     private final PostSupporService postSupporService;
     private final CharacterSupporService characterSupporService;
-    private final PartyApplicantRepository partyApplicantRepository;
+    private final PartyApplicantSupportService partyApplicantSupportService;
 
 
     /**
@@ -129,12 +130,12 @@ public class PostService {
         if (post.getCharacter().getId().equals(character.getId())) {
             throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "자신의 파티에는 신청할 수 없습니다.");
         }
-        if (partyApplicantRepository.existsByPostIdAndCharacterId(postId, character.getId())) {
+        if (partyApplicantSupportService.existsByPostIdAndCharacterId(postId, character.getId())) {
             throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 신청한 파티입니다.");
         }
 
         PartyApplicant applicant = new PartyApplicant(post, character);
-        partyApplicantRepository.save(applicant);
+        partyApplicantSupportService.save(applicant);
 
         return new ApplyPartyResponseDto(post.getId(), character.getId(), character.getCharName());
     }
