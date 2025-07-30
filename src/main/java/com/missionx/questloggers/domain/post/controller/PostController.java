@@ -28,7 +28,7 @@ public class PostController {
      * 게시글 생성
      */
     @PostMapping("/posts")
-    public ResponseEntity<ApiResponse<CreatePostResponseDto>> createPost(
+    public ResponseEntity<ApiResponse<Object>> createPost(
             @RequestBody @Valid CreatePostRequestDto createPostRequestDto,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
@@ -80,6 +80,15 @@ public class PostController {
             @AuthenticationPrincipal LoginUser loginUser) {
         postService.deletePostService(postId, loginUser);
         return ApiResponse.success(HttpStatus.OK,"게시글 삭제가 완료되었습니다.", null);
+    }
+
+    @PostMapping("/posts/{postId}/applicants")
+    public ResponseEntity<ApiResponse<ApplyPartyResponseDto>> applyToParty(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        ApplyPartyResponseDto responseDto = postService.applyPartyResponseDto(postId, loginUser);
+        return ApiResponse.success(HttpStatus.CREATED, "파티 신청이 완료되었습니다.", responseDto);
     }
 
 }
