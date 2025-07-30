@@ -28,7 +28,7 @@ public class PostController {
      * 게시글 생성
      */
     @PostMapping("/posts")
-    public ResponseEntity<ApiResponse<CreatePostResponseDto>> createPost(
+    public ResponseEntity<ApiResponse<Object>> createPost(
             @RequestBody @Valid CreatePostRequestDto createPostRequestDto,
             @AuthenticationPrincipal LoginUser loginUser
     ) {

@@ -1,4 +1,4 @@
-package com.missionx.questloggers.domain.character.dto;
+package com.missionx.questloggers.global.dto.client;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

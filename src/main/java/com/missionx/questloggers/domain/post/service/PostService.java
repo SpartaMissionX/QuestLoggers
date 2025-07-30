@@ -1,7 +1,7 @@
 package com.missionx.questloggers.domain.post.service;
 
 import com.missionx.questloggers.domain.character.entity.Character;
-import com.missionx.questloggers.domain.character.service.CharacterService;
+import com.missionx.questloggers.domain.character.service.CharacterSupporService;
 import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.post.entity.PartyApplicant;
 import com.missionx.questloggers.domain.post.entity.Post;
@@ -9,7 +9,7 @@ import com.missionx.questloggers.domain.post.exception.*;
 import com.missionx.questloggers.domain.post.repository.PartyApplicantRepository;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
 import com.missionx.questloggers.domain.user.entity.User;
-import com.missionx.questloggers.domain.user.service.UserService;
+import com.missionx.questloggers.domain.user.service.UserSupporService;
 import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.PageResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
-    private final UserService userService;
-    private final CharacterService characterService;
+    private final UserSupporService userSupporService;
+    private final CharacterSupporService characterSupporService;
     private final PartyApplicantRepository partyApplicantRepository;
 
     /**
@@ -38,8 +38,8 @@ public class PostService {
      */
     @Transactional
     public void createPostService(CreatePostRequestDto requestDto, LoginUser loginUser) {
-        User user = userService.findUserById(loginUser.getUserId());
-        Character ownerCharacter = characterService.findByMainCharId(user.getOwnerCharId());
+        User user = userSupporService.findUserById(loginUser.getUserId());
+        Character ownerCharacter = characterSupporService.findByMainCharId(user.getOwnerCharId());
         Post post = new Post(requestDto.getTitle(), requestDto.getContent(), ownerCharacter, requestDto.getBossId(),
                 requestDto.getDifficulty(), requestDto.getPartySize());
         postRepository.save(post);
@@ -50,8 +50,8 @@ public class PostService {
      */
     @Transactional
     public UpdatePostResponseDto updatePostService(Long postId, UpdatePostRequestDto updatePostRequestDto, LoginUser loginUser) {
-        User user = userService.findUserById(loginUser.getUserId());
-        Character ownerCharacter = characterService.findByMainCharId(user.getOwnerCharId());
+        User user = userSupporService.findUserById(loginUser.getUserId());
+        Character ownerCharacter = characterSupporService.findByMainCharId(user.getOwnerCharId());
         Post foundPost = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
         if (!foundPost.getCharacter().getId().equals(ownerCharacter.getId())) {
@@ -113,7 +113,7 @@ public class PostService {
      */
     @Transactional
     public void deletePostService(Long postId, LoginUser loginUser) {
-        User user = userService.findUserById(loginUser.getUserId());
+        User user = userSupporService.findUserById(loginUser.getUserId());
         Post foundPost = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
         if (foundPost.getDeletedAt() == null) {
@@ -129,8 +129,8 @@ public class PostService {
 
     @Transactional
     public ApplyPartyResponseDto applyPartyResponseDto(Long postId, LoginUser loginUser) {
-        User user = userService.findUserById(loginUser.getUserId());
-        Character character = characterService.findById(user.getOwnerCharId());
+        User user = userSupporService.findUserById(loginUser.getUserId());
+        Character character = characterSupporService.findById(user.getOwnerCharId());
         Post post = postRepository.findById(postId).orElseThrow(()-> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
         if (post.getCharacter().getId().equals(character.getId())) {
             throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "자신의 파티에는 신청할 수 없습니다.");
@@ -143,12 +143,5 @@ public class PostService {
         partyApplicantRepository.save(applicant);
 
         return new ApplyPartyResponseDto(post.getId(), character.getId(), character.getCharName());
-    }
-
-    // 다른 domain에서 사용하는 기능
-    public Post findPostById(Long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND,
-                        "게시글을 찾을 수 없습니다. 다시 확인해주세요"));
     }
 }
