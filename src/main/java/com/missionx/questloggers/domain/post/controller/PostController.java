@@ -129,6 +129,6 @@ public class PostController {
             @AuthenticationPrincipal LoginUser loginUser
     ) {
         postService.rejectParty(postId, charId, loginUser);
-        return ApiResponse.success(HttpStatus.OK, "파티 신청을 수락했습니다.", null);
+        return ApiResponse.success(HttpStatus.OK, "파티 신청을 거절했습니다.", null);
     }
 }
