@@ -3,8 +3,10 @@ package com.missionx.questloggers.domain.post.service;
 import com.missionx.questloggers.domain.character.entity.Character;
 import com.missionx.questloggers.domain.character.service.CharacterSupportService;
 import com.missionx.questloggers.domain.partyapplicant.service.PartyApplicantSupportService;
+import com.missionx.questloggers.domain.partymember.dto.PartyMemberResponseDto;
 import com.missionx.questloggers.domain.partymember.entity.PartyMember;
 import com.missionx.questloggers.domain.partyapplicant.enums.ApplicantStatus;
+import com.missionx.questloggers.domain.partymember.service.PartyMemberSupportService;
 import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.partyapplicant.entity.PartyApplicant;
 import com.missionx.questloggers.domain.post.entity.Post;
@@ -35,6 +37,7 @@ public class PostService {
     private final PostSupportService postSupportService;
     private final CharacterSupportService characterSupportService;
     private final PartyApplicantSupportService partyApplicantSupportService;
+    private final PartyMemberSupportService partyMemberSupportService;
 
 
     /**
@@ -46,8 +49,9 @@ public class PostService {
         Character ownerCharacter = characterSupportService.findByMainCharId(user.getOwnerCharId());
         Post post = new Post(requestDto.getTitle(), requestDto.getContent(), ownerCharacter, requestDto.getBossId(),
                 requestDto.getDifficulty(), requestDto.getPartySize());
-        new PartyApplicant(post, ownerCharacter);
         postRepository.save(post);
+        partyMemberSupportService.save(new PartyMember(post, ownerCharacter));
+
     }
 
     /**
@@ -190,7 +194,7 @@ public class PostService {
         }
 
         partyApplicant.acceptStatus();
-        new PartyMember(post,applicantCharacter);
+        partyMemberSupportService.save(new PartyMember(post,applicantCharacter));
     }
 
     /**
@@ -214,5 +218,18 @@ public class PostService {
         }
 
         partyApplicant.rejectStatus();
+    }
+
+    /**
+     * 파티원 조회
+     */
+    @Transactional(readOnly = true)
+    public List<PartyMemberResponseDto> getPartyMembers(Long postId) {
+        List<PartyMember> partyMembers = partyMemberSupportService.findAllByPostId(postId);
+
+        return partyMembers.stream().map(partyMember -> new PartyMemberResponseDto(
+                        partyMember.getCharacter().getId(), partyMember.getCharacter().getCharName(), partyMember.getCharacter().getCharClass(), partyMember.getCharacter().getCharLevel(), partyMember.getCharacter().getCharPower()
+                ))
+                .collect(Collectors.toList());
     }
 }

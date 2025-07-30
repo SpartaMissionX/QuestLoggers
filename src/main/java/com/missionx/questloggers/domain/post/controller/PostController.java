@@ -1,5 +1,6 @@
 package com.missionx.questloggers.domain.post.controller;
 
+import com.missionx.questloggers.domain.partymember.dto.PartyMemberResponseDto;
 import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.post.service.PostService;
 import com.missionx.questloggers.global.config.security.LoginUser;
@@ -130,5 +131,16 @@ public class PostController {
     ) {
         postService.rejectParty(postId, charId, loginUser);
         return ApiResponse.success(HttpStatus.OK, "파티 신청을 거절했습니다.", null);
+    }
+
+    /**
+     * 파티원 조회
+     */
+    @GetMapping("/posts/{postId}/party-members")
+    public ResponseEntity<ApiResponse<List<PartyMemberResponseDto>>> getPartyMembers(
+            @PathVariable Long postId
+    ) {
+        List<PartyMemberResponseDto> partyMemberResponseDto = postService.getPartyMembers(postId);
+        return ApiResponse.success(HttpStatus.ACCEPTED, "파티원 조회가 완료되었습니다.", partyMemberResponseDto);
     }
 }
