@@ -93,7 +93,7 @@ public class PostController {
     }
 
     // 파티원 신청자 조회
-    @GetMapping
+    @GetMapping("/api/posts/{postId}/applicants")
     public ResponseEntity<ApiResponse<List<PartyApplicantResponseDto>>> getPartyApplicants(
             @PathVariable Long postId,
             @AuthenticationPrincipal LoginUser loginUser
@@ -102,7 +102,7 @@ public class PostController {
         return ApiResponse.success(HttpStatus.OK, "파티 신청자 조회 성공", partyApplicantResponseDto);
     }
 
-    @GetMapping
+    @GetMapping("/api/posts/{postId}/members")
     public ResponseEntity<ApiResponse<List<PartyMemberResponseDto>>> getPartyMembers(
             @PathVariable Long postId,
             @AuthenticationPrincipal LoginUser loginUser
