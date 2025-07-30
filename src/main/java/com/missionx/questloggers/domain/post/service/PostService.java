@@ -5,6 +5,7 @@ import com.missionx.questloggers.domain.character.service.CharacterSupporService
 import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.post.entity.PartyApplicant;
 import com.missionx.questloggers.domain.post.entity.Post;
+import com.missionx.questloggers.domain.post.enums.ApplicantStatus;
 import com.missionx.questloggers.domain.post.exception.*;
 import com.missionx.questloggers.domain.post.repository.PartyApplicantRepository;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
@@ -160,5 +161,30 @@ public class PostService {
                 applicant.getCharacter().getId(), applicant.getCharacter().getCharName(), applicant.getStatus()
         ))
                 .collect(Collectors.toList());
+    }
+
+    // 파티안에 있는 파티원 조회 기능
+    @Transactional
+    public List<PartyMemberResponseDto> getPartyMemberResponseDto(Long postId, LoginUser loginUser) {
+        User user = userSupporService.findUserById(loginUser.getUserId());
+        Character character = characterSupporService.findById(user.getOwnerCharId());
+        Post post = postRepository.findById(postId).orElseThrow(()-> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
+
+        boolean isLeader = post.getCharacter().getId().equals(character.getId());
+        boolean isMember = partyApplicantRepository.existsByPostIdAndCharacterId(postId, character.getId());
+
+        if (!isLeader && !isMember) {
+            throw new InvalidPartyActionException(HttpStatus.FORBIDDEN, "파티장 또는 파티원만 파티원을 조회할 수 있습니다.");
+        }
+
+        List<PartyApplicant> partyApplicant = partyApplicantRepository.findAllByPostIdAndStatus(postId, ApplicantStatus.ACCEPTED);
+
+        return partyApplicant.stream()
+                .map(applicant -> new PartyMemberResponseDto(
+                        applicant.getCharacter().getId(),
+                        applicant.getCharacter().getCharName()
+                ))
+                .collect(Collectors.toList());
+
     }
 }
