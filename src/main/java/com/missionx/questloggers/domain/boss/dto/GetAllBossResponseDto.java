@@ -1,12 +1,13 @@
 package com.missionx.questloggers.domain.boss.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class GetAllBossResponseDto {
-    private final Long bossId;
-    private final String bossName;
-    private final String bossImage;
+    private Long bossId;
+    private String bossName;
+    private String bossImage;
 }

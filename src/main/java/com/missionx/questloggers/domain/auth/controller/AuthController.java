@@ -5,7 +5,6 @@ import com.missionx.questloggers.domain.auth.dto.LoginResponseDto;
 import com.missionx.questloggers.domain.auth.dto.SignupResponseDto;
 import com.missionx.questloggers.domain.auth.service.AuthService;
 import com.missionx.questloggers.domain.auth.dto.SignupRequestDto;
-import com.missionx.questloggers.domain.user.service.UserService;
 import com.missionx.questloggers.global.config.JwtTokenProvider;
 import com.missionx.questloggers.global.dto.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;

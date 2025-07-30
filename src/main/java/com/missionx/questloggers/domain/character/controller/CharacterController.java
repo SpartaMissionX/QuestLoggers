@@ -2,6 +2,9 @@ package com.missionx.questloggers.domain.character.controller;
 
 import com.missionx.questloggers.domain.character.dto.*;
 import com.missionx.questloggers.domain.character.service.CharacterService;
+import com.missionx.questloggers.domain.characterboss.dto.CreateCharBossResponseDto;
+import com.missionx.questloggers.domain.characterboss.dto.MyCharInfoResponseDto;
+import com.missionx.questloggers.domain.characterboss.dto.UpdateIsClearedResponseDto;
 import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.ApiResponse;
 import com.missionx.questloggers.global.dto.PageResponseDto;
@@ -21,28 +24,6 @@ import java.util.List;
 public class CharacterController {
 
     private final CharacterService characterService;
-
-    /**
-     * 본인 캐릭터 전체 조회 API
-     */
-    @GetMapping("/characters/me")
-    public ResponseEntity<ApiResponse<List<CharacterListRespnseDto>>> getCharList(
-            @AuthenticationPrincipal LoginUser loginUser
-    ) {
-        List<CharacterListRespnseDto> charList = characterService.getCharList(loginUser);
-        return ApiResponse.success(HttpStatus.OK, "조회가 완료되었습니다.", charList);
-    }
-
-    /**
-     * 본인 대표 캐릭터 조회 API
-     */
-    @GetMapping("/characters/me/main")
-    public ResponseEntity<ApiResponse<GetOwnerCharResponseDto>> getOwnerChar(
-            @AuthenticationPrincipal LoginUser loginUser
-    ) {
-        GetOwnerCharResponseDto responseDto = characterService.getOwnerChar(loginUser);
-        return ApiResponse.success(HttpStatus.OK, "조회가 완료되었습니다.", responseDto);
-    }
 
     /**
      * 유저 캐릭터 리스트 검색 API
@@ -67,6 +48,17 @@ public class CharacterController {
     }
 
     /**
+     * 본인 캐릭터 전체 조회 API
+     */
+    @GetMapping("/characters/me")
+    public ResponseEntity<ApiResponse<List<CharacterListRespnseDto>>> getCharList(
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        List<CharacterListRespnseDto> charList = characterService.getCharList(loginUser);
+        return ApiResponse.success(HttpStatus.OK, "조회가 완료되었습니다.", charList);
+    }
+
+    /**
      * 대표캐릭터 설정
      */
     @PostMapping("/characters/me/main")
@@ -78,4 +70,49 @@ public class CharacterController {
         return ApiResponse.success(HttpStatus.OK, "대표 캐릭터 설정이 완료되었습니다.", responseDto);
     }
 
+    /**
+     * 본인 대표 캐릭터 조회 API
+     */
+    @GetMapping("/characters/me/main")
+    public ResponseEntity<ApiResponse<GetOwnerCharResponseDto>> getOwnerChar(
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        GetOwnerCharResponseDto responseDto = characterService.getOwnerChar(loginUser);
+        return ApiResponse.success(HttpStatus.OK, "조회가 완료되었습니다.", responseDto);
+    }
+
+    /**
+     * 대표 캐릭터의 보스 생성
+     */
+    @PostMapping("/characters/me/main/bosses")
+    public ResponseEntity<ApiResponse<CreateCharBossResponseDto>> createCharBoss(
+            @AuthenticationPrincipal LoginUser loginUser,
+            @PathVariable Long bossId
+    ) {
+        CreateCharBossResponseDto responseDto = characterService.createCharBoss(loginUser, bossId);
+        return ApiResponse.success(HttpStatus.OK, "캐릭터의 보스 생성 완료", responseDto);
+    }
+
+    /**
+     * 대표 캐릭터의 보스 클리어 정보 조회
+     */
+    @GetMapping("/characters/me/main/bosses")
+    public ResponseEntity<ApiResponse<List<MyCharInfoResponseDto>>> myCharInfo(
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        List<MyCharInfoResponseDto> responseDtoList = characterService.myCharInfo(loginUser);
+        return ApiResponse.success(HttpStatus.OK, "캐릭터 정보 조회 완료", responseDtoList);
+    }
+
+    /**
+     * 대표 캐릭터의 보스 클리어 여부 수정
+     */
+    @PatchMapping("/characters/me/main/bosses/{bossId}")
+    public ResponseEntity<ApiResponse<UpdateIsClearedResponseDto>> updateIsCleared(
+            @AuthenticationPrincipal LoginUser loginUser,
+            @PathVariable Long bossId
+    ) {
+        UpdateIsClearedResponseDto responseDto = characterService.updateIsCleared(loginUser, bossId);
+        return ApiResponse.success(HttpStatus.OK, "캐릭터 보스 클리어 여부가 변경되었습니다.", responseDto);
+    }
 }

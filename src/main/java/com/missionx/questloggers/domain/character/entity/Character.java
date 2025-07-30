@@ -43,7 +43,7 @@ public class Character {
     @Column(name = "char_level")
     private Integer charLevel;
 
-    ;@Column(name = "char_image")
+    ;@Column(name = "char_image", length = 500)
     private String charImage;
 
     @Column(name = "owner_char")
@@ -51,7 +51,7 @@ public class Character {
     private boolean ownerChar;
 
     @Column(name = "char_power")
-    private Integer charPower;
+    private long charPower;
 
 
     public Character(User user, String ocid, String charName, String worldName, String charClass, int charLevel) {
@@ -61,10 +61,15 @@ public class Character {
         this.worldName = worldName;
         this.charClass = charClass;
         this.charLevel = charLevel;
-        this.charPower = charPower;
     }
 
     public void updateOwnerChar(boolean ownerChar) {
         this.ownerChar = ownerChar;
+    }
+    public void updateCharImage(String charImage) {
+        this.charImage = charImage;
+    }
+    public void updateCharPower(String statValue) {
+        this.charPower = Long.parseLong(statValue);
     }
 }
