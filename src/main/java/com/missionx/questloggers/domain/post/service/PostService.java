@@ -127,6 +127,7 @@ public class PostService {
         foundPost.delete();
     }
 
+    // 파티원 신청
     @Transactional
     public ApplyPartyResponseDto applyPartyResponseDto(Long postId, LoginUser loginUser) {
         User user = userService.findUserById(loginUser.getUserId());
@@ -145,6 +146,14 @@ public class PostService {
         return new ApplyPartyResponseDto(post.getId(), character.getId(), character.getCharName());
     }
 
+    // 파티원 신청 조회
+    public List<PartyApplicantResponseDto> getPartyApplicantResponseDto(Long postId, LoginUser loginUser) {
+        Post post = postRepository.findById(postId).orElseThrow(()-> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
+        User user = userService.findUserById(loginUser.getUserId());
+        Character character = characterService.findById(user.getOwnerCharId());
+
+        return null;
+    }
     // 다른 domain에서 사용하는 기능
     public Post findPostById(Long postId) {
         return postRepository.findById(postId)
