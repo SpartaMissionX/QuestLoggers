@@ -1,4 +1,4 @@
-package com.missionx.questloggers.domain.post.enums;
+package com.missionx.questloggers.domain.partyapplicant.enums;
 
 public enum ApplicantStatus {
     PENDING, ACCEPTED, REJECTED

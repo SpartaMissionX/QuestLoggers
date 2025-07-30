@@ -63,10 +63,10 @@ public class CharacterController {
      */
     @PostMapping("/characters/me/main")
     public ResponseEntity<ApiResponse<SetOwnerCharResponseDto>> setOwnerChar(
-            @PathVariable Long charId,
+            @RequestBody SetOwnerCharRequestDto requestDto,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
-        SetOwnerCharResponseDto responseDto = characterService.setOwnerChar(loginUser , charId);
+        SetOwnerCharResponseDto responseDto = characterService.setOwnerChar(loginUser, requestDto);
         return ApiResponse.success(HttpStatus.OK, "대표 캐릭터 설정이 완료되었습니다.", responseDto);
     }
 

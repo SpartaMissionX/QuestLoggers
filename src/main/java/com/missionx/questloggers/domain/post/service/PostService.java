@@ -3,6 +3,10 @@ package com.missionx.questloggers.domain.post.service;
 import com.missionx.questloggers.domain.character.entity.Character;
 import com.missionx.questloggers.domain.character.service.CharacterSupportService;
 import com.missionx.questloggers.domain.partyapplicant.service.PartyApplicantSupportService;
+import com.missionx.questloggers.domain.partymember.dto.PartyMemberResponseDto;
+import com.missionx.questloggers.domain.partymember.entity.PartyMember;
+import com.missionx.questloggers.domain.partyapplicant.enums.ApplicantStatus;
+import com.missionx.questloggers.domain.partymember.service.PartyMemberSupportService;
 import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.partyapplicant.entity.PartyApplicant;
 import com.missionx.questloggers.domain.post.entity.Post;
@@ -33,6 +37,7 @@ public class PostService {
     private final PostSupportService postSupportService;
     private final CharacterSupportService characterSupportService;
     private final PartyApplicantSupportService partyApplicantSupportService;
+    private final PartyMemberSupportService partyMemberSupportService;
 
 
     /**
@@ -44,8 +49,9 @@ public class PostService {
         Character ownerCharacter = characterSupportService.findByMainCharId(user.getOwnerCharId());
         Post post = new Post(requestDto.getTitle(), requestDto.getContent(), ownerCharacter, requestDto.getBossId(),
                 requestDto.getDifficulty(), requestDto.getPartySize());
-        new PartyApplicant(post, ownerCharacter);
         postRepository.save(post);
+        partyMemberSupportService.save(new PartyMember(post, ownerCharacter));
+
     }
 
     /**
@@ -149,7 +155,7 @@ public class PostService {
     public List<PartyApplicantResponseDto> getPartyApplicantResponseDto(Long postId, LoginUser loginUser) {
         User user = userSupportService.findUserById(loginUser.getUserId());
         Character character = characterSupportService.findById(user.getOwnerCharId());
-        Post post = postRepository.findById(postId).orElseThrow(()-> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
+        Post post = postSupportService.findById(postId);
 
         boolean isLeader = post.getCharacter().getId().equals(character.getId());
         boolean isMember = partyApplicantSupportService.existsByPostIdAndCharacterId(postId, character.getId());
@@ -163,6 +169,67 @@ public class PostService {
         return partyApplicants.stream().map(applicant -> new PartyApplicantResponseDto(
                 applicant.getCharacter().getId(), applicant.getCharacter().getCharName(), applicant.getStatus()
         ))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 파티 신청 수락
+     */
+    @Transactional
+    public void accpetParty(Long postId, Long charId, LoginUser loginUser) {
+        User user = userSupportService.findUserById(loginUser.getUserId());
+        Character leaderCharacter = characterSupportService.findById(user.getOwnerCharId());
+        Character applicantCharacter = characterSupportService.findById(charId);
+        Post post = postSupportService.findById(postId);
+
+        boolean isLeader = post.getCharacter().getId().equals(leaderCharacter.getId());
+
+        PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, charId);
+
+        if (!isLeader) {
+            throw new InvalidPartyActionException(HttpStatus.FORBIDDEN, "파티장만 수락할 수 있습니다.");
+        }
+        if (partyApplicant.getStatus() == ApplicantStatus.ACCEPTED || partyApplicant.getStatus() == ApplicantStatus.REJECTED) {
+            throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 수락 또는 거절되었습니다.");
+        }
+
+        partyApplicant.acceptStatus();
+        partyMemberSupportService.save(new PartyMember(post,applicantCharacter));
+    }
+
+    /**
+     * 파티 신청 거절
+     */
+    @Transactional
+    public void rejectParty(Long postId, Long charId, LoginUser loginUser) {
+        User user = userSupportService.findUserById(loginUser.getUserId());
+        Character leaderCharacter = characterSupportService.findById(user.getOwnerCharId());
+        Post post = postSupportService.findById(postId);
+
+        boolean isLeader = post.getCharacter().getId().equals(leaderCharacter.getId());
+
+        PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, charId);
+
+        if (!isLeader) {
+            throw new InvalidPartyActionException(HttpStatus.FORBIDDEN, "파티장만 거절할 수 있습니다.");
+        }
+        if (partyApplicant.getStatus() == ApplicantStatus.ACCEPTED || partyApplicant.getStatus() == ApplicantStatus.REJECTED) {
+            throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 수락 또는 거절되었습니다.");
+        }
+
+        partyApplicant.rejectStatus();
+    }
+
+    /**
+     * 파티원 조회
+     */
+    @Transactional(readOnly = true)
+    public List<PartyMemberResponseDto> getPartyMembers(Long postId) {
+        List<PartyMember> partyMembers = partyMemberSupportService.findAllByPostId(postId);
+
+        return partyMembers.stream().map(partyMember -> new PartyMemberResponseDto(
+                        partyMember.getCharacter().getId(), partyMember.getCharacter().getCharName(), partyMember.getCharacter().getCharClass(), partyMember.getCharacter().getCharLevel(), partyMember.getCharacter().getCharPower()
+                ))
                 .collect(Collectors.toList());
     }
 }

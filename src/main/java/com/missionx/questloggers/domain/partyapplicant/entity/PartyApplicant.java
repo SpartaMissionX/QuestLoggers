@@ -1,7 +1,7 @@
 package com.missionx.questloggers.domain.partyapplicant.entity;
 
 import com.missionx.questloggers.domain.post.entity.Post;
-import com.missionx.questloggers.domain.post.enums.ApplicantStatus;
+import com.missionx.questloggers.domain.partyapplicant.enums.ApplicantStatus;
 import com.missionx.questloggers.domain.character.entity.Character;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -34,7 +34,11 @@ public class PartyApplicant {
         this.status = ApplicantStatus.PENDING;
     }
 
-    public void updateStatus(ApplicantStatus status) {
-        this.status = status;
+    public void acceptStatus() {
+        this.status = ApplicantStatus.valueOf("ACCEPTED");
+    }
+
+    public void rejectStatus() {
+        this.status = ApplicantStatus.valueOf("REJECTED");
     }
 }

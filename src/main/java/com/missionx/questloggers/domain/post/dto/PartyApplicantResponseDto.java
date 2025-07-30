@@ -1,6 +1,6 @@
 package com.missionx.questloggers.domain.post.dto;
 
-import com.missionx.questloggers.domain.post.enums.ApplicantStatus;
+import com.missionx.questloggers.domain.partyapplicant.enums.ApplicantStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

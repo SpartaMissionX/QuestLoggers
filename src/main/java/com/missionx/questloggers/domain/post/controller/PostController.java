@@ -1,5 +1,6 @@
 package com.missionx.questloggers.domain.post.controller;
 
+import com.missionx.questloggers.domain.partymember.dto.PartyMemberResponseDto;
 import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.post.service.PostService;
 import com.missionx.questloggers.global.config.security.LoginUser;
@@ -97,6 +98,7 @@ public class PostController {
     /**
      * 파티원 신청자 조회
      */
+    @GetMapping("/posts/{postId}/applicants")
     public ResponseEntity<ApiResponse<List<PartyApplicantResponseDto>>> getPartyApplicants(
             @PathVariable Long postId,
             @AuthenticationPrincipal LoginUser loginUser
@@ -105,4 +107,40 @@ public class PostController {
         return ApiResponse.success(HttpStatus.OK, "파티 신청자 조회 성공", partyApplicantResponseDto);
     }
 
+    /**
+     * 파티 신청 수락
+     */
+    @PatchMapping("/posts/{postId}/applicants/{charId}")
+    public ResponseEntity<ApiResponse<Object>> acceptParty(
+            @PathVariable Long postId,
+            @PathVariable Long charId,
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        postService.accpetParty(postId, charId, loginUser);
+        return ApiResponse.success(HttpStatus.OK, "파티 신청을 수락했습니다.", null);
+    }
+
+    /**
+     * 파티 신청 거절
+     */
+    @DeleteMapping("/posts/{postId}/applicants/{charId}")
+    public ResponseEntity<ApiResponse<Object>> rejectParty(
+            @PathVariable Long postId,
+            @PathVariable Long charId,
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        postService.rejectParty(postId, charId, loginUser);
+        return ApiResponse.success(HttpStatus.OK, "파티 신청을 거절했습니다.", null);
+    }
+
+    /**
+     * 파티원 조회
+     */
+    @GetMapping("/posts/{postId}/party-members")
+    public ResponseEntity<ApiResponse<List<PartyMemberResponseDto>>> getPartyMembers(
+            @PathVariable Long postId
+    ) {
+        List<PartyMemberResponseDto> partyMemberResponseDto = postService.getPartyMembers(postId);
+        return ApiResponse.success(HttpStatus.ACCEPTED, "파티원 조회가 완료되었습니다.", partyMemberResponseDto);
+    }
 }

@@ -90,14 +90,14 @@ public class CharacterService {
      * 대표캐릭터 설정 기능
      */
     @Transactional
-    public SetOwnerCharResponseDto setOwnerChar(LoginUser loginUser, Long charId) {
+    public SetOwnerCharResponseDto setOwnerChar(LoginUser loginUser, SetOwnerCharRequestDto requestDto) {
         User user = userSupportService.findUserById(loginUser.getUserId());
         List<Character> byUser = characterRepository.findByUser(user);
 
         for (Character c : byUser) {
-            if (c.getId().equals(charId) && c.isOwnerChar()) {
+            if (c.getId().equals(requestDto.getCharId()) && c.isOwnerChar()) {
                 throw new AlreadyHaveOwnerCharacterException(HttpStatus.BAD_REQUEST, "이미 대표 캐릭터로 설정되어 있습니다.");
-            } else if (c.getId().equals(charId)) {
+            } else if (c.getId().equals(requestDto.getCharId())) {
                 for (Character c1 : byUser) {
                     if (c1.isOwnerChar()) {
                         c1.updateOwnerChar(false);
