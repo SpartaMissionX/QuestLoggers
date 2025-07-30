@@ -121,6 +121,7 @@ public class PostService {
         foundPost.delete();
     }
 
+    // 파티원 신청
     @Transactional
     public ApplyPartyResponseDto applyPartyResponseDto(Long postId, LoginUser loginUser) {
         User user = userSupporService.findUserById(loginUser.getUserId());
@@ -137,5 +138,27 @@ public class PostService {
         partyApplicantRepository.save(applicant);
 
         return new ApplyPartyResponseDto(post.getId(), character.getId(), character.getCharName());
+    }
+
+    // 파티원 신청 조회
+    @Transactional
+    public List<PartyApplicantResponseDto> getPartyApplicantResponseDto(Long postId, LoginUser loginUser) {
+        User user = userSupporService.findUserById(loginUser.getUserId());
+        Character character = characterSupporService.findById(user.getOwnerCharId());
+        Post post = postRepository.findById(postId).orElseThrow(()-> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
+
+        boolean isLeader = post.getCharacter().getId().equals(character.getId());
+        boolean isMember = partyApplicantRepository.existsByPostIdAndCharacterId(postId, character.getId());
+
+        if (!isLeader && !isMember) {
+            throw new InvalidPartyActionException(HttpStatus.FORBIDDEN, "파티장 또는 파티원만 신청자 목록을 조회할 수 있습니다.");
+        }
+
+        List<PartyApplicant> partyApplicants = partyApplicantRepository.findAllByPostId(postId);
+
+        return partyApplicants.stream().map(applicant -> new PartyApplicantResponseDto(
+                applicant.getCharacter().getId(), applicant.getCharacter().getCharName(), applicant.getStatus()
+        ))
+                .collect(Collectors.toList());
     }
 }
