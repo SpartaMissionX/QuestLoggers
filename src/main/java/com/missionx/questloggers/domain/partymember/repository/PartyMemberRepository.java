@@ -1,4 +1,7 @@
-package com.missionx.questloggers.domain.partymember;
+package com.missionx.questloggers.domain.partymember.repository;
 
-public interface PartyMemberRepository {
+import com.missionx.questloggers.domain.partymember.entity.PartyMember;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface PartyMemberRepository extends JpaRepository<PartyMember, Long> {
 }
