@@ -102,6 +102,7 @@ public class PostController {
         return ApiResponse.success(HttpStatus.OK, "파티 신청자 조회 성공", partyApplicantResponseDto);
     }
 
+    // 파티안에 있는 파티원 조회
     @GetMapping("/api/posts/{postId}/members")
     public ResponseEntity<ApiResponse<List<PartyMemberResponseDto>>> getPartyMembers(
             @PathVariable Long postId,
