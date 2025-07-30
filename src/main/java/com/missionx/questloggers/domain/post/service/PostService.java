@@ -141,6 +141,7 @@ public class PostService {
     }
 
     // 파티원 신청 조회
+    @Transactional
     public List<PartyApplicantResponseDto> getPartyApplicantResponseDto(Long postId, LoginUser loginUser) {
         User user = userSupporService.findUserById(loginUser.getUserId());
         Character character = characterSupporService.findById(user.getOwnerCharId());
