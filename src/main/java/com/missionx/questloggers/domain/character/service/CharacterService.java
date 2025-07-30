@@ -1,29 +1,34 @@
 package com.missionx.questloggers.domain.character.service;
 
+import com.missionx.questloggers.domain.boss.entity.Boss;
+import com.missionx.questloggers.domain.boss.service.BossSupporService;
 import com.missionx.questloggers.domain.character.dto.SearchCharResponseDto;
 import com.missionx.questloggers.domain.character.dto.*;
 import com.missionx.questloggers.domain.character.dto.SearchAllCharResponseDto;
-import com.missionx.questloggers.domain.character.dto.AccountListDto;
-import com.missionx.questloggers.domain.character.dto.CharacterDto;
 import com.missionx.questloggers.domain.character.entity.Character;
 import com.missionx.questloggers.domain.character.exception.AlreadyHaveOwnerCharacterException;
 import com.missionx.questloggers.domain.character.exception.NotFoundCharException;
 import com.missionx.questloggers.domain.character.repository.CharacterRepository;
+import com.missionx.questloggers.domain.characterboss.dto.CreateCharBossResponseDto;
+import com.missionx.questloggers.domain.characterboss.dto.MyCharInfoResponseDto;
+import com.missionx.questloggers.domain.characterboss.dto.UpdateIsClearedResponseDto;
+import com.missionx.questloggers.domain.characterboss.entity.CharacterBoss;
+import com.missionx.questloggers.domain.characterboss.exception.AlreadyCharacterBossException;
+import com.missionx.questloggers.domain.characterboss.service.CharacterBossSupporService;
 import com.missionx.questloggers.domain.user.entity.User;
-import com.missionx.questloggers.domain.user.service.UserService;
+import com.missionx.questloggers.domain.user.service.UserSupporService;
 import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.PageResponseDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,37 +39,10 @@ import java.util.stream.Collectors;
 public class CharacterService {
 
     private final CharacterRepository characterRepository;
-    private final UserService userService;
-    private final RestTemplate restTemplate;
-
-    /**
-     * 본인 캐릭터 전체 조회
-     */
-    @Transactional(readOnly = true)
-    public List<CharacterListRespnseDto> getCharList(LoginUser loginUser) {
-        User user = userService.findUserById(loginUser.getUserId());
-        List<Character> characterList = characterRepository.findByUser(user);
-        return characterList.stream()
-                .map(character -> new CharacterListRespnseDto(character.getId(), character.getOcid(), character.getCharName(), character.getWorldName(), character.getCharClass(), character.getCharLevel(), character.isOwnerChar()))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * 본인 대표 캐릭터 조회
-     */
-    @Transactional
-    public GetOwnerCharResponseDto getOwnerChar(LoginUser loginUser) {
-        User user = userService.findUserById(loginUser.getUserId());
-        if (user.getOwnerCharId() == null) {
-            throw new NotFoundCharException(HttpStatus.NOT_FOUND, "대표 캐릭터를 설정해 주세요.");
-        } else {
-            Character character = characterRepository.findById(user.getOwnerCharId()).orElseThrow(
-                    () -> new NotFoundCharException(HttpStatus.NOT_FOUND, "대표 캐릭터를 찾을 수 없습니다. 다시 설정해주세요")
-            );
-            return new GetOwnerCharResponseDto(character);
-        }
-
-    }
+    private final UserSupporService userSupporService;
+    private final BossSupporService bossSupporService;
+    private final CharacterBossSupporService characterBossSupporService;
+    private final CharacterSupporService characterSupporService;
 
     /**
      * 유저 캐릭터 리스트 검색
@@ -85,7 +63,6 @@ public class CharacterService {
                 charactersPage.getTotalPages(),
                 charactersPage.isLast()
         );
-
     }
 
     /**
@@ -98,11 +75,23 @@ public class CharacterService {
     }
 
     /**
+     * 본인 캐릭터 전체 조회
+     */
+    @Transactional(readOnly = true)
+    public List<CharacterListRespnseDto> getCharList(LoginUser loginUser) {
+        User user = userSupporService.findUserById(loginUser.getUserId());
+        List<Character> characterList = characterRepository.findByUser(user);
+        return characterList.stream()
+                .map(character -> new CharacterListRespnseDto(character.getId(), character.getOcid(), character.getCharName(), character.getWorldName(), character.getCharClass(), character.getCharLevel(), character.isOwnerChar()))
+                .collect(Collectors.toList());
+    }
+
+    /**
      * 대표캐릭터 설정 기능
      */
     @Transactional
     public SetOwnerCharResponseDto setOwnerChar(LoginUser loginUser, Long charId) {
-        User user = userService.findUserById(loginUser.getUserId());
+        User user = userSupporService.findUserById(loginUser.getUserId());
         List<Character> byUser = characterRepository.findByUser(user);
 
         for (Character c : byUser) {
@@ -122,64 +111,82 @@ public class CharacterService {
         throw new NotFoundCharException(HttpStatus.NOT_FOUND, "본인 캐릭터만 대표캐릭터로 설정할 수 있습니다.");
     }
 
-
-
     /**
-     * 다른 domain에서 사용
-     */
-
-    /**
-     * 캐릭터 생성 기능
+     * 본인 대표 캐릭터 조회
      */
     @Transactional
-    public void createCharList(User user) {
-        String url = "https://open.api.nexon.com/maplestory/v1/character/list";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("x-nxopen-api-key", user.getApiKey());
-
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        ResponseEntity<AccountListDto> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                entity,
-                AccountListDto.class
-        );
-
-        AccountListDto accountListDto = response.getBody();
-
-        if (accountListDto != null && accountListDto.getAccountList() != null) {
-            for (AccountListDto.AccountInfo accountInfo : accountListDto.getAccountList()) {
-                if (accountInfo.getCharacterList() != null) {
-                    for (CharacterDto characterDto : accountInfo.getCharacterList()) {
-                        Character character = new Character(
-                                user,
-                                characterDto.getOcid(),
-                                characterDto.getCharacterName(),
-                                characterDto.getWorldName(),
-                                characterDto.getCharacterClass(),
-                                characterDto.getCharacterLevel()
-                        );
-                        Character savedCharacter = characterRepository.save(character);
-                    }
-                }
-            }
+    public GetOwnerCharResponseDto getOwnerChar(LoginUser loginUser) {
+        User user = userSupporService.findUserById(loginUser.getUserId());
+        if (user.getOwnerCharId() == null) {
+            throw new NotFoundCharException(HttpStatus.NOT_FOUND, "대표 캐릭터를 설정해 주세요.");
+        } else {
+            Character character = characterRepository.findById(user.getOwnerCharId()).orElseThrow(
+                    () -> new NotFoundCharException(HttpStatus.NOT_FOUND, "대표 캐릭터를 찾을 수 없습니다. 다시 설정해주세요")
+            );
+            return new GetOwnerCharResponseDto(character);
         }
     }
 
-    public Character findById(Long charId) {
-        return characterRepository.findById(charId).orElseThrow(
-                () -> new NotFoundCharException(HttpStatus.NOT_FOUND, "존재하지 않는 캐릭터입니다.")
-        );
-    }
-
-    public Character findByMainCharId(Long mainCharId) {
-        if (mainCharId == null) {
-            throw new NotFoundCharException(HttpStatus.NOT_FOUND, "대표 캐릭터를 설정해주세요");
-        }
-        return characterRepository.findById(mainCharId).orElseThrow(
+    /**
+     * 캐릭터 보스 생성
+     */
+    @Transactional
+    public CreateCharBossResponseDto createCharBoss(LoginUser loginUser, Long bossId) {
+        User user = userSupporService.findUserById(loginUser.getUserId());
+        Character character = characterRepository.findById(user.getOwnerCharId()).orElseThrow(
                 () -> new NotFoundCharException(HttpStatus.NOT_FOUND, "대표 캐릭터를 찾을 수 없습니다.")
         );
+        Boss boss = bossSupporService.findById(bossId);
+
+        CharacterBoss characterBoss = characterBossSupporService.findByCharacterAndBoss(character, boss);
+
+        characterBossSupporService.save(characterBoss);
+
+        return new CreateCharBossResponseDto(characterBoss.getCharacter().getId(), characterBoss.getBoss().getId(), characterBoss.getBoss().getBossName(), characterBoss.isCleared(), characterBoss.getClearCount());
     }
+
+    /**
+     * 캐릭터 보스 조회
+     */
+    @Transactional(readOnly = true)
+    public List<MyCharInfoResponseDto> myCharInfo(LoginUser loginUser) {
+        User user = userSupporService.findUserById(loginUser.getUserId());
+        Character character = characterSupporService.findByMainCharId(user.getOwnerCharId());
+        List<CharacterBoss> characterBossList = characterBossSupporService.findByCharacter(character);
+        return characterBossList.stream()
+                .map(characterBoss -> new MyCharInfoResponseDto(characterBoss.getId(), characterBoss.getCharacter().getId(), characterBoss.getBoss().getId(), characterBoss.isCleared(), characterBoss.getClearCount()))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 캐릭터의 보스 클리어 여부 수정
+     */
+    @Transactional
+    public UpdateIsClearedResponseDto updateIsCleared(LoginUser loginUser, Long bossId) {
+        User user = userSupporService.findUserById(loginUser.getUserId());
+        Character character = characterSupporService.findByMainCharId(user.getOwnerCharId());
+        Boss boss = bossSupporService.findById(bossId);
+
+        CharacterBoss characterBoss = characterBossSupporService.findByCharacterAndBoss(character, boss);
+        if (characterBoss.isCleared()) {
+            throw new AlreadyCharacterBossException(HttpStatus.BAD_REQUEST, "이미 클리어한 보스입니다.");
+        } else {
+            characterBoss.updateIsCleared(true);
+        }
+
+        return new UpdateIsClearedResponseDto(characterBoss.getCharacter().getId(), characterBoss.getBoss().getId(), characterBoss.isCleared(), characterBoss.getClearCount());
+    }
+
+
+    // 스케쥴 ( 월요일 AM 06:00 마다 클리어 여부 초기화 )
+    @Scheduled(cron = "0 0 6 * * 1")
+    @Transactional
+    public void updateIsClearedToFalse() {
+        List<CharacterBoss> characterBossList = characterBossSupporService.findAll();
+        for (CharacterBoss characterBoss : characterBossList) {
+            characterBoss.updateIsClearedToFalse();
+        }
+    }
+
+
 }

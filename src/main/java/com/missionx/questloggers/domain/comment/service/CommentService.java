@@ -1,16 +1,15 @@
 package com.missionx.questloggers.domain.comment.service;
 
 import com.missionx.questloggers.domain.character.entity.Character;
-import com.missionx.questloggers.domain.character.service.CharacterService;
+import com.missionx.questloggers.domain.character.service.CharacterSupporService;
 import com.missionx.questloggers.domain.comment.dto.*;
 import com.missionx.questloggers.domain.comment.entity.Comment;
 import com.missionx.questloggers.domain.comment.exception.*;
 import com.missionx.questloggers.domain.comment.repository.CommentRepository;
 import com.missionx.questloggers.domain.post.entity.Post;
-import com.missionx.questloggers.domain.post.service.PostService;
+import com.missionx.questloggers.domain.post.service.PostSupporService;
 import com.missionx.questloggers.domain.user.entity.User;
-import com.missionx.questloggers.domain.user.exception.InvalidRequestUserException;
-import com.missionx.questloggers.domain.user.service.UserService;
+import com.missionx.questloggers.domain.user.service.UserSupporService;
 import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.PageResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -30,18 +29,18 @@ import java.util.stream.Collectors;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final UserService userService;
-    private final PostService postService;
-    private final CharacterService characterService;
+    private final UserSupporService userSupporService;
+    private final PostSupporService postSupporService;
+    private final CharacterSupporService characterSupporService;
 
     /**
      * 댓글 생성 기능
      */
     @Transactional
     public void createComment(Long postId, CreateCommentRequestDto requestDto, LoginUser loginUser) {
-        User user = userService.findUserById(loginUser.getUserId());
-        Character character = characterService.findByMainCharId(user.getOwnerCharId());
-        Post post = postService.findPostById(postId);
+        User user = userSupporService.findUserById(loginUser.getUserId());
+        Character character = characterSupporService.findByMainCharId(user.getOwnerCharId());
+        Post post = postSupporService.findPostById(postId);
 
         Comment comment = new Comment(requestDto.getContent(), character, post);
         commentRepository.save(comment);
@@ -78,8 +77,8 @@ public class CommentService {
      */
     @Transactional
     public UpdateCommentResponseDto updateComment(Long commentId, UpdateCommentRequestDto requestDto, LoginUser loginUser) {
-        User user = userService.findUserById(loginUser.getUserId());
-        Character character = characterService.findByMainCharId(user.getOwnerCharId());
+        User user = userSupporService.findUserById(loginUser.getUserId());
+        Character character = characterSupporService.findByMainCharId(user.getOwnerCharId());
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundCommentException(HttpStatus.NOT_FOUND,"댓글을 찾을 수 없습니다. 다시 확인해주세요"));
 
@@ -97,8 +96,8 @@ public class CommentService {
      */
     @Transactional
     public void deleteComment(Long commentId, LoginUser loginUser) {
-        User user = userService.findUserById(loginUser.getUserId());
-        Character character = characterService.findByMainCharId(user.getOwnerCharId());
+        User user = userSupporService.findUserById(loginUser.getUserId());
+        Character character = characterSupporService.findByMainCharId(user.getOwnerCharId());
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundCommentException(HttpStatus.NOT_FOUND,"댓글을 찾을 수 없습니다. 다시 확인해주세요"));
         if (comment.getDeletedAt() == null) {

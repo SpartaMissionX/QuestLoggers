@@ -2,7 +2,6 @@ package com.missionx.questloggers.domain.character.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
 @AllArgsConstructor

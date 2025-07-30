@@ -43,7 +43,7 @@ public class Character {
     @Column(name = "char_level")
     private Integer charLevel;
 
-    ;@Column(name = "char_image")
+    ;@Column(name = "char_image", length = 500)
     private String charImage;
 
     @Column(name = "owner_char")
@@ -66,5 +66,8 @@ public class Character {
 
     public void updateOwnerChar(boolean ownerChar) {
         this.ownerChar = ownerChar;
+    }
+    public void updateCharImage(String charImage) {
+        this.charImage = charImage;
     }
 }

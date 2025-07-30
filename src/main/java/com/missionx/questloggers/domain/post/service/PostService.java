@@ -1,7 +1,7 @@
 package com.missionx.questloggers.domain.post.service;
 
 import com.missionx.questloggers.domain.character.entity.Character;
-import com.missionx.questloggers.domain.character.service.CharacterService;
+import com.missionx.questloggers.domain.character.service.CharacterSupporService;
 import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.exception.AlreadyDeletedPostException;
@@ -10,7 +10,7 @@ import com.missionx.questloggers.domain.post.exception.PostException;
 import com.missionx.questloggers.domain.post.exception.UnauthorizedPostAccessException;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
 import com.missionx.questloggers.domain.user.entity.User;
-import com.missionx.questloggers.domain.user.service.UserService;
+import com.missionx.questloggers.domain.user.service.UserSupporService;
 import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.PageResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -30,16 +30,16 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
-    private final UserService userService;
-    private final CharacterService characterService;
+    private final UserSupporService userSupporService;
+    private final CharacterSupporService characterSupporService;
 
     /**
      * 게시글 생성
      */
     @Transactional
     public void createPostService(CreatePostRequestDto requestDto, LoginUser loginUser) {
-        User user = userService.findUserById(loginUser.getUserId());
-        Character ownerCharacter = characterService.findByMainCharId(user.getOwnerCharId());
+        User user = userSupporService.findUserById(loginUser.getUserId());
+        Character ownerCharacter = characterSupporService.findByMainCharId(user.getOwnerCharId());
         Post post = new Post(requestDto.getTitle(), requestDto.getContent(), ownerCharacter);
         postRepository.save(post);
     }
@@ -49,8 +49,8 @@ public class PostService {
      */
     @Transactional
     public UpdatePostResponseDto updatePostService(Long postId, UpdatePostRequestDto updatePostRequestDto, LoginUser loginUser) {
-        User user = userService.findUserById(loginUser.getUserId());
-        Character ownerCharacter = characterService.findByMainCharId(user.getOwnerCharId());
+        User user = userSupporService.findUserById(loginUser.getUserId());
+        Character ownerCharacter = characterSupporService.findByMainCharId(user.getOwnerCharId());
         Post foundPost = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
         if (!foundPost.getCharacter().getId().equals(ownerCharacter.getId())) {
@@ -107,7 +107,7 @@ public class PostService {
      */
     @Transactional
     public void deletePostService(Long postId, LoginUser loginUser) {
-        User user = userService.findUserById(loginUser.getUserId());
+        User user = userSupporService.findUserById(loginUser.getUserId());
         Post foundPost = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."));
         if (foundPost.getDeletedAt() == null) {
@@ -119,12 +119,5 @@ public class PostService {
             throw new UnauthorizedPostAccessException("게시글 삭제 권한이 없습니다.");
         }
         foundPost.delete();
-    }
-
-    // 다른 domain에서 사용하는 기능
-    public Post findPostById(Long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new NotFoundPostException(HttpStatus.NOT_FOUND,
-                        "게시글을 찾을 수 없습니다. 다시 확인해주세요"));
     }
 }
