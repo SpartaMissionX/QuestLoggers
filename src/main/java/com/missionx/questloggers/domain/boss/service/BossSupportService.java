@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
-public class BossSupporService {
+public class BossSupportService {
 
     private final BossRepository bossRepository;
 

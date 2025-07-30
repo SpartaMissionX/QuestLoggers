@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
-public class CharacterSupporService {
+public class CharacterSupportService {
 
     private final CharacterRepository characterRepository;
 

@@ -23,14 +23,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
-    private final UserSupporService userSupporService;
+    private final UserSupportService userSupportService;
 
     /**
      * 유저 정보 조회
      */
     @Transactional(readOnly = true)
     public FindUserResponseDto findUser(LoginUser loginUser) {
-        User user = userSupporService.findUserById(loginUser.getUserId());
+        User user = userSupportService.findUserById(loginUser.getUserId());
         return new FindUserResponseDto(user.getId(), user.getEmail(), user.getPoint(), user.getRole(), user.getOwnerCharId(), user.getOwnerCharName());
     }
 
@@ -39,7 +39,7 @@ public class UserService {
      */
     @Transactional
     public UpdatePasswordResponseDto updatePassword(UpdatePasswordRequestDto updatePasswordRequestDto, LoginUser loginUser) {
-        User user = userSupporService.findUserById(loginUser.getUserId());
+        User user = userSupportService.findUserById(loginUser.getUserId());
 
         if (!passwordEncoder.matches(updatePasswordRequestDto.getCurrentPassword(), user.getPassword())) {
             throw new InvalidRequestUserException(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다.");

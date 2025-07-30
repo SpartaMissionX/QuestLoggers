@@ -9,15 +9,16 @@ import com.missionx.questloggers.domain.characterboss.repository.CharacterBossRe
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Slf4j
-@Service
+@Component
 @RequiredArgsConstructor
-public class CharacterBossSupporService {
+public class CharacterBossSupportService {
 
     private final CharacterBossRepository characterBossRepository;
 

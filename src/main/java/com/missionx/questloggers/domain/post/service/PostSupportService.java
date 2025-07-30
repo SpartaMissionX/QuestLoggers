@@ -3,14 +3,14 @@ package com.missionx.questloggers.domain.post.service;
 import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.exception.NotFoundPostException;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
-public class PostSupporService {
+public class PostSupportService {
 
     private final PostRepository postRepository;
 
