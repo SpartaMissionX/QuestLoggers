@@ -4,7 +4,7 @@ import com.missionx.questloggers.domain.character.entity.Character;
 import com.missionx.questloggers.domain.character.service.CharacterSupportService;
 import com.missionx.questloggers.domain.partyapplicant.service.PartyApplicantSupportService;
 import com.missionx.questloggers.domain.partymember.entity.PartyMember;
-import com.missionx.questloggers.domain.partymember.enums.ApplicantStatus;
+import com.missionx.questloggers.domain.partyapplicant.enums.ApplicantStatus;
 import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.partyapplicant.entity.PartyApplicant;
 import com.missionx.questloggers.domain.post.entity.Post;
@@ -191,6 +191,28 @@ public class PostService {
 
         partyApplicant.acceptStatus();
         new PartyMember(post,applicantCharacter);
+    }
 
+    /**
+     * 파티 신청 수락
+     */
+    @Transactional
+    public void rejectParty(Long postId, Long charId, LoginUser loginUser) {
+        User user = userSupportService.findUserById(loginUser.getUserId());
+        Character leaderCharacter = characterSupportService.findById(user.getOwnerCharId());
+        Post post = postSupportService.findById(postId);
+
+        boolean isLeader = post.getCharacter().getId().equals(leaderCharacter.getId());
+
+        PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, charId);
+
+        if (!isLeader) {
+            throw new InvalidPartyActionException(HttpStatus.FORBIDDEN, "파티장만 거절할 수 있습니다.");
+        }
+        if (partyApplicant.getStatus() == ApplicantStatus.ACCEPTED || partyApplicant.getStatus() == ApplicantStatus.REJECTED) {
+            throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 수락 또는 거절되었습니다.");
+        }
+
+        partyApplicant.rejectStatus();
     }
 }

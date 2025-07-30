@@ -118,4 +118,17 @@ public class PostController {
         postService.accpetParty(postId, charId, loginUser);
         return ApiResponse.success(HttpStatus.OK, "파티 신청을 수락했습니다.", null);
     }
+
+    /**
+     * 파티 신청 거절
+     */
+    @DeleteMapping("/posts/{postId}/applicants/{charId}")
+    public ResponseEntity<ApiResponse<Object>> rejectParty(
+            @PathVariable Long postId,
+            @PathVariable Long charId,
+            @AuthenticationPrincipal LoginUser loginUser
+    ) {
+        postService.rejectParty(postId, charId, loginUser);
+        return ApiResponse.success(HttpStatus.OK, "파티 신청을 수락했습니다.", null);
+    }
 }
