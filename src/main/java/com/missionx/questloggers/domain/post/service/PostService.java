@@ -194,7 +194,7 @@ public class PostService {
     }
 
     /**
-     * 파티 신청 수락
+     * 파티 신청 거절
      */
     @Transactional
     public void rejectParty(Long postId, Long charId, LoginUser loginUser) {
