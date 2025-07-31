@@ -94,7 +94,7 @@ public class CharacterController {
     }
 
     /**
-     * 대표 캐릭터의 보스 클리어 정보 조회
+     * 대표 캐릭터의 보스 조회
      */
     @GetMapping("/characters/me/main/bosses")
     public ResponseEntity<ApiResponse<List<MyCharInfoResponseDto>>> myCharInfo(

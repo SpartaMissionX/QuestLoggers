@@ -128,7 +128,7 @@ public class CharacterService {
     }
 
     /**
-     * 캐릭터 보스 생성
+     * 대표 캐릭터의 보스 생성
      */
     @Transactional
     public CreateCharBossResponseDto createCharBoss(LoginUser loginUser, Long bossId) {
@@ -146,7 +146,7 @@ public class CharacterService {
     }
 
     /**
-     * 캐릭터 보스 조회
+     * 대표 캐릭터의 보스 조회
      */
     @Transactional(readOnly = true)
     public List<MyCharInfoResponseDto> myCharInfo(LoginUser loginUser) {
@@ -159,7 +159,7 @@ public class CharacterService {
     }
 
     /**
-     * 캐릭터의 보스 클리어 여부 수정
+     * 대표 캐릭터의 보스 클리어 여부 수정
      */
     @Transactional
     public UpdateIsClearedResponseDto updateIsCleared(LoginUser loginUser, Long bossId) {
