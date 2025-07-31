@@ -131,12 +131,12 @@ public class CharacterService {
      * 대표 캐릭터의 보스 생성
      */
     @Transactional
-    public CreateCharBossResponseDto createCharBoss(LoginUser loginUser, Long bossId) {
+    public CreateCharBossResponseDto createCharBoss(CreateCharacterBossRequestDto requestDto, LoginUser loginUser) {
         User user = userSupportService.findUserById(loginUser.getUserId());
         Character character = characterRepository.findById(user.getOwnerCharId()).orElseThrow(
                 () -> new NotFoundCharException(HttpStatus.NOT_FOUND, "대표 캐릭터를 찾을 수 없습니다.")
         );
-        Boss boss = bossSupportService.findById(bossId);
+        Boss boss = bossSupportService.findById(requestDto.getBossId());
 
         CharacterBoss characterBoss = characterBossSupportService.findByCharacterAndBoss(character, boss);
 

@@ -86,10 +86,10 @@ public class CharacterController {
      */
     @PostMapping("/characters/me/main/bosses")
     public ResponseEntity<ApiResponse<CreateCharBossResponseDto>> createCharBoss(
-            @AuthenticationPrincipal LoginUser loginUser,
-            @PathVariable Long bossId
+            @RequestBody CreateCharacterBossRequestDto requestDto,
+            @AuthenticationPrincipal LoginUser loginUser
     ) {
-        CreateCharBossResponseDto responseDto = characterService.createCharBoss(loginUser, bossId);
+        CreateCharBossResponseDto responseDto = characterService.createCharBoss(requestDto, loginUser);
         return ApiResponse.success(HttpStatus.OK, "캐릭터의 보스 생성 완료", responseDto);
     }
 
