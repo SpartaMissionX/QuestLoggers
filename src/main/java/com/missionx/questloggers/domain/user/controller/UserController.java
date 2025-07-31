@@ -37,7 +37,7 @@ public class UserController {
      * 비밀번호 변경
      * 수정 필요
      */
-    @PostMapping("/users/password")
+    @PatchMapping("/users/password")
     public ResponseEntity<ApiResponse<UpdatePasswordResponseDto>> updatePassword(
             @AuthenticationPrincipal LoginUser loginUser,
             @RequestBody @Valid UpdatePasswordRequestDto requestDto) {
