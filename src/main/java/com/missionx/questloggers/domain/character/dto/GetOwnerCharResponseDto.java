@@ -5,11 +5,12 @@ import lombok.Getter;
 
 @Getter
 public class GetOwnerCharResponseDto {
-    private String ocid;
-    private String charName;
-    private String worldName;
-    private String charClass;
-    private int charLevel;
+    private final String ocid;
+    private final String charName;
+    private final String worldName;
+    private final String charClass;
+    private final int charLevel;
+    private final long charPower;
 
     public GetOwnerCharResponseDto(Character character) {
         this.ocid = character.getOcid();
@@ -17,5 +18,6 @@ public class GetOwnerCharResponseDto {
         this.worldName = character.getWorldName();
         this.charClass = character.getCharClass();
         this.charLevel = character.getCharLevel();
+        this.charPower = character.getCharPower();
     }
 }
