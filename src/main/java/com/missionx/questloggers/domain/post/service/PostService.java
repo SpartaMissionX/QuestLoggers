@@ -154,7 +154,13 @@ public class PostService {
             throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "자신의 파티에는 신청할 수 없습니다.");
         }
         if (partyApplicantSupportService.existsByPostIdAndCharacterId(postId, character.getId())) {
-            throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 신청한 파티입니다.");
+            if (partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId()).getStatus() == ApplicantStatus.ACCEPTED) {
+                throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 수락된 파티입니다.");
+            } else if (partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId()).getStatus() == ApplicantStatus.REJECTED) {
+                throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 거절된 파티입니다.");
+            } else {
+                throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 신청한 파티입니다.");
+            }
         }
 
         PartyApplicant applicant = new PartyApplicant(post, character);
