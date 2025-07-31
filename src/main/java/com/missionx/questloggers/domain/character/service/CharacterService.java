@@ -14,6 +14,7 @@ import com.missionx.questloggers.domain.characterboss.dto.MyCharInfoResponseDto;
 import com.missionx.questloggers.domain.characterboss.dto.UpdateIsClearedResponseDto;
 import com.missionx.questloggers.domain.characterboss.entity.CharacterBoss;
 import com.missionx.questloggers.domain.characterboss.exception.AlreadyCharacterBossException;
+import com.missionx.questloggers.domain.characterboss.exception.NotFoundCharacterBossExceoption;
 import com.missionx.questloggers.domain.characterboss.service.CharacterBossSupportService;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.domain.user.service.UserSupportService;
@@ -52,7 +53,7 @@ public class CharacterService {
         Page<Character> charactersPage = characterRepository.findByCharNameContaining(keyword, pageable);
 
         List<SearchAllCharResponseDto> responseDtos = charactersPage.stream()
-                .map(character -> new SearchAllCharResponseDto(character.getId(), character.getCharName(), character.getWorldName(), character.getCharClass(), character.getCharLevel()))
+                .map(character -> new SearchAllCharResponseDto(character.getId(), character.getCharName(), character.getWorldName(), character.getCharLevel()))
                 .collect(Collectors.toList());
 
         return new PageResponseDto<>(
@@ -71,7 +72,7 @@ public class CharacterService {
     public SearchCharResponseDto serchCharService(Long charId) {
         Character foundChar = characterRepository.findById(charId)
                 .orElseThrow(()-> new NotFoundCharException(HttpStatus.NOT_FOUND, "존재하지 않는 캐릭터입니다."));
-        return new SearchCharResponseDto(foundChar.getId(), foundChar.getCharName(), foundChar.getWorldName(), foundChar.getCharClass(), foundChar.getCharLevel());
+        return new SearchCharResponseDto(foundChar.getId(), foundChar.getCharName(), foundChar.getWorldName(), foundChar.getCharClass(), foundChar.getCharLevel(), foundChar.getCharPower());
     }
 
     /**
@@ -133,12 +134,13 @@ public class CharacterService {
     @Transactional
     public CreateCharBossResponseDto createCharBoss(CreateCharacterBossRequestDto requestDto, LoginUser loginUser) {
         User user = userSupportService.findUserById(loginUser.getUserId());
-        Character character = characterRepository.findById(user.getOwnerCharId()).orElseThrow(
-                () -> new NotFoundCharException(HttpStatus.NOT_FOUND, "대표 캐릭터를 찾을 수 없습니다.")
-        );
+        Character character = characterSupportService.findById(user.getOwnerCharId());
         Boss boss = bossSupportService.findById(requestDto.getBossId());
 
-        CharacterBoss characterBoss = characterBossSupportService.findByCharacterAndBoss(character, boss);
+        if (characterBossSupportService.findByCharacterAndBoss(character, boss).isPresent()) {
+            throw new AlreadyCharacterBossException(HttpStatus.BAD_REQUEST, "이미 생성된 보스가 있습니다.");
+        }
+        CharacterBoss characterBoss = new CharacterBoss(character, boss);
 
         characterBossSupportService.save(characterBoss);
 
@@ -167,7 +169,9 @@ public class CharacterService {
         Character character = characterSupportService.findByMainCharId(user.getOwnerCharId());
         Boss boss = bossSupportService.findById(bossId);
 
-        CharacterBoss characterBoss = characterBossSupportService.findByCharacterAndBoss(character, boss);
+        CharacterBoss characterBoss = characterBossSupportService.findByCharacterAndBoss(character, boss).orElseThrow(
+                () -> new NotFoundCharacterBossExceoption(HttpStatus.NOT_FOUND, "해당 보스를 찾을 수 없습니다.")
+        );
         if (characterBoss.isCleared()) {
             throw new AlreadyCharacterBossException(HttpStatus.BAD_REQUEST, "이미 클리어한 보스입니다.");
         } else {

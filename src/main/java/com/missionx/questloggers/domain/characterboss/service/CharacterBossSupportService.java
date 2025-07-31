@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -33,11 +34,8 @@ public class CharacterBossSupportService {
     }
 
     @Transactional
-    public CharacterBoss findByCharacterAndBoss(Character character, Boss boss) {
-        if (characterBossRepository.findByCharacterAndBoss(character, boss).isPresent()) {
-            throw new AlreadyCharacterBossException(HttpStatus.BAD_REQUEST, "이미 존재하는 캐릭터 보스 입니다.");
-        }
-        return new CharacterBoss(character, boss);
+    public Optional<CharacterBoss> findByCharacterAndBoss(Character character, Boss boss) {
+        return characterBossRepository.findByCharacterAndBoss(character, boss);
     }
 
     @Transactional
