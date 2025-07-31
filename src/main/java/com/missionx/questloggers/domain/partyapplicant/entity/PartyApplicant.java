@@ -41,4 +41,8 @@ public class PartyApplicant {
     public void rejectStatus() {
         this.status = ApplicantStatus.valueOf("REJECTED");
     }
+
+    public void pendingStatus() {
+        this.status = ApplicantStatus.valueOf("PENDING");
+    }
 }

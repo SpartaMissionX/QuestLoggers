@@ -9,6 +9,5 @@ public class SearchAllCharResponseDto {
     private Long charId;
     private String charName;
     private String worldName;
-    private String charClass;
     private int charLevel;
 }

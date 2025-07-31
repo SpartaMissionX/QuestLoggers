@@ -4,6 +4,7 @@ import com.missionx.questloggers.domain.partyapplicant.dto.UpdatePostRequestDto;
 import com.missionx.questloggers.domain.partymember.dto.KickPartyMemberRequestDto;
 import com.missionx.questloggers.domain.partymember.dto.PartyMemberResponseDto;
 import com.missionx.questloggers.domain.post.dto.*;
+import com.missionx.questloggers.domain.post.enums.Difficulty;
 import com.missionx.questloggers.domain.post.service.PostService;
 import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.ApiResponse;
@@ -55,11 +56,12 @@ public class PostController {
      */
     @GetMapping("/posts")
     public ResponseEntity<ApiResponse<PageResponseDto<GetAllPostResponseDto>>> getAllPost(
-            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long bossId,
+            @RequestParam(required = false) String difficulty,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        PageResponseDto<GetAllPostResponseDto> posts = postService.getAllPostService(keyword, page, size);
+        PageResponseDto<GetAllPostResponseDto> posts = postService.getAllPostService(bossId, difficulty, page, size);
         return ApiResponse.success(HttpStatus.ACCEPTED,"게시글 목록 조회가 완료되었습니다.", posts);
     }
 

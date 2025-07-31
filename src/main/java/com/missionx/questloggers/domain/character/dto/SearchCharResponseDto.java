@@ -11,5 +11,6 @@ public class SearchCharResponseDto {
     private String worldName;
     private String charClass;
     private int charLevel;
+    private long charPower;
 
 }

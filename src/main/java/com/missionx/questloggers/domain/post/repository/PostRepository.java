@@ -1,6 +1,7 @@
 package com.missionx.questloggers.domain.post.repository;
 
 import com.missionx.questloggers.domain.post.entity.Post;
+import com.missionx.questloggers.domain.post.enums.Difficulty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,5 +15,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByTitleContainingAndDeletedAtNull(String title,Pageable pageable);
     Page<Post> findByDeletedAtNull(Pageable pageable);
     Optional<Post> findByIdAndDeletedAtNull(Long postId);
-
+    Page<Post> findByBossIdAndDeletedAtNull(Long bossId, Pageable pageable);
+    Page<Post> findByDifficultyAndDeletedAtNull(Difficulty difficulty, Pageable pageable);
+    Page<Post> findByBossIdAndDifficultyAndDeletedAtNull(Long bossId, Difficulty difficulty, Pageable pageable);
 }
