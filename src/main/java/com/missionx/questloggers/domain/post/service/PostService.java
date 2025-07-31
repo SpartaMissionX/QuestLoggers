@@ -84,14 +84,17 @@ public class PostService {
     public PageResponseDto<GetAllPostResponseDto> getAllPostService(Long bossId, String difficulty, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Post> postsPage;
-        Difficulty difficulty1 = Difficulty.valueOf(difficulty);
+
+
         if (bossId == null && difficulty == null) {
             postsPage = postRepository.findByDeletedAtNull(pageable);
         } else if (bossId != null && difficulty == null) {
             postsPage = postRepository.findByBossIdAndDeletedAtNull(bossId, pageable);
         } else if (bossId == null && difficulty != null) {
+            Difficulty difficulty1 = Difficulty.valueOf(difficulty);
             postsPage = postRepository.findByDifficultyAndDeletedAtNull(difficulty1, pageable);
         } else {
+            Difficulty difficulty1 = Difficulty.valueOf(difficulty);
             postsPage = postRepository.findByBossIdAndDifficultyAndDeletedAtNull(bossId, difficulty1, pageable);
         }
 
