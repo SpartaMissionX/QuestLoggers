@@ -15,6 +15,7 @@ import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.partyapplicant.entity.PartyApplicant;
 import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.enums.Difficulty;
+import com.missionx.questloggers.domain.post.enums.PartySize;
 import com.missionx.questloggers.domain.post.exception.*;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
 import com.missionx.questloggers.domain.user.entity.User;
@@ -207,16 +208,20 @@ public class PostService {
         Character leaderCharacter = characterSupportService.findById(user.getOwnerCharId());
         Character applicantCharacter = characterSupportService.findById(charId);
         Post post = postSupportService.findById(postId);
+        PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, charId);
 
         boolean isLeader = post.getCharacter().getId().equals(leaderCharacter.getId());
-
-        PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, charId);
 
         if (!isLeader) {
             throw new InvalidPartyActionException(HttpStatus.FORBIDDEN, "파티장만 수락할 수 있습니다.");
         }
         if (partyApplicant.getStatus() == ApplicantStatus.ACCEPTED || partyApplicant.getStatus() == ApplicantStatus.REJECTED) {
             throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 수락 또는 거절되었습니다.");
+        }
+
+        int currentSize = partyMemberSupportService.findAllByPostId(postId).size();
+        if (currentSize >= post.getPartySize().getSize()) {
+            throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "파티 정원이 모두 찼습니다.");
         }
 
         partyApplicant.acceptStatus();
