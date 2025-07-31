@@ -24,6 +24,10 @@ public class PartyMemberSupportService {
         partyMemberRepository.delete(partyMember);
     }
 
+    public boolean existsByPostIdAndCharacterId(Long postId, Long charId) {
+        return partyMemberRepository.existsByPostIdAndCharacterId(postId, charId);
+    }
+
     public List<PartyMember> findAllByPostId(Long postId) {
         return partyMemberRepository.findAllByPostId(postId);
     }
