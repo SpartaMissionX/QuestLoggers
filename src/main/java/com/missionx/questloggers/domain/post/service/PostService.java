@@ -297,7 +297,10 @@ public class PostService {
         }
 
         PartyMember partyMember = partyMemberSupportService.findByPostIdAndCharacterId(postId, character.getId());
+        PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId());
 
         partyMemberSupportService.delete(partyMember);
+        partyApplicantSupportService.delete(partyApplicant);
+
     }
 }
