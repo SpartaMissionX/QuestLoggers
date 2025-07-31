@@ -1,5 +1,7 @@
 package com.missionx.questloggers.domain.post.service;
 
+import com.missionx.questloggers.domain.boss.entity.Boss;
+import com.missionx.questloggers.domain.boss.service.BossSupportService;
 import com.missionx.questloggers.domain.character.entity.Character;
 import com.missionx.questloggers.domain.character.service.CharacterSupportService;
 import com.missionx.questloggers.domain.partyapplicant.dto.UpdatePostRequestDto;
@@ -12,6 +14,7 @@ import com.missionx.questloggers.domain.partymember.service.PartyMemberSupportSe
 import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.partyapplicant.entity.PartyApplicant;
 import com.missionx.questloggers.domain.post.entity.Post;
+import com.missionx.questloggers.domain.post.enums.Difficulty;
 import com.missionx.questloggers.domain.post.exception.*;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
 import com.missionx.questloggers.domain.user.entity.User;
@@ -40,6 +43,7 @@ public class PostService {
     private final CharacterSupportService characterSupportService;
     private final PartyApplicantSupportService partyApplicantSupportService;
     private final PartyMemberSupportService partyMemberSupportService;
+    private final BossSupportService bossSupportService;
 
 
     /**
@@ -49,7 +53,8 @@ public class PostService {
     public void createPostService(CreatePostRequestDto requestDto, LoginUser loginUser) {
         User user = userSupportService.findUserById(loginUser.getUserId());
         Character ownerCharacter = characterSupportService.findByMainCharId(user.getOwnerCharId());
-        Post post = new Post(requestDto.getTitle(), requestDto.getContent(), ownerCharacter, requestDto.getBossId(),
+        Boss boss = bossSupportService.findById(requestDto.getBossId());
+        Post post = new Post(requestDto.getTitle(), requestDto.getContent(), ownerCharacter, boss,
                 requestDto.getDifficulty(), requestDto.getPartySize());
         postRepository.save(post);
         partyMemberSupportService.save(new PartyMember(post, ownerCharacter));
@@ -76,13 +81,18 @@ public class PostService {
      * 게시글 다건 조회 , 검색 , 페이징
      */
     @Transactional(readOnly = true)
-    public PageResponseDto<GetAllPostResponseDto> getAllPostService(String keyword, int page, int size) {
+    public PageResponseDto<GetAllPostResponseDto> getAllPostService(Long bossId, String difficulty, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Post> postsPage;
-        if (keyword == null) {
+        Difficulty difficulty1 = Difficulty.valueOf(difficulty);
+        if (bossId == null && difficulty == null) {
             postsPage = postRepository.findByDeletedAtNull(pageable);
+        } else if (bossId != null && difficulty == null) {
+            postsPage = postRepository.findByBossIdAndDeletedAtNull(bossId, pageable);
+        } else if (bossId == null && difficulty != null) {
+            postsPage = postRepository.findByDifficultyAndDeletedAtNull(difficulty1, pageable);
         } else {
-            postsPage = postRepository.findByTitleContainingAndDeletedAtNull(keyword, pageable);
+            postsPage = postRepository.findByBossIdAndDifficultyAndDeletedAtNull(bossId, difficulty1, pageable);
         }
 
         if (postsPage.isEmpty()) {
@@ -91,8 +101,8 @@ public class PostService {
 
         List<GetAllPostResponseDto> responseDtos = postsPage.stream()
                 .map(post -> new GetAllPostResponseDto(post.getCharacter().getId(),
-                        post.getCharacter().getCharName(),post.getId(), post.getTitle(), post.getContent(),
-                        post.getBossId(), post.getDifficulty(), post.getPartySize()))
+                        post.getCharacter().getCharName(),post.getId(), post.getTitle(),
+                        post.getBoss().getId(), post.getBoss().getBossName(), post.getDifficulty(), post.getPartySize()))
                 .collect(Collectors.toList());
 
         return new PageResponseDto<>(
@@ -112,8 +122,8 @@ public class PostService {
     public GetPostResponseDto getPostService(Long postId) {
         Post foundPost = postSupportService.findById(postId);
         return new GetPostResponseDto(foundPost.getCharacter().getId(), foundPost.getCharacter().getCharName(),
-                foundPost.getId(), foundPost.getTitle(), foundPost.getContent(), foundPost.getBossId(),
-                foundPost.getDifficulty(), foundPost.getPartySize());
+                foundPost.getId(), foundPost.getTitle(), foundPost.getContent(), foundPost.getBoss().getId(),
+                foundPost.getBoss().getBossName(), foundPost.getDifficulty(), foundPost.getPartySize());
     }
 
     /**

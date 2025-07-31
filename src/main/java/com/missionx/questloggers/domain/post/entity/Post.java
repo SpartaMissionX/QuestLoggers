@@ -1,5 +1,6 @@
 package com.missionx.questloggers.domain.post.entity;
 
+import com.missionx.questloggers.domain.boss.entity.Boss;
 import com.missionx.questloggers.domain.character.entity.Character;
 import com.missionx.questloggers.domain.partyapplicant.dto.UpdatePostRequestDto;
 import com.missionx.questloggers.domain.post.enums.Difficulty;
@@ -25,8 +26,9 @@ public class Post extends BaseEntity {
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false, name = "boss_id")
-    private Long bossId;
+    @ManyToOne
+    @JoinColumn(name = "boss_id", nullable = false)
+    private Boss boss;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, name = "difficulty")
@@ -40,10 +42,10 @@ public class Post extends BaseEntity {
     @JoinColumn(name = "char_id")
     private Character character;
 
-    public Post (String title, String content, Character character, Long bossId, Difficulty difficulty, PartySize partySize) {
+    public Post (String title, String content, Character character, Boss boss, Difficulty difficulty, PartySize partySize) {
         this.title = title;
         this.content = content;
-        this.bossId = bossId;
+        this.boss = boss;
         this.character = character;
         this.difficulty = difficulty;
         this.partySize = partySize;
