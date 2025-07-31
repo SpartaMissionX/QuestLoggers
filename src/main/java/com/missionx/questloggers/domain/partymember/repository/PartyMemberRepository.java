@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PartyMemberRepository extends JpaRepository<PartyMember, Long> {
+    boolean existsByPostIdAndCharacterId(Long postId, Long charId);
     List<PartyMember> findAllByPostId(Long postId);
     Optional<PartyMember> findByPostIdAndCharacterId(Long postId, Long characterId);
 }

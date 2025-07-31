@@ -153,6 +153,7 @@ public class PostService {
         if (post.getCharacter().getId().equals(character.getId())) {
             throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "자신의 파티에는 신청할 수 없습니다.");
         }
+
         if (partyApplicantSupportService.existsByPostIdAndCharacterId(postId, character.getId())) {
             if (partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId()).getStatus() == ApplicantStatus.ACCEPTED) {
                 throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 수락된 파티입니다.");
@@ -162,10 +163,10 @@ public class PostService {
                 PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId());
                 partyApplicant.pendingStatus();
             }
+        } else {
+            PartyApplicant applicant = new PartyApplicant(post, character);
+            partyApplicantSupportService.save(applicant);
         }
-
-        PartyApplicant applicant = new PartyApplicant(post, character);
-        partyApplicantSupportService.save(applicant);
 
         return new ApplyPartyResponseDto(post.getId(), character.getId(), character.getCharName());
     }
@@ -180,7 +181,7 @@ public class PostService {
         Post post = postSupportService.findById(postId);
 
         boolean isLeader = post.getCharacter().getId().equals(character.getId());
-        boolean isMember = partyApplicantSupportService.existsByPostIdAndCharacterId(postId, character.getId());
+        boolean isMember = partyMemberSupportService.existsByPostIdAndCharacterId(postId, character.getId());
 
         if (!isLeader && !isMember) {
             throw new InvalidPartyActionException(HttpStatus.FORBIDDEN, "파티장 또는 파티원만 신청자 목록을 조회할 수 있습니다.");
@@ -188,9 +189,12 @@ public class PostService {
 
         List<PartyApplicant> partyApplicants = partyApplicantSupportService.findAllByPostId(postId);
 
-        return partyApplicants.stream().map(applicant -> new PartyApplicantResponseDto(
-                applicant.getCharacter().getId(), applicant.getCharacter().getCharName(), applicant.getStatus()
-        ))
+        return partyApplicants.stream()
+                .filter(applicant -> applicant.getStatus() == ApplicantStatus.PENDING)
+                .map(applicant -> new PartyApplicantResponseDto(
+                        applicant.getCharacter().getId(),
+                        applicant.getCharacter().getCharName(),
+                        applicant.getStatus()))
                 .collect(Collectors.toList());
     }
 
@@ -293,7 +297,10 @@ public class PostService {
         }
 
         PartyMember partyMember = partyMemberSupportService.findByPostIdAndCharacterId(postId, character.getId());
+        PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId());
 
         partyMemberSupportService.delete(partyMember);
+        partyApplicantSupportService.delete(partyApplicant);
+
     }
 }
