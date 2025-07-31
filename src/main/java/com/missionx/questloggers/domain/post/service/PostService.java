@@ -156,10 +156,11 @@ public class PostService {
         if (partyApplicantSupportService.existsByPostIdAndCharacterId(postId, character.getId())) {
             if (partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId()).getStatus() == ApplicantStatus.ACCEPTED) {
                 throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 수락된 파티입니다.");
-            } else if (partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId()).getStatus() == ApplicantStatus.REJECTED) {
-                throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 거절된 파티입니다.");
-            } else {
+            } else if (partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId()).getStatus() == ApplicantStatus.PENDING) {
                 throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 신청한 파티입니다.");
+            } else {
+                PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId());
+                partyApplicant.pendingStatus();
             }
         }
 
@@ -239,6 +240,7 @@ public class PostService {
         }
 
         partyApplicant.rejectStatus();
+
     }
 
     /**
@@ -266,12 +268,14 @@ public class PostService {
         boolean isLeader = post.getCharacter().getId().equals(leaderCharacter.getId());
 
         PartyMember partyMember = partyMemberSupportService.findByPostIdAndCharacterId(postId, requestDto.getCharId());
+        PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, requestDto.getCharId());
 
         if (!isLeader) {
             throw new InvalidPartyActionException(HttpStatus.FORBIDDEN, "파티장만 추방할 수 있습니다.");
         }
 
         partyMemberSupportService.delete(partyMember);
+        partyApplicantSupportService.delete(partyApplicant);
     }
 
     /**

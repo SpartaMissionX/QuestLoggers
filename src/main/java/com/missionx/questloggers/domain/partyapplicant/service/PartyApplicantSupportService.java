@@ -17,6 +17,10 @@ public class PartyApplicantSupportService {
         partyApplicantRepository.save(partyApplicant);
     }
 
+    public void delete(PartyApplicant partyApplicant) {
+        partyApplicantRepository.delete(partyApplicant);
+    }
+
     public boolean existsByPostIdAndCharacterId(Long postId, Long charId) {
         return partyApplicantRepository.existsByPostIdAndCharacterId(postId, charId);
     }
