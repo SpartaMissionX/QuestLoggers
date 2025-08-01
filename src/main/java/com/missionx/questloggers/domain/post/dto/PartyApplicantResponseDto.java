@@ -9,5 +9,8 @@ import lombok.Getter;
 public class PartyApplicantResponseDto {
     private Long characterId;
     private String characterName;
+    private String characterClass;
+    private int characterLevel;
+    private long characterPower;
     private ApplicantStatus status;
 }

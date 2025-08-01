@@ -90,7 +90,7 @@ public class CharacterController {
             @AuthenticationPrincipal LoginUser loginUser
     ) {
         CreateCharBossResponseDto responseDto = characterService.createCharBoss(requestDto, loginUser);
-        return ApiResponse.success(HttpStatus.OK, "캐릭터의 보스 생성 완료", responseDto);
+        return ApiResponse.success(HttpStatus.OK, "캐릭터의 보스를 생성했습니다", responseDto);
     }
 
     /**
@@ -101,7 +101,7 @@ public class CharacterController {
             @AuthenticationPrincipal LoginUser loginUser
     ) {
         List<MyCharInfoResponseDto> responseDtoList = characterService.myCharInfo(loginUser);
-        return ApiResponse.success(HttpStatus.OK, "캐릭터 정보 조회 완료", responseDtoList);
+        return ApiResponse.success(HttpStatus.OK, "캐릭터 보스 정보 조회 완료했습니다.", responseDtoList);
     }
 
     /**
@@ -114,5 +114,17 @@ public class CharacterController {
     ) {
         UpdateIsClearedResponseDto responseDto = characterService.updateIsCleared(loginUser, bossId);
         return ApiResponse.success(HttpStatus.OK, "캐릭터 보스 클리어 여부가 변경되었습니다.", responseDto);
+    }
+
+    /**
+     * 대표 캐릭터의 보스 삭제
+     */
+    @DeleteMapping("/characters/me/main/bosses/{bossId}")
+    public ResponseEntity<ApiResponse<Object>> deleteCharBoss(
+            @AuthenticationPrincipal LoginUser loginUser,
+            @PathVariable Long bossId
+    ) {
+        characterService.deleteCharBoss(loginUser, bossId);
+        return ApiResponse.success(HttpStatus.OK, "캐릭터 보스를 삭제했습니다.", null);
     }
 }

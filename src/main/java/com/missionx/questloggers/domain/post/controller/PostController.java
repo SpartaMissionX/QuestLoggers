@@ -57,7 +57,7 @@ public class PostController {
     @GetMapping("/posts")
     public ResponseEntity<ApiResponse<PageResponseDto<GetAllPostResponseDto>>> getAllPost(
             @RequestParam(required = false) Long bossId,
-            @RequestParam(required = false) String difficulty,
+            @RequestParam(required = false) Integer difficulty,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {

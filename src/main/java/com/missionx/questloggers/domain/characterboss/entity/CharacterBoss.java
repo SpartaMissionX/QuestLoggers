@@ -2,6 +2,7 @@ package com.missionx.questloggers.domain.characterboss.entity;
 
 import com.missionx.questloggers.domain.boss.entity.Boss;
 import com.missionx.questloggers.domain.character.entity.Character;
+import com.missionx.questloggers.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import org.hibernate.annotations.ColumnDefault;
 @Getter
 @Table(name = "character_boss")
 @NoArgsConstructor
-public class CharacterBoss {
+public class CharacterBoss extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,11 +39,17 @@ public class CharacterBoss {
         this.boss = boss;
     }
 
-    public void updateIsCleared(boolean isCleared) {
-        this.isCleared = isCleared;
+    public void updateIsCleared() {
+        this.isCleared = true;
         this.clearCount = clearCount + 1;
     }
 
+    public void returnIsCleared() {
+        this.isCleared = false;
+        this.clearCount = clearCount - 1;
+    }
+
+    // 스케줄에서 사용
     public void updateIsClearedToFalse() {
         this.isCleared = false;
     }

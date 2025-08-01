@@ -15,7 +15,6 @@ import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.partyapplicant.entity.PartyApplicant;
 import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.enums.Difficulty;
-import com.missionx.questloggers.domain.post.enums.PartySize;
 import com.missionx.questloggers.domain.post.exception.*;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
 import com.missionx.questloggers.domain.user.entity.User;
@@ -23,6 +22,7 @@ import com.missionx.questloggers.domain.user.service.UserSupportService;
 import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.PageResponseDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -69,20 +70,26 @@ public class PostService {
     public UpdatePostResponseDto updatePostService(Long postId, UpdatePostRequestDto updatePostRequestDto, LoginUser loginUser) {
         User user = userSupportService.findUserById(loginUser.getUserId());
         Character ownerCharacter = characterSupportService.findByMainCharId(user.getOwnerCharId());
-        Post foundPost = postSupportService.findById(postId);
-        if (!foundPost.getCharacter().getId().equals(ownerCharacter.getId())) {
+        Post post = postSupportService.findById(postId);
+        if (!post.getCharacter().getId().equals(ownerCharacter.getId())) {
             throw new UnauthorizedPostAccessException("게시글 수정 권한이 없습니다.");
         }
-        foundPost.updatePost(updatePostRequestDto);
-        return new UpdatePostResponseDto(ownerCharacter.getId(), ownerCharacter.getCharName(), foundPost.getId(),
-                foundPost.getTitle(), foundPost.getContent(), foundPost.getPartySize());
+
+        int currentSize = partyMemberSupportService.findAllByPostId(postId).size();
+        if (currentSize >= updatePostRequestDto.getPartySize()) {
+            throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "현재 파티원이 수정하려는 파티 인원수보다 많습니다. 다시 확인해주세요");
+        }
+
+        post.updatePost(updatePostRequestDto);
+        return new UpdatePostResponseDto(ownerCharacter.getId(), ownerCharacter.getCharName(), post.getId(),
+                post.getTitle(), post.getContent(), post.getPartySize());
     }
 
     /**
      * 게시글 다건 조회 , 검색 , 페이징
      */
     @Transactional(readOnly = true)
-    public PageResponseDto<GetAllPostResponseDto> getAllPostService(Long bossId, String difficulty, int page, int size) {
+    public PageResponseDto<GetAllPostResponseDto> getAllPostService(Long bossId, Integer difficulty, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Post> postsPage;
 
@@ -92,21 +99,17 @@ public class PostService {
         } else if (bossId != null && difficulty == null) {
             postsPage = postRepository.findByBossIdAndDeletedAtNull(bossId, pageable);
         } else if (bossId == null && difficulty != null) {
-            Difficulty difficulty1 = Difficulty.valueOf(difficulty);
+            Difficulty difficulty1 = Difficulty.fromCode(difficulty);
             postsPage = postRepository.findByDifficultyAndDeletedAtNull(difficulty1, pageable);
         } else {
-            Difficulty difficulty1 = Difficulty.valueOf(difficulty);
+            Difficulty difficulty1 = Difficulty.fromCode(difficulty);
             postsPage = postRepository.findByBossIdAndDifficultyAndDeletedAtNull(bossId, difficulty1, pageable);
         }
-
-        if (postsPage.isEmpty()) {
-            throw new PostException(HttpStatus.ACCEPTED, "요청한 페이지에 게시글이 존재하지 않습니다.");
-        };
 
         List<GetAllPostResponseDto> responseDtos = postsPage.stream()
                 .map(post -> new GetAllPostResponseDto(post.getCharacter().getId(),
                         post.getCharacter().getCharName(),post.getId(), post.getTitle(),
-                        post.getBoss().getId(), post.getBoss().getBossName(), post.getDifficulty(), post.getPartySize()))
+                        post.getBoss().getId(), post.getBoss().getBossName(), post.getBoss().getBossImage(), post.getDifficulty(), post.getPartySize()))
                 .collect(Collectors.toList());
 
         return new PageResponseDto<>(
@@ -127,7 +130,7 @@ public class PostService {
         Post foundPost = postSupportService.findById(postId);
         return new GetPostResponseDto(foundPost.getCharacter().getId(), foundPost.getCharacter().getCharName(),
                 foundPost.getId(), foundPost.getTitle(), foundPost.getContent(), foundPost.getBoss().getId(),
-                foundPost.getBoss().getBossName(), foundPost.getDifficulty(), foundPost.getPartySize());
+                foundPost.getBoss().getBossName(), foundPost.getBoss().getBossImage(), foundPost.getDifficulty(), foundPost.getPartySize());
     }
 
     /**
@@ -153,6 +156,14 @@ public class PostService {
         Post post = postSupportService.findById(postId);
         if (post.getCharacter().getId().equals(character.getId())) {
             throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "자신의 파티에는 신청할 수 없습니다.");
+        }
+
+        List<Character> characterList = characterSupportService.findByUser(user);
+        for (Character c : characterList) {
+            PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, c.getId());
+            if (partyApplicant.getStatus() == ApplicantStatus.ACCEPTED || partyApplicant.getStatus() == ApplicantStatus.PENDING){
+                throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 본인의 다른 캐릭터가 파티 멤버이거나 파티 신청중입니다.");
+            }
         }
 
         if (partyApplicantSupportService.existsByPostIdAndCharacterId(postId, character.getId())) {
@@ -195,6 +206,9 @@ public class PostService {
                 .map(applicant -> new PartyApplicantResponseDto(
                         applicant.getCharacter().getId(),
                         applicant.getCharacter().getCharName(),
+                        applicant.getCharacter().getCharClass(),
+                        applicant.getCharacter().getCharLevel(),
+                        applicant.getCharacter().getCharPower(),
                         applicant.getStatus()))
                 .collect(Collectors.toList());
     }
@@ -215,12 +229,12 @@ public class PostService {
         if (!isLeader) {
             throw new InvalidPartyActionException(HttpStatus.FORBIDDEN, "파티장만 수락할 수 있습니다.");
         }
-        if (partyApplicant.getStatus() == ApplicantStatus.ACCEPTED || partyApplicant.getStatus() == ApplicantStatus.REJECTED) {
-            throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 수락 또는 거절되었습니다.");
+        if (partyApplicant.getStatus() == ApplicantStatus.ACCEPTED || partyApplicant.getStatus() == ApplicantStatus.REJECTED || partyApplicant.getStatus() == ApplicantStatus.LEAVE) {
+            throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 처리된 신청입니다.");
         }
 
         int currentSize = partyMemberSupportService.findAllByPostId(postId).size();
-        if (currentSize >= post.getPartySize().getSize()) {
+        if (currentSize >= post.getPartySize()) {
             throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "파티 정원이 모두 찼습니다.");
         }
 
@@ -282,9 +296,8 @@ public class PostService {
         if (!isLeader) {
             throw new InvalidPartyActionException(HttpStatus.FORBIDDEN, "파티장만 추방할 수 있습니다.");
         }
-
+        partyApplicant.leaveStatus();
         partyMemberSupportService.delete(partyMember);
-        partyApplicantSupportService.delete(partyApplicant);
     }
 
     /**
@@ -304,8 +317,8 @@ public class PostService {
         PartyMember partyMember = partyMemberSupportService.findByPostIdAndCharacterId(postId, character.getId());
         PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId());
 
+        partyApplicant.leaveStatus();
         partyMemberSupportService.delete(partyMember);
-        partyApplicantSupportService.delete(partyApplicant);
 
     }
 }

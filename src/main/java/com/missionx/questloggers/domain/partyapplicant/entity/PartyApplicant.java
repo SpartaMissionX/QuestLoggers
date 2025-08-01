@@ -35,14 +35,18 @@ public class PartyApplicant {
     }
 
     public void acceptStatus() {
-        this.status = ApplicantStatus.valueOf("ACCEPTED");
+        this.status = ApplicantStatus.ACCEPTED;
     }
 
     public void rejectStatus() {
-        this.status = ApplicantStatus.valueOf("REJECTED");
+        this.status = ApplicantStatus.REJECTED;
     }
 
     public void pendingStatus() {
-        this.status = ApplicantStatus.valueOf("PENDING");
+        this.status = ApplicantStatus.PENDING;
+    }
+
+    public void leaveStatus() {
+        this.status = ApplicantStatus.LEAVE;
     }
 }

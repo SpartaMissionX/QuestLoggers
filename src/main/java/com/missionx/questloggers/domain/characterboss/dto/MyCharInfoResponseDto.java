@@ -9,6 +9,7 @@ public class MyCharInfoResponseDto {
     private Long id;
     private Long charId;
     private Long bossId;
+    private String bossName;
     private boolean isCleared;
     private int clearCount;
 }

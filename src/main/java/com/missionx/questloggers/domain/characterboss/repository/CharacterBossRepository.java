@@ -11,5 +11,6 @@ import java.util.Optional;
 public interface CharacterBossRepository extends JpaRepository<CharacterBoss, Long> {
     List<CharacterBoss> findByCharacter(Character character);
     Optional<CharacterBoss> findByCharacterAndBoss(Character character, Boss boss);
+    boolean existsByCharacterAndBoss(Character character, Boss boss);
 
 }
