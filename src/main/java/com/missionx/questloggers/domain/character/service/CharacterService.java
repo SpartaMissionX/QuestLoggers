@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -137,8 +138,14 @@ public class CharacterService {
         Character character = characterSupportService.findById(user.getOwnerCharId());
         Boss boss = bossSupportService.findById(requestDto.getBossId());
 
-        if (characterBossSupportService.findByCharacterAndBoss(character, boss).isPresent()) {
-            throw new AlreadyCharacterBossException(HttpStatus.BAD_REQUEST, "이미 생성된 보스가 있습니다.");
+        if (characterBossSupportService.existsByCharacterAndBoss(character, boss)) {
+            CharacterBoss characterBoss = characterBossSupportService.findByCharacterAndBoss(character, boss);
+            if (characterBoss.getDeletedAt() != null) {
+                characterBoss.updateDeletedAt();
+                return new CreateCharBossResponseDto(characterBoss.getCharacter().getId(), characterBoss.getBoss().getId(), characterBoss.getBoss().getBossName(), characterBoss.isCleared(), characterBoss.getClearCount());
+            } else {
+                throw new AlreadyCharacterBossException(HttpStatus.BAD_REQUEST, "이미 생성된 보스가 있습니다.");
+            }
         }
         CharacterBoss characterBoss = new CharacterBoss(character, boss);
 
@@ -156,6 +163,7 @@ public class CharacterService {
         Character character = characterSupportService.findByMainCharId(user.getOwnerCharId());
         List<CharacterBoss> characterBossList = characterBossSupportService.findByCharacter(character);
         return characterBossList.stream()
+                .filter(characterBoss -> characterBoss.getDeletedAt() == null)
                 .map(characterBoss -> new MyCharInfoResponseDto(characterBoss.getId(), characterBoss.getCharacter().getId(), characterBoss.getBoss().getId(), characterBoss.getBoss().getBossName(), characterBoss.isCleared(), characterBoss.getClearCount()))
                 .collect(Collectors.toList());
     }
@@ -169,9 +177,11 @@ public class CharacterService {
         Character character = characterSupportService.findByMainCharId(user.getOwnerCharId());
         Boss boss = bossSupportService.findById(bossId);
 
-        CharacterBoss characterBoss = characterBossSupportService.findByCharacterAndBoss(character, boss).orElseThrow(
-                () -> new NotFoundCharacterBossExceoption(HttpStatus.NOT_FOUND, "해당 보스를 찾을 수 없습니다.")
-        );
+        CharacterBoss characterBoss = characterBossSupportService.findByCharacterAndBoss(character, boss);
+        if (characterBoss.getDeletedAt() != null) {
+            throw new NotFoundCharacterBossExceoption(HttpStatus.NOT_FOUND, "해당 보스를 찾을 수 없습니다.");
+        }
+
         if (characterBoss.isCleared()) {
             characterBoss.returnIsCleared();
         } else {
@@ -179,6 +189,20 @@ public class CharacterService {
         }
 
         return new UpdateIsClearedResponseDto(characterBoss.getCharacter().getId(), characterBoss.getBoss().getId(), characterBoss.isCleared(), characterBoss.getClearCount());
+    }
+
+    /**
+     * 대표 캐릭터의 보스 삭제
+     */
+    @Transactional
+    public void deleteCharBoss(LoginUser loginUser, Long bossId) {
+        User user = userSupportService.findUserById(loginUser.getUserId());
+        Character character = characterSupportService.findByMainCharId(user.getOwnerCharId());
+        Boss boss = bossSupportService.findById(bossId);
+
+        CharacterBoss characterBoss = characterBossSupportService.findByCharacterAndBoss(character, boss);
+
+        characterBoss.delete();
     }
 
 

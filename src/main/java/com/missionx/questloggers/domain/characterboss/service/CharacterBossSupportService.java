@@ -34,8 +34,14 @@ public class CharacterBossSupportService {
     }
 
     @Transactional
-    public Optional<CharacterBoss> findByCharacterAndBoss(Character character, Boss boss) {
-        return characterBossRepository.findByCharacterAndBoss(character, boss);
+    public CharacterBoss findByCharacterAndBoss(Character character, Boss boss) {
+        return characterBossRepository.findByCharacterAndBoss(character, boss).orElseThrow(
+                () -> new NotFoundCharacterBossExceoption(HttpStatus.NOT_FOUND, "캐릭터 보스 정보를 찾을 수 없습니다.")
+        );
+    }
+
+    public boolean existsByCharacterAndBoss(Character character, Boss boss) {
+        return characterBossRepository.existsByCharacterAndBoss(character, boss);
     }
 
     @Transactional
@@ -51,5 +57,9 @@ public class CharacterBossSupportService {
     @Transactional
     public List<CharacterBoss> findAll() {
         return characterBossRepository.findAll();
+    }
+
+    public void delete(CharacterBoss characterBoss) {
+        characterBossRepository.delete(characterBoss);
     }
 }
