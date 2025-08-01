@@ -125,7 +125,7 @@ public class PostService {
         Post foundPost = postSupportService.findById(postId);
         return new GetPostResponseDto(foundPost.getCharacter().getId(), foundPost.getCharacter().getCharName(),
                 foundPost.getId(), foundPost.getTitle(), foundPost.getContent(), foundPost.getBoss().getId(),
-                foundPost.getBoss().getBossName(), foundPost.getDifficulty(), foundPost.getPartySize());
+                foundPost.getBoss().getBossName(), foundPost.getBoss().getBossImage(), foundPost.getDifficulty(), foundPost.getPartySize());
     }
 
     /**
