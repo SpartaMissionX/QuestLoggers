@@ -20,6 +20,6 @@ public enum Difficulty {
                 return difficulty;
             }
         }
-        throw new PostException(HttpStatus.BAD_REQUEST, "입력한 난이도가 없습니다. 1~3 사이 값으로 입력해주세요");
+        throw new PostException(HttpStatus.BAD_REQUEST, "입력한 난이도를 찾을 수 없습니다. 1~3 사이 값으로 입력해주세요");
     }
 }

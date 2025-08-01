@@ -158,6 +158,14 @@ public class PostService {
             throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "자신의 파티에는 신청할 수 없습니다.");
         }
 
+        List<Character> characterList = characterSupportService.findByUser(user);
+        for (Character c : characterList) {
+            PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, c.getId());
+            if (partyApplicant.getStatus() == ApplicantStatus.ACCEPTED || partyApplicant.getStatus() == ApplicantStatus.PENDING){
+                throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 본인의 다른 캐릭터가 파티 멤버이거나 파티 신청중입니다.");
+            }
+        }
+
         if (partyApplicantSupportService.existsByPostIdAndCharacterId(postId, character.getId())) {
             if (partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId()).getStatus() == ApplicantStatus.ACCEPTED) {
                 throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 수락된 파티입니다.");
@@ -198,6 +206,9 @@ public class PostService {
                 .map(applicant -> new PartyApplicantResponseDto(
                         applicant.getCharacter().getId(),
                         applicant.getCharacter().getCharName(),
+                        applicant.getCharacter().getCharClass(),
+                        applicant.getCharacter().getCharLevel(),
+                        applicant.getCharacter().getCharPower(),
                         applicant.getStatus()))
                 .collect(Collectors.toList());
     }
@@ -218,8 +229,8 @@ public class PostService {
         if (!isLeader) {
             throw new InvalidPartyActionException(HttpStatus.FORBIDDEN, "파티장만 수락할 수 있습니다.");
         }
-        if (partyApplicant.getStatus() == ApplicantStatus.ACCEPTED || partyApplicant.getStatus() == ApplicantStatus.REJECTED) {
-            throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 수락 또는 거절되었습니다.");
+        if (partyApplicant.getStatus() == ApplicantStatus.ACCEPTED || partyApplicant.getStatus() == ApplicantStatus.REJECTED || partyApplicant.getStatus() == ApplicantStatus.LEAVE) {
+            throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 처리된 신청입니다.");
         }
 
         int currentSize = partyMemberSupportService.findAllByPostId(postId).size();
@@ -285,9 +296,8 @@ public class PostService {
         if (!isLeader) {
             throw new InvalidPartyActionException(HttpStatus.FORBIDDEN, "파티장만 추방할 수 있습니다.");
         }
-
+        partyApplicant.leaveStatus();
         partyMemberSupportService.delete(partyMember);
-        partyApplicantSupportService.delete(partyApplicant);
     }
 
     /**
@@ -307,8 +317,8 @@ public class PostService {
         PartyMember partyMember = partyMemberSupportService.findByPostIdAndCharacterId(postId, character.getId());
         PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId());
 
+        partyApplicant.leaveStatus();
         partyMemberSupportService.delete(partyMember);
-        partyApplicantSupportService.delete(partyApplicant);
 
     }
 }
