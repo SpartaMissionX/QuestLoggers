@@ -156,7 +156,7 @@ public class CharacterService {
         Character character = characterSupportService.findByMainCharId(user.getOwnerCharId());
         List<CharacterBoss> characterBossList = characterBossSupportService.findByCharacter(character);
         return characterBossList.stream()
-                .map(characterBoss -> new MyCharInfoResponseDto(characterBoss.getId(), characterBoss.getCharacter().getId(), characterBoss.getBoss().getId(), characterBoss.isCleared(), characterBoss.getClearCount()))
+                .map(characterBoss -> new MyCharInfoResponseDto(characterBoss.getId(), characterBoss.getCharacter().getId(), characterBoss.getBoss().getId(), characterBoss.getBoss().getBossName(), characterBoss.isCleared(), characterBoss.getClearCount()))
                 .collect(Collectors.toList());
     }
 
