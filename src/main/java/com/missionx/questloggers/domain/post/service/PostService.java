@@ -104,7 +104,7 @@ public class PostService {
         List<GetAllPostResponseDto> responseDtos = postsPage.stream()
                 .map(post -> new GetAllPostResponseDto(post.getCharacter().getId(),
                         post.getCharacter().getCharName(),post.getId(), post.getTitle(),
-                        post.getBoss().getId(), post.getBoss().getBossName(), post.getDifficulty(), post.getPartySize()))
+                        post.getBoss().getId(), post.getBoss().getBossName(), post.getBoss().getBossImage(), post.getDifficulty(), post.getPartySize()))
                 .collect(Collectors.toList());
 
         return new PageResponseDto<>(

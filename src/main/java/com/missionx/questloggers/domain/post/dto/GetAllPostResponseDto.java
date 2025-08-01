@@ -16,6 +16,7 @@ public class GetAllPostResponseDto {
     private String title;
     private Long bossId;
     private String bossName;
+    private String bossImage;
     private Difficulty difficulty;
     private PartySize partySize;
 }
