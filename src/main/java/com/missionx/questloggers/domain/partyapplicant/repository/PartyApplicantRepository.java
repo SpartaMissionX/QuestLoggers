@@ -6,9 +6,10 @@ import com.missionx.questloggers.domain.post.entity.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PartyApplicantRepository extends JpaRepository<PartyApplicant, Long> {
     boolean existsByPostIdAndCharacterId(Long postId, Long charId);
     List<PartyApplicant> findAllByPostId(Long postId);
-    PartyApplicant findByPostIdAndCharacterId(Long postId, Long charId);
+    Optional<PartyApplicant> findByPostIdAndCharacterId(Long postId, Long charId);
 }
