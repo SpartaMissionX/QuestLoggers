@@ -38,9 +38,14 @@ public class CharacterBoss {
         this.boss = boss;
     }
 
-    public void updateIsCleared(boolean isCleared) {
-        this.isCleared = isCleared;
+    public void updateIsCleared() {
+        this.isCleared = true;
         this.clearCount = clearCount + 1;
+    }
+
+    public void returnIsCleared() {
+        this.isCleared = false;
+        this.clearCount = clearCount - 1;
     }
 
     public void updateIsClearedToFalse() {

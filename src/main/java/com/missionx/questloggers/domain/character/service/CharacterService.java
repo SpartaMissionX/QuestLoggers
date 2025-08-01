@@ -173,9 +173,9 @@ public class CharacterService {
                 () -> new NotFoundCharacterBossExceoption(HttpStatus.NOT_FOUND, "해당 보스를 찾을 수 없습니다.")
         );
         if (characterBoss.isCleared()) {
-            throw new AlreadyCharacterBossException(HttpStatus.BAD_REQUEST, "이미 클리어한 보스입니다.");
+            characterBoss.returnIsCleared();
         } else {
-            characterBoss.updateIsCleared(true);
+            characterBoss.updateIsCleared();
         }
 
         return new UpdateIsClearedResponseDto(characterBoss.getCharacter().getId(), characterBoss.getBoss().getId(), characterBoss.isCleared(), characterBoss.getClearCount());

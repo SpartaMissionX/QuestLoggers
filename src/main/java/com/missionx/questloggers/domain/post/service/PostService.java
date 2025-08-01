@@ -23,6 +23,7 @@ import com.missionx.questloggers.domain.user.service.UserSupportService;
 import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.PageResponseDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -98,10 +100,6 @@ public class PostService {
             Difficulty difficulty1 = Difficulty.valueOf(difficulty);
             postsPage = postRepository.findByBossIdAndDifficultyAndDeletedAtNull(bossId, difficulty1, pageable);
         }
-
-        if (postsPage.isEmpty()) {
-            throw new PostException(HttpStatus.ACCEPTED, "요청한 페이지에 게시글이 존재하지 않습니다.");
-        };
 
         List<GetAllPostResponseDto> responseDtos = postsPage.stream()
                 .map(post -> new GetAllPostResponseDto(post.getCharacter().getId(),
