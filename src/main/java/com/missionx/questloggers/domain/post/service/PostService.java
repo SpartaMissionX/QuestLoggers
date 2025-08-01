@@ -15,7 +15,6 @@ import com.missionx.questloggers.domain.post.dto.*;
 import com.missionx.questloggers.domain.partyapplicant.entity.PartyApplicant;
 import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.enums.Difficulty;
-import com.missionx.questloggers.domain.post.enums.PartySize;
 import com.missionx.questloggers.domain.post.exception.*;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
 import com.missionx.questloggers.domain.user.entity.User;
@@ -71,13 +70,19 @@ public class PostService {
     public UpdatePostResponseDto updatePostService(Long postId, UpdatePostRequestDto updatePostRequestDto, LoginUser loginUser) {
         User user = userSupportService.findUserById(loginUser.getUserId());
         Character ownerCharacter = characterSupportService.findByMainCharId(user.getOwnerCharId());
-        Post foundPost = postSupportService.findById(postId);
-        if (!foundPost.getCharacter().getId().equals(ownerCharacter.getId())) {
+        Post post = postSupportService.findById(postId);
+        if (!post.getCharacter().getId().equals(ownerCharacter.getId())) {
             throw new UnauthorizedPostAccessException("게시글 수정 권한이 없습니다.");
         }
-        foundPost.updatePost(updatePostRequestDto);
-        return new UpdatePostResponseDto(ownerCharacter.getId(), ownerCharacter.getCharName(), foundPost.getId(),
-                foundPost.getTitle(), foundPost.getContent(), foundPost.getPartySize());
+
+        int currentSize = partyMemberSupportService.findAllByPostId(postId).size(); // 현재원
+        if (currentSize >= updatePostRequestDto.getPartySize()) { // 파티 정해진 인원
+            throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "현재 파티원이 수정하려는 파티 인원수보다 많습니다. 다시 확인해주세요");
+        }
+
+        post.updatePost(updatePostRequestDto);
+        return new UpdatePostResponseDto(ownerCharacter.getId(), ownerCharacter.getCharName(), post.getId(),
+                post.getTitle(), post.getContent(), post.getPartySize());
     }
 
     /**
@@ -218,7 +223,7 @@ public class PostService {
         }
 
         int currentSize = partyMemberSupportService.findAllByPostId(postId).size();
-        if (currentSize >= post.getPartySize().getSize()) {
+        if (currentSize >= post.getPartySize()) {
             throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "파티 정원이 모두 찼습니다.");
         }
 

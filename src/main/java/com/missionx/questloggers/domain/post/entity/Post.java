@@ -4,7 +4,6 @@ import com.missionx.questloggers.domain.boss.entity.Boss;
 import com.missionx.questloggers.domain.character.entity.Character;
 import com.missionx.questloggers.domain.partyapplicant.dto.UpdatePostRequestDto;
 import com.missionx.questloggers.domain.post.enums.Difficulty;
-import com.missionx.questloggers.domain.post.enums.PartySize;
 import com.missionx.questloggers.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -34,15 +33,14 @@ public class Post extends BaseEntity {
     @Column(nullable = false, name = "difficulty")
     private Difficulty difficulty;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false, name = "party_size")
-    private PartySize partySize;
+    private int partySize;
 
     @ManyToOne
     @JoinColumn(name = "char_id")
     private Character character;
 
-    public Post (String title, String content, Character character, Boss boss, Difficulty difficulty, PartySize partySize) {
+    public Post (String title, String content, Character character, Boss boss, Difficulty difficulty, int partySize) {
         this.title = title;
         this.content = content;
         this.boss = boss;

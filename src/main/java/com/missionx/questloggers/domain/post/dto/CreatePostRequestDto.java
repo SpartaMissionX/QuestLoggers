@@ -1,7 +1,8 @@
 package com.missionx.questloggers.domain.post.dto;
 
 import com.missionx.questloggers.domain.post.enums.Difficulty;
-import com.missionx.questloggers.domain.post.enums.PartySize;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -21,5 +22,7 @@ public class CreatePostRequestDto {
     private Difficulty difficulty;
 
     @NotNull(message = "파티원 수는 필수입니다.")
-    private PartySize partySize;
+    @Max(value = 6, message = "파티원 수는 최대 6명 입니다.")
+    @Min(value = 2, message = "파티원 수는 최소 2명 입니다.")
+    private int partySize;
 }
