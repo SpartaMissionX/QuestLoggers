@@ -75,8 +75,8 @@ public class PostService {
             throw new UnauthorizedPostAccessException("게시글 수정 권한이 없습니다.");
         }
 
-        int currentSize = partyMemberSupportService.findAllByPostId(postId).size(); // 현재원
-        if (currentSize >= updatePostRequestDto.getPartySize()) { // 파티 정해진 인원
+        int currentSize = partyMemberSupportService.findAllByPostId(postId).size();
+        if (currentSize >= updatePostRequestDto.getPartySize()) {
             throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "현재 파티원이 수정하려는 파티 인원수보다 많습니다. 다시 확인해주세요");
         }
 
