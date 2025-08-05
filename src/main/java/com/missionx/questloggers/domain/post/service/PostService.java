@@ -159,14 +159,15 @@ public class PostService {
             throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "자신의 파티에는 신청할 수 없습니다.");
         }
 
+        partyApplicantSupportService.findApplicantCountIsLimit(postId);
+
         List<Character> characterList = characterSupportService.findByUser(user);
         for (Character c : characterList) {
-            PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, c.getId());
-            boolean applicantCountIsLimit = partyApplicantSupportService.findApplicantCountIsLimit(postId);
-            if (partyApplicant.getStatus() == ApplicantStatus.ACCEPTED || partyApplicant.getStatus() == ApplicantStatus.PENDING){
-                throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 본인의 다른 캐릭터가 파티 멤버이거나 파티 신청중입니다.");
-            } else if (applicantCountIsLimit) {
-                throw new PartyApplicantException(HttpStatus.TOO_MANY_REQUESTS, "파티 인원이 100명을 넘었습니다.");
+            if (partyApplicantSupportService.existsByPostIdAndCharacterId(postId, c.getId())) {
+                PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, c.getId());
+                if (partyApplicant.getStatus() == ApplicantStatus.ACCEPTED || partyApplicant.getStatus() == ApplicantStatus.PENDING){
+                    throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 본인의 다른 캐릭터가 파티 멤버이거나 파티 신청중입니다.");
+                }
             }
         }
         if (partyApplicantSupportService.existsByPostIdAndCharacterId(postId, character.getId())) {
