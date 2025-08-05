@@ -38,13 +38,11 @@ public class PartyApplicantSupportService {
         );
     }
 
-    public boolean findApplicantCountIsLimit(Long postId) {
+    public void findApplicantCountIsLimit(Long postId) {
         List<PartyApplicant> partyApplicantList = partyApplicantRepository.findAllByPostId(postId);
         int count = partyApplicantList.size();
-        boolean applicantCountIsLimit = false;
-        if (count > 101) {
+        if (count >= 100) {
             throw new PartyApplicantException(HttpStatus.TOO_MANY_REQUESTS, "신청 인원이 100 명을 넘었습니다.");
         }
-        return applicantCountIsLimit;
     }
 }
