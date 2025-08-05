@@ -2,6 +2,7 @@ package com.missionx.questloggers.domain.partyapplicant.service;
 
 import com.missionx.questloggers.domain.partyapplicant.entity.PartyApplicant;
 import com.missionx.questloggers.domain.partyapplicant.exception.NotFoundPartyApplicantException;
+import com.missionx.questloggers.domain.partyapplicant.exception.PartyApplicantException;
 import com.missionx.questloggers.domain.partyapplicant.repository.PartyApplicantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -35,5 +36,15 @@ public class PartyApplicantSupportService {
         return partyApplicantRepository.findByPostIdAndCharacterId(postId, charId).orElseThrow(
                 () -> new NotFoundPartyApplicantException(HttpStatus.NOT_FOUND, "신청한 캐릭터를 찾을 수 없습니다.")
         );
+    }
+
+    public boolean findApplicantCountIsLimit(Long postId) {
+        List<PartyApplicant> partyApplicantList = partyApplicantRepository.findAllByPostId(postId);
+        int count = partyApplicantList.size();
+        boolean applicantCountIsLimit = false;
+        if (count > 101) {
+            throw new PartyApplicantException(HttpStatus.TOO_MANY_REQUESTS, "신청 인원이 100 명을 넘었습니다.");
+        }
+        return applicantCountIsLimit;
     }
 }
