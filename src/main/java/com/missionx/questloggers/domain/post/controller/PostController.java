@@ -93,7 +93,7 @@ public class PostController {
             @PathVariable Long postId,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
-        ApplyPartyResponseDto responseDto = postService.applyPartyResponseDto(postId, loginUser);
+        ApplyPartyResponseDto responseDto = postService.applyToParty(postId, loginUser);
         return ApiResponse.success(HttpStatus.CREATED, "파티 신청이 완료되었습니다.", responseDto);
     }
 

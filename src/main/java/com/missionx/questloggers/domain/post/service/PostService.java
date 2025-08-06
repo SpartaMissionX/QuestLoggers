@@ -4,8 +4,9 @@ import com.missionx.questloggers.domain.boss.entity.Boss;
 import com.missionx.questloggers.domain.boss.service.BossSupportService;
 import com.missionx.questloggers.domain.character.entity.Character;
 import com.missionx.questloggers.domain.character.service.CharacterSupportService;
+import com.missionx.questloggers.domain.notification.entity.Notification;
+import com.missionx.questloggers.domain.notification.service.NotificationSupportService;
 import com.missionx.questloggers.domain.partyapplicant.dto.UpdatePostRequestDto;
-import com.missionx.questloggers.domain.partyapplicant.exception.PartyApplicantException;
 import com.missionx.questloggers.domain.partyapplicant.service.PartyApplicantSupportService;
 import com.missionx.questloggers.domain.partymember.dto.KickPartyMemberRequestDto;
 import com.missionx.questloggers.domain.partymember.dto.PartyMemberResponseDto;
@@ -18,6 +19,7 @@ import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.enums.Difficulty;
 import com.missionx.questloggers.domain.post.exception.*;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
+import com.missionx.questloggers.domain.notification.service.SseEmiterService;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.domain.user.service.UserSupportService;
 import com.missionx.questloggers.global.config.security.LoginUser;
@@ -47,6 +49,8 @@ public class PostService {
     private final PartyApplicantSupportService partyApplicantSupportService;
     private final PartyMemberSupportService partyMemberSupportService;
     private final BossSupportService bossSupportService;
+    private final SseEmiterService sseEmiterService;
+    private final NotificationSupportService notificationSupportService;
 
 
     /**
@@ -151,10 +155,11 @@ public class PostService {
      * 파티원 신청
      */
     @Transactional
-    public ApplyPartyResponseDto applyPartyResponseDto(Long postId, LoginUser loginUser) {
+    public ApplyPartyResponseDto applyToParty(Long postId, LoginUser loginUser) {
         User user = userSupportService.findUserById(loginUser.getUserId());
         Character character = characterSupportService.findById(user.getOwnerCharId());
         Post post = postSupportService.findById(postId);
+
         if (post.getCharacter().getId().equals(character.getId())) {
             throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "자신의 파티에는 신청할 수 없습니다.");
         }
@@ -179,10 +184,20 @@ public class PostService {
                 PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId());
                 partyApplicant.pendingStatus();
             }
-        } else {
-            PartyApplicant applicant = new PartyApplicant(post, character);
-            partyApplicantSupportService.save(applicant);
         }
+        PartyApplicant applicant = new PartyApplicant(post, character);
+        partyApplicantSupportService.save(applicant);
+
+        PartyApplicantResponseDto newApplicantDto = new PartyApplicantResponseDto(
+                applicant.getCharacter().getId(),
+                applicant.getCharacter().getCharName(),
+                applicant.getCharacter().getCharClass(),
+                applicant.getCharacter().getCharLevel(),
+                applicant.getCharacter().getCharPower(),
+                applicant.getStatus()
+        );
+
+        sseEmiterService.sendPartyApplicantUpdate(postId, newApplicantDto);
 
         return new ApplyPartyResponseDto(post.getId(), character.getId(), character.getCharName());
     }

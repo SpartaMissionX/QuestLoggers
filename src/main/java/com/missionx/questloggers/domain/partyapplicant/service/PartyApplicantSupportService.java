@@ -16,8 +16,8 @@ public class PartyApplicantSupportService {
 
     private final PartyApplicantRepository partyApplicantRepository;
 
-    public void save(PartyApplicant partyApplicant) {
-        partyApplicantRepository.save(partyApplicant);
+    public PartyApplicant save(PartyApplicant partyApplicant) {
+        return partyApplicantRepository.save(partyApplicant);
     }
 
     public void delete(PartyApplicant partyApplicant) {
