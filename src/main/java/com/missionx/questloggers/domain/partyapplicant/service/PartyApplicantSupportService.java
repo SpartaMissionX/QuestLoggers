@@ -7,6 +7,7 @@ import com.missionx.questloggers.domain.partyapplicant.repository.PartyApplicant
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 

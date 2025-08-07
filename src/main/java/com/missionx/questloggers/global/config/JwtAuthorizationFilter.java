@@ -24,7 +24,9 @@ public class JwtAuthorizationFilter implements Filter {
     private final Set<String> excludedPaths = Set.of(
             "/api/auth/login",
             "/api/auth/signup",
-            "/api/auth/logout"
+            "/api/auth/logout",
+            "/api/auth/test",
+            "/api/test/apply-party"
     );
 
     public JwtAuthorizationFilter(JwtTokenProvider jwtTokenProvider, UserRepository userRepository) {
