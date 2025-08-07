@@ -4,7 +4,6 @@ import com.missionx.questloggers.domain.partyapplicant.dto.UpdatePostRequestDto;
 import com.missionx.questloggers.domain.partymember.dto.KickPartyMemberRequestDto;
 import com.missionx.questloggers.domain.partymember.dto.PartyMemberResponseDto;
 import com.missionx.questloggers.domain.post.dto.*;
-import com.missionx.questloggers.domain.post.enums.Difficulty;
 import com.missionx.questloggers.domain.post.service.PostService;
 import com.missionx.questloggers.global.config.security.LoginUser;
 import com.missionx.questloggers.global.dto.ApiResponse;
@@ -14,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
