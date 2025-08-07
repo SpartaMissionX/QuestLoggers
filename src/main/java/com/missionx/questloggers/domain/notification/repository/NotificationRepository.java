@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
     List<Notification> findAllByReceiverAndIsReadFalseOrderByCreatedAtAsc(User receiver);
+    boolean existsByReceiverAndIsReadFalse(User receiver);
 }

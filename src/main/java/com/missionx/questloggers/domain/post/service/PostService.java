@@ -190,21 +190,12 @@ public class PostService {
         }
 
         User leader = post.getCharacter().getUser();
-        String message = user.getOwnerCharName() + "님이 파티에 신청했습니다.";
+        String message = "[" + post.getTitle() + "] 게시글에 " +user.getOwnerCharName() + "님이 파티에 신청했습니다.";
 
         Notification notification = new Notification(leader, message, post);
         notificationSupportService.save(notification);
 
-        PartyApplicantResponseDto newApplicantDto = new PartyApplicantResponseDto(
-                partyApplicant.getCharacter().getId(),
-                partyApplicant.getCharacter().getCharName(),
-                partyApplicant.getCharacter().getCharClass(),
-                partyApplicant.getCharacter().getCharLevel(),
-                partyApplicant.getCharacter().getCharPower(),
-                partyApplicant.getStatus()
-        );
-
-        sseEmiterService.sendPartyApplicantUpdate(postId, newApplicantDto);
+        sseEmiterService.sendPartyApplicantUpdate(postId, notification);
 
         return new ApplyPartyResponseDto(post.getId(), character.getId(), character.getCharName());
     }
