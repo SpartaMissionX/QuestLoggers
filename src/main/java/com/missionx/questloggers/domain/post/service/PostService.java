@@ -159,6 +159,7 @@ public class PostService {
         User user = userSupportService.findUserById(loginUser.getUserId());
         Character character = characterSupportService.findById(user.getOwnerCharId());
         Post post = postSupportService.findById(postId);
+        PartyApplicant partyApplicant;
 
         if (post.getCharacter().getId().equals(character.getId())) {
             throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "자신의 파티에는 신청할 수 없습니다.");
@@ -169,32 +170,38 @@ public class PostService {
         List<Character> characterList = characterSupportService.findByUser(user);
         for (Character c : characterList) {
             if (partyApplicantSupportService.existsByPostIdAndCharacterId(postId, c.getId())) {
-                PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, c.getId());
+                partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, c.getId());
                 if (partyApplicant.getStatus() == ApplicantStatus.ACCEPTED || partyApplicant.getStatus() == ApplicantStatus.PENDING){
                     throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 본인의 다른 캐릭터가 파티 멤버이거나 파티 신청중입니다.");
                 }
             }
         }
+
         if (partyApplicantSupportService.existsByPostIdAndCharacterId(postId, character.getId())) {
-            if (partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId()).getStatus() == ApplicantStatus.ACCEPTED) {
-                throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 수락된 파티입니다.");
-            } else if (partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId()).getStatus() == ApplicantStatus.PENDING) {
-                throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 신청한 파티입니다.");
+            if (partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId()).getStatus() == ApplicantStatus.ACCEPTED || partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId()).getStatus() == ApplicantStatus.PENDING) {
+                throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 신청 또는 수락된 파티입니다.");
             } else {
-                PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId());
+                partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId());
                 partyApplicant.pendingStatus();
             }
+        } else {
+            partyApplicant = new PartyApplicant(post, character);
+            partyApplicantSupportService.save(partyApplicant);
         }
-        PartyApplicant applicant = new PartyApplicant(post, character);
-        partyApplicantSupportService.save(applicant);
+
+        User leader = post.getCharacter().getUser();
+        String message = user.getOwnerCharName() + "님이 파티에 신청했습니다.";
+
+        Notification notification = new Notification(leader, message, post);
+        notificationSupportService.save(notification);
 
         PartyApplicantResponseDto newApplicantDto = new PartyApplicantResponseDto(
-                applicant.getCharacter().getId(),
-                applicant.getCharacter().getCharName(),
-                applicant.getCharacter().getCharClass(),
-                applicant.getCharacter().getCharLevel(),
-                applicant.getCharacter().getCharPower(),
-                applicant.getStatus()
+                partyApplicant.getCharacter().getId(),
+                partyApplicant.getCharacter().getCharName(),
+                partyApplicant.getCharacter().getCharClass(),
+                partyApplicant.getCharacter().getCharLevel(),
+                partyApplicant.getCharacter().getCharPower(),
+                partyApplicant.getStatus()
         );
 
         sseEmiterService.sendPartyApplicantUpdate(postId, newApplicantDto);
