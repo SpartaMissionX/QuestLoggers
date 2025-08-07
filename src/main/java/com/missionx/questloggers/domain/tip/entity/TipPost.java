@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "tip_posts")
+@Table(name = "tip_posts_test")
 @NoArgsConstructor
 public class TipPost extends BaseEntity {
 
@@ -18,7 +18,7 @@ public class TipPost extends BaseEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     public TipPost(String title, String content) {

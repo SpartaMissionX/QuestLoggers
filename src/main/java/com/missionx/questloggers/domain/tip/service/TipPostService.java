@@ -8,6 +8,8 @@ import com.missionx.questloggers.domain.tip.entity.TipPost;
 import com.missionx.questloggers.domain.tip.exception.TipNotFoundException;
 import com.missionx.questloggers.domain.tip.repository.TipPostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 public class TipPostService {
 
     private final TipPostRepository tipPostRepository;
+    private final CacheManager cacheManager;
 
     @Transactional
     public CreateTipPostResponseDto createTipPost(CreateTipPostRequestDto createTipPostRequestDto) {
@@ -34,27 +37,56 @@ public class TipPostService {
 
     @Transactional(readOnly = true)
     public GetTipPostResponseDto getTipPost(Long tipId) {
+        Cache cache = cacheManager.getCache("tipSingle");
+        if (cache != null) {
+            GetTipPostResponseDto cached = cache.get(tipId, GetTipPostResponseDto.class);
+            if (cached != null) {
+                return cached;
+            }
+        }
+
         TipPost tipPost = tipPostRepository.findById(tipId)
                 .orElseThrow(() ->
                         new TipNotFoundException("해당 팁 게시글이 존재하지 않습니다")
                 );
 
-        return new GetTipPostResponseDto(
+        GetTipPostResponseDto response = new GetTipPostResponseDto(
                 tipPost.getId(),
                 tipPost.getTitle(),
                 tipPost.getContent()
         );
+
+        if (cache != null) {
+            cache.put(tipId, response);
+        }
+
+        return response;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<GetAllTipPostResponseDto> getAllTipPosts() {
-        return tipPostRepository.findAll().stream()
+        Cache cache = cacheManager.getCache("tipAll");
+
+        if (cache != null) {
+            List<GetAllTipPostResponseDto> cached = cache.get("all", List.class);
+            if (cached != null) {
+                return cached;
+            }
+        }
+
+        List<GetAllTipPostResponseDto> list = tipPostRepository.findAll().stream()
                 .map(tipPost -> new GetAllTipPostResponseDto(
                         tipPost.getId(),
                         tipPost.getTitle(),
                         tipPost.getContent()
                 ))
                 .collect(Collectors.toList());
+
+        if (cache != null) {
+            cache.put("all", list);
+        }
+
+        return list;
     }
 
     @Transactional
@@ -63,5 +95,16 @@ public class TipPostService {
             throw new TipNotFoundException("해당 팁 게시글이 존재하지 않습니다");
         }
         tipPostRepository.deleteById(tipId);
+
+        Cache cache = cacheManager.getCache("tipSingle");
+        if (cache != null) {
+            cache.evict(tipId);
+        }
+
+        Cache listCache = cacheManager.getCache("tipAll");
+        if (listCache != null) {
+            listCache.clear();
+        }
+
     }
 }
