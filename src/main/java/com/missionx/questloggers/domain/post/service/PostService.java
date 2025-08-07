@@ -5,6 +5,7 @@ import com.missionx.questloggers.domain.boss.service.BossSupportService;
 import com.missionx.questloggers.domain.character.entity.Character;
 import com.missionx.questloggers.domain.character.service.CharacterSupportService;
 import com.missionx.questloggers.domain.partyapplicant.dto.UpdatePostRequestDto;
+import com.missionx.questloggers.domain.partyapplicant.exception.PartyApplicantException;
 import com.missionx.questloggers.domain.partyapplicant.service.PartyApplicantSupportService;
 import com.missionx.questloggers.domain.partymember.dto.KickPartyMemberRequestDto;
 import com.missionx.questloggers.domain.partymember.dto.PartyMemberResponseDto;
@@ -158,14 +159,17 @@ public class PostService {
             throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "자신의 파티에는 신청할 수 없습니다.");
         }
 
+        partyApplicantSupportService.findApplicantCountIsLimit(postId);
+
         List<Character> characterList = characterSupportService.findByUser(user);
         for (Character c : characterList) {
-            PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, c.getId());
-            if (partyApplicant.getStatus() == ApplicantStatus.ACCEPTED || partyApplicant.getStatus() == ApplicantStatus.PENDING){
-                throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 본인의 다른 캐릭터가 파티 멤버이거나 파티 신청중입니다.");
+            if (partyApplicantSupportService.existsByPostIdAndCharacterId(postId, c.getId())) {
+                PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, c.getId());
+                if (partyApplicant.getStatus() == ApplicantStatus.ACCEPTED || partyApplicant.getStatus() == ApplicantStatus.PENDING){
+                    throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 본인의 다른 캐릭터가 파티 멤버이거나 파티 신청중입니다.");
+                }
             }
         }
-
         if (partyApplicantSupportService.existsByPostIdAndCharacterId(postId, character.getId())) {
             if (partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId()).getStatus() == ApplicantStatus.ACCEPTED) {
                 throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 수락된 파티입니다.");
