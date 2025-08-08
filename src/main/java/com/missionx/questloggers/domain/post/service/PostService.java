@@ -197,7 +197,7 @@ public class PostService {
         Notification notification = new Notification(leader, message, post, status);
         notificationSupportService.save(notification);
 
-        sseEmitterService.sendEvent(postId, notification);
+        sseEmitterService.sendEvent(leader, notification);
 
         return new ApplyPartyResponseDto(post.getId(), character.getId(), character.getCharName());
     }
@@ -266,7 +266,7 @@ public class PostService {
         Notification notification = new Notification(applicantCharacter.getUser(), message, post, status);
         notificationSupportService.save(notification);
 
-        sseEmitterService.sendEvent(postId, notification);
+        sseEmitterService.sendEvent(applicantCharacter.getUser(), notification);
     }
 
     /**
@@ -298,7 +298,7 @@ public class PostService {
         Notification notification = new Notification(applicantCharacter.getUser(), message, post, status);
         notificationSupportService.save(notification);
 
-        sseEmitterService.sendEvent(postId, notification);
+        sseEmitterService.sendEvent(applicantCharacter.getUser(), notification);
 
     }
 
@@ -342,7 +342,7 @@ public class PostService {
         Notification notification = new Notification(applicantCharacter.getUser(), message, post, status);
         notificationSupportService.save(notification);
 
-        sseEmitterService.sendEvent(postId, notification);
+        sseEmitterService.sendEvent(partyMember.getCharacter().getUser(), notification);
     }
 
     /**
@@ -372,6 +372,6 @@ public class PostService {
 
         Notification notification = new Notification(leader, message, post, status);
         notificationSupportService.save(notification);
-        sseEmitterService.sendEvent(postId, notification);
+        sseEmitterService.sendEvent(leader, notification);
     }
 }

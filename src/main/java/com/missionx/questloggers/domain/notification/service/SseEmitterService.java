@@ -27,19 +27,18 @@ public class SseEmitterService {
 
 
     @Transactional
-    public SseEmitter subscribe(Long postId, LoginUser loginUser) {
+    public SseEmitter subscribe(LoginUser loginUser) {
         SseEmitter emitter = new SseEmitter(1000L * 60 * 60); // 60분 타임아웃 설정
-
         User user = userSupportService.findUserById(loginUser.getUserId());
-        boolean existsByReceiverAndIsReadFalse = notificationSupportService.existsByReceiverAndIsReadFalse(user);
 
-        emitters.put(postId, emitter);
+        emitters.put(user.getId(), emitter);
 
         // 타임아웃이나 완료 시 맵에서 제거
-        emitter.onCompletion(() -> emitters.remove(postId));
-        emitter.onTimeout(() -> emitters.remove(postId));
+        emitter.onCompletion(() -> emitters.remove(user.getId()));
+        emitter.onTimeout(() -> emitters.remove(user.getId()));
 
         // 최초 연결 시 더미 데이터를 전송하여 연결을 유지함
+        boolean existsByReceiverAndIsReadFalse = notificationSupportService.existsByReceiverAndIsReadFalse(user);
         try {
             emitter.send(SseEmitter.event().name("Connect").data("연결성공"));
             if (existsByReceiverAndIsReadFalse) {
@@ -50,15 +49,15 @@ public class SseEmitterService {
                 }
             }
         } catch (Exception e) {
-            emitters.remove(postId);
+            emitters.remove(user.getId());
         }
 
         return emitter;
     }
 
     @Transactional
-    public void sendEvent(Long postId, Notification notification) {
-        SseEmitter emitter = emitters.get(postId);
+    public void sendEvent(User user, Notification notification) {
+        SseEmitter emitter = emitters.get(user.getId());
 
         if (emitter != null) {
             try {
@@ -66,7 +65,7 @@ public class SseEmitterService {
                 notification.updateIsRead();
             } catch (IOException e) {
                 notificationSupportService.save(notification);
-                emitters.remove(postId);
+                emitters.remove(user.getId());
             }
         } else {
             notificationSupportService.save(notification);
