@@ -6,6 +6,7 @@ import com.missionx.questloggers.domain.user.service.UserSupportService;
 import com.missionx.questloggers.global.config.security.LoginUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -18,11 +19,12 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SseEmiterService {
+public class SseEmitterService {
 
     private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
     private final NotificationSupportService notificationSupportService;
     private final UserSupportService userSupportService;
+
 
     @Transactional
     public SseEmitter subscribe(Long postId, LoginUser loginUser) {
@@ -39,11 +41,11 @@ public class SseEmiterService {
 
         // 최초 연결 시 더미 데이터를 전송하여 연결을 유지함
         try {
-            emitter.send(SseEmitter.event().name("연결성공").data("연결성공"));
+            emitter.send(SseEmitter.event().name("Connect").data("연결성공"));
             if (existsByReceiverAndIsReadFalse) {
                 List<Notification> notificationList = notificationSupportService.findAllByReceiverAndIsReadFalseOrderByCreatedAtAsc(user);
                 for (Notification notification : notificationList) {
-                    emitter.send(SseEmitter.event().name("파티신청").data(notification.getMessage()));
+                    emitter.send(SseEmitter.event().name(notification.getStatus().toString()).data(notification.getMessage()));
                     notification.updateIsRead();
                 }
             }
@@ -55,14 +57,14 @@ public class SseEmiterService {
     }
 
     @Transactional
-    public void sendPartyApplicantUpdate(Long postId, Notification notification) {
+    public void sendEvent(Long postId, Notification notification) {
         SseEmitter emitter = emitters.get(postId);
 
         if (emitter != null) {
             try {
-                emitter.send(SseEmitter.event().name("파티신청").data(notification.getMessage()));
+                emitter.send(SseEmitter.event().name(notification.getStatus().toString()).data(notification.getMessage()));
                 notification.updateIsRead();
-            } catch (IOException e){
+            } catch (IOException e) {
                 notificationSupportService.save(notification);
                 emitters.remove(postId);
             }

@@ -1,6 +1,6 @@
 package com.missionx.questloggers.domain.notification.controller;
 
-import com.missionx.questloggers.domain.notification.service.SseEmiterService;
+import com.missionx.questloggers.domain.notification.service.SseEmitterService;
 import com.missionx.questloggers.global.config.security.LoginUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -15,13 +15,13 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class SseEmitterController {
-    private final SseEmiterService sseEmiterService;
+    private final SseEmitterService sseEmitterService;
 
-    @GetMapping(value = "/posts/{postId}/applicant/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = "/posts/{postId}/applicants/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(
             @PathVariable Long postId,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
-        return sseEmiterService.subscribe(postId, loginUser);
+        return sseEmitterService.subscribe(postId, loginUser);
     }
 }

@@ -1,5 +1,6 @@
 package com.missionx.questloggers.domain.notification.entity;
 
+import com.missionx.questloggers.domain.notification.enums.NotificationStatus;
 import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.user.entity.User;
 import jakarta.persistence.*;
@@ -30,16 +31,21 @@ public class Notification {
     @JoinColumn(name = "post_id")
     private Post post;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, name = "status")
+    private NotificationStatus status;
+
     // 조회 여부
     private boolean isRead;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    public Notification(User receiver, String message, Post post) {
+    public Notification(User receiver, String message, Post post, NotificationStatus status) {
         this.receiver = receiver;
         this.message = message;
         this.post = post;
+        this.status = status;
         this.isRead = false;
     }
 
