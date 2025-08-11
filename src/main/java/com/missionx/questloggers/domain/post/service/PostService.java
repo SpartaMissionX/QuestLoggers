@@ -4,8 +4,10 @@ import com.missionx.questloggers.domain.boss.entity.Boss;
 import com.missionx.questloggers.domain.boss.service.BossSupportService;
 import com.missionx.questloggers.domain.character.entity.Character;
 import com.missionx.questloggers.domain.character.service.CharacterSupportService;
+import com.missionx.questloggers.domain.notification.entity.Notification;
+import com.missionx.questloggers.domain.notification.enums.NotificationStatus;
+import com.missionx.questloggers.domain.notification.service.NotificationSupportService;
 import com.missionx.questloggers.domain.partyapplicant.dto.UpdatePostRequestDto;
-import com.missionx.questloggers.domain.partyapplicant.exception.PartyApplicantException;
 import com.missionx.questloggers.domain.partyapplicant.service.PartyApplicantSupportService;
 import com.missionx.questloggers.domain.partymember.dto.KickPartyMemberRequestDto;
 import com.missionx.questloggers.domain.partymember.dto.PartyMemberResponseDto;
@@ -18,6 +20,7 @@ import com.missionx.questloggers.domain.post.entity.Post;
 import com.missionx.questloggers.domain.post.enums.Difficulty;
 import com.missionx.questloggers.domain.post.exception.*;
 import com.missionx.questloggers.domain.post.repository.PostRepository;
+import com.missionx.questloggers.domain.notification.service.SseEmitterService;
 import com.missionx.questloggers.domain.user.entity.User;
 import com.missionx.questloggers.domain.user.service.UserSupportService;
 import com.missionx.questloggers.global.config.security.LoginUser;
@@ -47,6 +50,8 @@ public class PostService {
     private final PartyApplicantSupportService partyApplicantSupportService;
     private final PartyMemberSupportService partyMemberSupportService;
     private final BossSupportService bossSupportService;
+    private final SseEmitterService sseEmitterService;
+    private final NotificationSupportService notificationSupportService;
 
 
     /**
@@ -151,10 +156,12 @@ public class PostService {
      * 파티원 신청
      */
     @Transactional
-    public ApplyPartyResponseDto applyPartyResponseDto(Long postId, LoginUser loginUser) {
+    public ApplyPartyResponseDto applyToParty(Long postId, LoginUser loginUser) {
         User user = userSupportService.findUserById(loginUser.getUserId());
         Character character = characterSupportService.findById(user.getOwnerCharId());
         Post post = postSupportService.findById(postId);
+        PartyApplicant partyApplicant;
+
         if (post.getCharacter().getId().equals(character.getId())) {
             throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "자신의 파티에는 신청할 수 없습니다.");
         }
@@ -164,25 +171,33 @@ public class PostService {
         List<Character> characterList = characterSupportService.findByUser(user);
         for (Character c : characterList) {
             if (partyApplicantSupportService.existsByPostIdAndCharacterId(postId, c.getId())) {
-                PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, c.getId());
+                partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, c.getId());
                 if (partyApplicant.getStatus() == ApplicantStatus.ACCEPTED || partyApplicant.getStatus() == ApplicantStatus.PENDING){
                     throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 본인의 다른 캐릭터가 파티 멤버이거나 파티 신청중입니다.");
                 }
             }
         }
+
         if (partyApplicantSupportService.existsByPostIdAndCharacterId(postId, character.getId())) {
-            if (partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId()).getStatus() == ApplicantStatus.ACCEPTED) {
-                throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 수락된 파티입니다.");
-            } else if (partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId()).getStatus() == ApplicantStatus.PENDING) {
-                throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 신청한 파티입니다.");
+            if (partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId()).getStatus() == ApplicantStatus.ACCEPTED || partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId()).getStatus() == ApplicantStatus.PENDING) {
+                throw new InvalidPartyActionException(HttpStatus.BAD_REQUEST, "이미 신청 또는 수락된 파티입니다.");
             } else {
-                PartyApplicant partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId());
+                partyApplicant = partyApplicantSupportService.findByPostIdAndCharacterId(postId, character.getId());
                 partyApplicant.pendingStatus();
             }
         } else {
-            PartyApplicant applicant = new PartyApplicant(post, character);
-            partyApplicantSupportService.save(applicant);
+            partyApplicant = new PartyApplicant(post, character);
+            partyApplicantSupportService.save(partyApplicant);
         }
+
+        User leader = post.getCharacter().getUser();
+        String message = "'" + user.getOwnerCharName() + "'님이 파티에 신청했습니다. \n 파티모집글 : [" + post.getTitle() + "]";
+        NotificationStatus status = NotificationStatus.PARTY_APPLY;
+
+        Notification notification = new Notification(leader, message, post, status);
+        notificationSupportService.save(notification);
+
+        sseEmitterService.sendEvent(leader, notification);
 
         return new ApplyPartyResponseDto(post.getId(), character.getId(), character.getCharName());
     }
@@ -191,7 +206,7 @@ public class PostService {
      * 파티원 신청자 조회
      */
     @Transactional
-    public List<PartyApplicantResponseDto> getPartyApplicantResponseDto(Long postId, LoginUser loginUser) {
+    public List<PartyApplicantResponseDto> getPartyApplicants(Long postId, LoginUser loginUser) {
         User user = userSupportService.findUserById(loginUser.getUserId());
         Character character = characterSupportService.findById(user.getOwnerCharId());
         Post post = postSupportService.findById(postId);
@@ -221,7 +236,7 @@ public class PostService {
      * 파티 신청 수락
      */
     @Transactional
-    public void accpetParty(Long postId, Long charId, LoginUser loginUser) {
+    public void acceptParty(Long postId, Long charId, LoginUser loginUser) {
         User user = userSupportService.findUserById(loginUser.getUserId());
         Character leaderCharacter = characterSupportService.findById(user.getOwnerCharId());
         Character applicantCharacter = characterSupportService.findById(charId);
@@ -244,6 +259,14 @@ public class PostService {
 
         partyApplicant.acceptStatus();
         partyMemberSupportService.save(new PartyMember(post,applicantCharacter));
+
+        String message = "파티 신청이 수락되었습니다. \n 파티모집글 : [" + post.getTitle() + "]";
+        NotificationStatus status = NotificationStatus.PARTY_ACCEPT;
+
+        Notification notification = new Notification(applicantCharacter.getUser(), message, post, status);
+        notificationSupportService.save(notification);
+
+        sseEmitterService.sendEvent(applicantCharacter.getUser(), notification);
     }
 
     /**
@@ -253,6 +276,7 @@ public class PostService {
     public void rejectParty(Long postId, Long charId, LoginUser loginUser) {
         User user = userSupportService.findUserById(loginUser.getUserId());
         Character leaderCharacter = characterSupportService.findById(user.getOwnerCharId());
+        Character applicantCharacter = characterSupportService.findById(charId);
         Post post = postSupportService.findById(postId);
 
         boolean isLeader = post.getCharacter().getId().equals(leaderCharacter.getId());
@@ -267,6 +291,14 @@ public class PostService {
         }
 
         partyApplicant.rejectStatus();
+
+        String message = "파티 신청이 거절되었습니다. \n 파티모집글 : [" + post.getTitle() + "]";
+        NotificationStatus status = NotificationStatus.PARTY_REJECT;
+
+        Notification notification = new Notification(applicantCharacter.getUser(), message, post, status);
+        notificationSupportService.save(notification);
+
+        sseEmitterService.sendEvent(applicantCharacter.getUser(), notification);
 
     }
 
@@ -290,6 +322,7 @@ public class PostService {
     public void kickPartyMember(Long postId, KickPartyMemberRequestDto requestDto, LoginUser loginUser) {
         User user = userSupportService.findUserById(loginUser.getUserId());
         Character leaderCharacter = characterSupportService.findById(user.getOwnerCharId());
+        Character applicantCharacter = characterSupportService.findById(requestDto.getCharId());
         Post post = postSupportService.findById(postId);
 
         boolean isLeader = post.getCharacter().getId().equals(leaderCharacter.getId());
@@ -302,11 +335,20 @@ public class PostService {
         }
         partyApplicant.leaveStatus();
         partyMemberSupportService.delete(partyMember);
+
+        String message = "파티에서 추방되었습니다. \n 파티모집글 : [" + post.getTitle() + "]";
+        NotificationStatus status = NotificationStatus.PARTY_KICK;
+
+        Notification notification = new Notification(applicantCharacter.getUser(), message, post, status);
+        notificationSupportService.save(notification);
+
+        sseEmitterService.sendEvent(partyMember.getCharacter().getUser(), notification);
     }
 
     /**
      * 파티 탈퇴
      */
+    @Transactional
     public void leaveParty(Long postId, LoginUser loginUser) {
         User user = userSupportService.findUserById(loginUser.getUserId());
         Character character = characterSupportService.findById(user.getOwnerCharId());
@@ -324,5 +366,12 @@ public class PostService {
         partyApplicant.leaveStatus();
         partyMemberSupportService.delete(partyMember);
 
+        User leader = post.getCharacter().getUser();
+        String message = "'" + user.getOwnerCharName() + "'님이 파티에서 탈퇴했습니다. \n 파티모집글 : [" + post.getTitle() + "]";
+        NotificationStatus status = NotificationStatus.PARTY_APPLY;
+
+        Notification notification = new Notification(leader, message, post, status);
+        notificationSupportService.save(notification);
+        sseEmitterService.sendEvent(leader, notification);
     }
 }

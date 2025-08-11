@@ -91,7 +91,7 @@ public class PostController {
             @PathVariable Long postId,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
-        ApplyPartyResponseDto responseDto = postService.applyPartyResponseDto(postId, loginUser);
+        ApplyPartyResponseDto responseDto = postService.applyToParty(postId, loginUser);
         return ApiResponse.success(HttpStatus.CREATED, "파티 신청이 완료되었습니다.", responseDto);
     }
 
@@ -103,7 +103,7 @@ public class PostController {
             @PathVariable Long postId,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
-        List<PartyApplicantResponseDto> partyApplicantResponseDto = postService.getPartyApplicantResponseDto(postId, loginUser);
+        List<PartyApplicantResponseDto> partyApplicantResponseDto = postService.getPartyApplicants(postId, loginUser);
         return ApiResponse.success(HttpStatus.OK, "파티 신청자 조회 성공", partyApplicantResponseDto);
     }
 
@@ -116,7 +116,7 @@ public class PostController {
             @PathVariable Long charId,
             @AuthenticationPrincipal LoginUser loginUser
     ) {
-        postService.accpetParty(postId, charId, loginUser);
+        postService.acceptParty(postId, charId, loginUser);
         return ApiResponse.success(HttpStatus.OK, "파티 신청을 수락했습니다.", null);
     }
 
