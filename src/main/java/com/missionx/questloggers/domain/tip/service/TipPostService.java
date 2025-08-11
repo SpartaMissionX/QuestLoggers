@@ -10,6 +10,8 @@ import com.missionx.questloggers.domain.tip.repository.TipPostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,7 @@ public class TipPostService {
     private final TipPostRepository tipPostRepository;
     private final CacheManager cacheManager;
 
+    @CacheEvict(value = {"tipSingle", "tipAll"}, allEntries = true)
     @Transactional
     public CreateTipPostResponseDto createTipPost(CreateTipPostRequestDto createTipPostRequestDto) {
         TipPost tipPost = new TipPost(createTipPostRequestDto.getTitle(), createTipPostRequestDto.getContent());
@@ -35,6 +38,7 @@ public class TipPostService {
         );
     }
 
+    @Cacheable(value = "tipSingle", key = "#tipId")
     @Transactional(readOnly = true)
     public GetTipPostResponseDto getTipPost(Long tipId) {
         Cache cache = cacheManager.getCache("tipSingle");
@@ -63,6 +67,7 @@ public class TipPostService {
         return response;
     }
 
+    @Cacheable(value = "tipAll", key = "'all'")
     @Transactional(readOnly = true)
     public List<GetAllTipPostResponseDto> getAllTipPosts() {
         Cache cache = cacheManager.getCache("tipAll");
@@ -89,6 +94,7 @@ public class TipPostService {
         return list;
     }
 
+    @CacheEvict(value = {"tipSingle", "tipAll"}, allEntries = true)
     @Transactional
     public void deleteTipPost(Long tipId) {
         if (!tipPostRepository.existsById(tipId)) {

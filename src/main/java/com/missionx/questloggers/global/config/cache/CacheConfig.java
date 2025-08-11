@@ -1,35 +1,27 @@
 package com.missionx.questloggers.global.config.cache;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.caffeine.CaffeineCache;
-import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 @Configuration
-@EnableCaching
 public class CacheConfig {
 
     @Bean
-    public CacheManager cacheManager() {
-        SimpleCacheManager cacheManager = new SimpleCacheManager();
-        var caches = Arrays.stream(CacheType.values())
-                .map(type -> new CaffeineCache(
-                        type.getCacheName(),
-                        Caffeine.newBuilder()
-                                .expireAfterWrite(type.getExpireAfterWriteSec(), TimeUnit.SECONDS)
-                                .maximumSize(type.getMaximumSize())
-                                .recordStats()  // 히트/미스 통계 기록용
-                                .build()
-                ))
-                .toList();
-
-        cacheManager.setCaches(caches);
-        return cacheManager;
+    public RedisCacheConfiguration redisCacheConfiguration() {
+        return RedisCacheConfiguration.defaultCacheConfig()
+                // 캐시 기본 TTL
+                .entryTtl(Duration.ofMinutes(10))
+                // null 값은 캐싱하지 않음
+                .disableCachingNullValues()
+                // 값은 JSON 직렬화(보기/호환성 좋음)
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair
+                                .fromSerializer(new GenericJackson2JsonRedisSerializer())
+                );
     }
 }
