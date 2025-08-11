@@ -2,6 +2,14 @@ spring:
   profiles:
     active: local
 
+  cache:
+    type: redis
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
 admin:
   emails:
     - dPwls123@example.com
