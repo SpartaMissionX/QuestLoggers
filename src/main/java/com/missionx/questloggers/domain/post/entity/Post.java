@@ -12,6 +12,14 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @Table(name = "posts")
+//@Table(
+//        name = "posts",
+//        indexes = {
+//                @Index(name = "idx_boss_difficulty_created", columnList = "boss_id, difficulty, created_at"),
+//                @Index(name = "idx_difficulty_created", columnList = "difficulty, created_at"),
+//                @Index(name = "idx_created_at", columnList = "created_at")
+//        }
+//)
 @NoArgsConstructor
 public class Post extends BaseEntity {
 
