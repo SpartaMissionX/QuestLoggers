@@ -27,7 +27,7 @@ public class JwtAuthorizationFilter implements Filter {
             "/api/auth/logout",
             "/api/auth/test",
             "/api/test/apply-party",
-            "/api/test/posts"
+            "/api/auth/test/posts"
     );
 
     public JwtAuthorizationFilter(JwtTokenProvider jwtTokenProvider, UserRepository userRepository) {
