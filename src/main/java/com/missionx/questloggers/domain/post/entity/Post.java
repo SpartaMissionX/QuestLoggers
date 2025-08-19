@@ -19,10 +19,14 @@ public class Post extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "char_id")
+    private Character character;
+
+    @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(nullable = false)
+    @Column(name = "content", nullable = false)
     private String content;
 
     @ManyToOne
@@ -30,15 +34,11 @@ public class Post extends BaseEntity {
     private Boss boss;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, name = "difficulty")
+    @Column(name = "difficulty", nullable = false)
     private Difficulty difficulty;
 
-    @Column(nullable = false, name = "party_size")
+    @Column(name = "party_size", nullable = false)
     private int partySize;
-
-    @ManyToOne
-    @JoinColumn(name = "char_id")
-    private Character character;
 
     public Post (String title, String content, Character character, Boss boss, Difficulty difficulty, int partySize) {
         this.title = title;
