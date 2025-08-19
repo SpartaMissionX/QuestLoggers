@@ -18,11 +18,11 @@ public class TestApplyParty {
 
     @GetMapping("/test/apply-party")
     public String testApplyParty() throws InterruptedException {
-        ExecutorService executor = Executors.newFixedThreadPool(10); // 동시 10개 실행
-        CountDownLatch latch = new CountDownLatch(100); // 100명 기다리기
+        ExecutorService executor = Executors.newFixedThreadPool(10);
+        CountDownLatch latch = new CountDownLatch(200);
 
-        for (long i = 1; i <= 100; i++) {
-            long userId = i; // userId 1~100 (여기 맞게 수정)
+        for (long i = 1; i <= 200; i++) {
+            long userId = i;
             executor.submit(() -> {
                 try {
                     partyService.applyPartyResponseDto(userId);
@@ -34,7 +34,7 @@ public class TestApplyParty {
             });
         }
 
-        latch.await(); // 모든 작업이 끝날 때까지 대기
+        latch.await();
         executor.shutdown();
 
         return "100 API called concurrently.";
