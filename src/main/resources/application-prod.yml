@@ -17,6 +17,11 @@ spring:
     redis:
       host: redis-db-0wursh.serverless.apn2.cache.amazonaws.com
       port: 6379
+      username: default
+      password: ${REDIS_AUTH_TOKEN}
+      ssl:
+        enabled: true
+      client-type: lettuce
 
 server:
   error:
