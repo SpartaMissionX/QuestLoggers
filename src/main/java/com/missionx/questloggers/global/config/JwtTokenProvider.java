@@ -34,6 +34,8 @@ public class JwtTokenProvider {
                 .claim("role", user.getRole())
                 .claim("apiKey", user.getApiKey())
                 .claim("point", user.getPoint())
+                .claim("ownerCharId", user.getOwnerCharId())
+                .claim("ownerCharName", user.getOwnerCharName())
                 .setIssuedAt(now)
                 .setExpiration(expiry)
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -89,5 +91,13 @@ public class JwtTokenProvider {
 
     public Integer getPointFromToken(String token) {
         return parseClaims(token).get("point", Integer.class);
+    }
+
+    public Long getOwnerCharIdFromToken(String token) {
+        return parseClaims(token).get("ownerCharId", Long.class);
+    }
+
+    public String getOwnerCharNameFromToken(String token) {
+        return parseClaims(token).get("ownerCharName", String.class);
     }
 }

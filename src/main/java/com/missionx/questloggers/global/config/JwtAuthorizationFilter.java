@@ -80,7 +80,9 @@ public class JwtAuthorizationFilter implements Filter {
                 user.getEmail(),
                 jwtTokenProvider.getRoleFromToken(token),
                 jwtTokenProvider.getApiKeyFromToken(token),
-                jwtTokenProvider.getPointFromToken(token)
+                jwtTokenProvider.getPointFromToken(token),
+                jwtTokenProvider.getOwnerCharIdFromToken(token),
+                jwtTokenProvider.getOwnerCharNameFromToken(token)
         );
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

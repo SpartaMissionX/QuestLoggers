@@ -191,7 +191,7 @@ public class PostService {
         }
 
         User leader = post.getCharacter().getUser();
-        String message = "'" + user.getOwnerCharName() + "'님이 파티에 신청했습니다. \n 파티모집글 : [" + post.getTitle() + "]";
+        String message = "'" + user.getOwnerCharName() + "'님이 파티에 신청했습니다. \n 게시글 작성 캐릭터 : [" + post.getCharacter().getCharName() + "] \n 파티모집글 : [" + post.getTitle() + "]";
         NotificationStatus status = NotificationStatus.PARTY_APPLY;
 
         Notification notification = new Notification(leader, message, post, status);
@@ -260,7 +260,7 @@ public class PostService {
         partyApplicant.acceptStatus();
         partyMemberSupportService.save(new PartyMember(post,applicantCharacter));
 
-        String message = "파티 신청이 수락되었습니다. \n 파티모집글 : [" + post.getTitle() + "]";
+        String message = "파티 신청이 수락되었습니다. \n 파티 신청 캐릭터 : [" + applicantCharacter.getCharName() + "] \n 파티모집글 : [" + post.getTitle() + "]";
         NotificationStatus status = NotificationStatus.PARTY_ACCEPT;
 
         Notification notification = new Notification(applicantCharacter.getUser(), message, post, status);
@@ -292,7 +292,7 @@ public class PostService {
 
         partyApplicant.rejectStatus();
 
-        String message = "파티 신청이 거절되었습니다. \n 파티모집글 : [" + post.getTitle() + "]";
+        String message = "파티 신청이 거절되었습니다. \n 파티 거절된 캐릭터 : [" + applicantCharacter.getCharName() + "] \n 파티모집글 : [" + post.getTitle() + "]";
         NotificationStatus status = NotificationStatus.PARTY_REJECT;
 
         Notification notification = new Notification(applicantCharacter.getUser(), message, post, status);
@@ -336,7 +336,7 @@ public class PostService {
         partyApplicant.leaveStatus();
         partyMemberSupportService.delete(partyMember);
 
-        String message = "파티에서 추방되었습니다. \n 파티모집글 : [" + post.getTitle() + "]";
+        String message = "파티에서 추방되었습니다. \n 파티 추방된 캐릭터 : [" + partyMember.getCharacter().getCharName() + "] \n 파티모집글 : [" + post.getTitle() + "]";
         NotificationStatus status = NotificationStatus.PARTY_KICK;
 
         Notification notification = new Notification(applicantCharacter.getUser(), message, post, status);
