@@ -10,6 +10,14 @@ spring:
     hibernate:
       ddl-auto: none
 
+  cache:
+    type: redis
+
+  data:
+    redis:
+      host: redis-db-0wursh.serverless.apn2.cache.amazonaws.com
+      port: 6379
+
 server:
   error:
     include-message: always
