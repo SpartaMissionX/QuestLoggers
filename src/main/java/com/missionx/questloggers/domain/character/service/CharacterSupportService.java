@@ -25,6 +25,11 @@ public class CharacterSupportService {
     }
 
     @Transactional
+    public List<Character> findAllCharacter() {
+        return characterRepository.findAll();
+    }
+
+    @Transactional
     public List<Character> findByUser(User user) {
         return characterRepository.findByUser(user);
     }

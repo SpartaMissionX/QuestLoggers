@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class UserSupportService {
@@ -23,6 +25,11 @@ public class UserSupportService {
         return userRepository.findById(userId).orElseThrow(
                 () -> new NotFoundUserException(HttpStatus.NOT_FOUND, "유저가 존재하지 않습니다.")
         );
+    }
+
+    @Transactional
+    public List<User> findAllUsers() {
+        return userRepository.findAll();
     }
 
     // 이메일 중복 체크용
