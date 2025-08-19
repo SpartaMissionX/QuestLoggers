@@ -25,7 +25,7 @@ public class PartyApplicant {
     private Character character;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private ApplicantStatus status;
 
     public PartyApplicant(Post post, Character character) {
