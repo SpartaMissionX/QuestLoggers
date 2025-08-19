@@ -24,8 +24,7 @@ public class Character {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany
-    @JoinColumn(name = "char_boss_id")
+    @OneToMany(mappedBy = "character", cascade = CascadeType.ALL)
     private List<CharacterBoss> characterBoss = new ArrayList<>();
 
     @Column(name = "ocid", unique = true, nullable = false)
@@ -43,7 +42,7 @@ public class Character {
     @Column(name = "char_level", nullable = false)
     private Integer charLevel;
 
-    ;@Column(name = "char_image", columnDefinition = "TEXT")
+    @Column(name = "char_image", columnDefinition = "TEXT")
     private String charImage;
 
     @Column(name = "owner_char", nullable = false)
