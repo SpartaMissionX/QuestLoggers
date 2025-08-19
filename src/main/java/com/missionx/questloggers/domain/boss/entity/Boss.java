@@ -23,8 +23,10 @@ public class Boss {
     @JoinColumn(name = "char_boss_id")
     private List<CharacterBoss> characterBoss = new ArrayList<>();
 
+    @Column(name = "boss_name", nullable = false, length = 50)
     private String bossName;
 
+    @Column(name = "boss_image", nullable = false , columnDefinition = "TEXT")
     private String bossImage;
 
     //보스 생성 생성자

@@ -23,10 +23,10 @@ public class Post extends BaseEntity {
     @JoinColumn(name = "char_id")
     private Character character;
 
-    @Column(name = "title", nullable = false)
+    @Column(name = "title", nullable = false, length = 50)
     private String title;
 
-    @Column(name = "content", nullable = false)
+    @Column(name = "content", nullable = false, length = 500)
     private String content;
 
     @ManyToOne

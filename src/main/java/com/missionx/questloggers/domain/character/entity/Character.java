@@ -31,22 +31,22 @@ public class Character {
     @Column(name = "ocid", unique = true, nullable = false)
     private String ocid;
 
-    @Column(name = "char_name", nullable = false)
+    @Column(name = "char_name", nullable = false, length = 20)
     private String charName;
 
-    @Column(name = "world_name")
+    @Column(name = "world_name", nullable = false, length = 20)
     private String worldName;
 
-    @Column(name = "char_class")
+    @Column(name = "char_class", nullable = false, length = 30)
     private String charClass;
 
-    @Column(name = "char_level")
+    @Column(name = "char_level", nullable = false)
     private Integer charLevel;
 
-    ;@Column(name = "char_image", length = 500)
+    ;@Column(name = "char_image", columnDefinition = "TEXT")
     private String charImage;
 
-    @Column(name = "owner_char")
+    @Column(name = "owner_char", nullable = false)
     @ColumnDefault("false")
     private boolean ownerChar;
 

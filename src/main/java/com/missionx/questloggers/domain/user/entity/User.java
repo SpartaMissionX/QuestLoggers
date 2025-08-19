@@ -17,7 +17,7 @@ public class User extends BaseEntity {
     // 회원탈퇴기능 추가
     private Long id;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
     @Column(name = "password", nullable = false)
@@ -36,7 +36,7 @@ public class User extends BaseEntity {
     @Column(name = "owner_char_id")
     private Long ownerCharId;
 
-    @Column(name = "owner_char_name")
+    @Column(name = "owner_char_name", length = 20)
     private String ownerCharName;
 
     public User(String email, String password, String apiKey, Role role) {
