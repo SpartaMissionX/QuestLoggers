@@ -8,10 +8,10 @@ import com.missionx.questloggers.domain.tip.entity.TipPost;
 import com.missionx.questloggers.domain.tip.exception.TipNotFoundException;
 import com.missionx.questloggers.domain.tip.repository.TipPostRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,96 +21,52 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class TipPostService {
-
     private final TipPostRepository tipPostRepository;
-    private final CacheManager cacheManager;
 
-    @CacheEvict(value = {"tipSingle", "tipAll"}, allEntries = true)
+    @CacheEvict(value = "tipAll", key = "'all'")
     @Transactional
-    public CreateTipPostResponseDto createTipPost(CreateTipPostRequestDto createTipPostRequestDto) {
-        TipPost tipPost = new TipPost(createTipPostRequestDto.getTitle(), createTipPostRequestDto.getContent());
-        TipPost saved = tipPostRepository.save(tipPost);
-
-        return new CreateTipPostResponseDto(
-                saved.getId(),
-                saved.getTitle(),
-                saved.getContent()
-        );
+    public CreateTipPostResponseDto createTipPost(CreateTipPostRequestDto dto) {
+        TipPost saved = tipPostRepository.save(new TipPost(dto.getTitle(), dto.getContent()));
+        return new CreateTipPostResponseDto(saved.getId(), saved.getTitle(), saved.getContent());
     }
 
-    @Cacheable(value = "tipSingle", key = "#tipId")
+    @Cacheable(value = "tipSingle", key = "#tipId", unless = "#result == null")
     @Transactional(readOnly = true)
     public GetTipPostResponseDto getTipPost(Long tipId) {
-        Cache cache = cacheManager.getCache("tipSingle");
-        if (cache != null) {
-            GetTipPostResponseDto cached = cache.get(tipId, GetTipPostResponseDto.class);
-            if (cached != null) {
-                return cached;
-            }
-        }
-
         TipPost tipPost = tipPostRepository.findById(tipId)
-                .orElseThrow(() ->
-                        new TipNotFoundException("해당 팁 게시글이 존재하지 않습니다")
-                );
-
-        GetTipPostResponseDto response = new GetTipPostResponseDto(
-                tipPost.getId(),
-                tipPost.getTitle(),
-                tipPost.getContent()
-        );
-
-        if (cache != null) {
-            cache.put(tipId, response);
-        }
-
-        return response;
+                .orElseThrow(() -> new TipNotFoundException("해당 팁 게시글이 존재하지 않습니다"));
+        return new GetTipPostResponseDto(tipPost.getId(), tipPost.getTitle(), tipPost.getContent());
     }
 
-    @Cacheable(value = "tipAll", key = "'all'")
+    @Cacheable(value = "tipAll", key = "'all'", unless = "#result == null or #result.isEmpty()")
     @Transactional(readOnly = true)
     public List<GetAllTipPostResponseDto> getAllTipPosts() {
-        Cache cache = cacheManager.getCache("tipAll");
-
-        if (cache != null) {
-            List<GetAllTipPostResponseDto> cached = cache.get("all", List.class);
-            if (cached != null) {
-                return cached;
-            }
-        }
-
-        List<GetAllTipPostResponseDto> list = tipPostRepository.findAll().stream()
-                .map(tipPost -> new GetAllTipPostResponseDto(
-                        tipPost.getId(),
-                        tipPost.getTitle(),
-                        tipPost.getContent()
-                ))
+        return tipPostRepository.findAll().stream()
+                .map(t -> new GetAllTipPostResponseDto(t.getId(), t.getTitle(), t.getContent()))
                 .collect(Collectors.toList());
-
-        if (cache != null) {
-            cache.put("all", list);
-        }
-
-        return list;
     }
 
-    @CacheEvict(value = {"tipSingle", "tipAll"}, allEntries = true)
+    @Caching(
+            put   = { @CachePut(value = "tipSingle", key = "#tipId") },
+            evict = { @CacheEvict(value = "tipAll",  key = "'all'") }
+    )
+    @Transactional
+    public GetTipPostResponseDto updateTipPost(Long tipId, CreateTipPostRequestDto dto) {
+        TipPost post = tipPostRepository.findById(tipId)
+                .orElseThrow(() -> new TipNotFoundException("해당 팁 게시글이 존재하지 않습니다"));
+        post.update(dto.getTitle(), dto.getContent());
+        return new GetTipPostResponseDto(post.getId(), post.getTitle(), post.getContent());
+    }
+
+    @Caching(evict = {
+            @CacheEvict(value = "tipSingle", key = "#tipId"),
+            @CacheEvict(value = "tipAll",    key = "'all'")
+    })
     @Transactional
     public void deleteTipPost(Long tipId) {
         if (!tipPostRepository.existsById(tipId)) {
             throw new TipNotFoundException("해당 팁 게시글이 존재하지 않습니다");
         }
         tipPostRepository.deleteById(tipId);
-
-        Cache cache = cacheManager.getCache("tipSingle");
-        if (cache != null) {
-            cache.evict(tipId);
-        }
-
-        Cache listCache = cacheManager.getCache("tipAll");
-        if (listCache != null) {
-            listCache.clear();
-        }
-
     }
 }
