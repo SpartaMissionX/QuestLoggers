@@ -19,12 +19,13 @@ public class Boss {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany
-    @JoinColumn(name = "char_boss_id")
+    @OneToMany(mappedBy = "boss", cascade = CascadeType.ALL)
     private List<CharacterBoss> characterBoss = new ArrayList<>();
 
+    @Column(name = "boss_name", nullable = false, length = 50)
     private String bossName;
 
+    @Column(name = "boss_image", nullable = false , columnDefinition = "TEXT")
     private String bossImage;
 
     //보스 생성 생성자

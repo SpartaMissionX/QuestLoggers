@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor
+@Table(name = "notifications")
 public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,22 +24,26 @@ public class Notification {
     @JoinColumn(name = "user_id")
     private User receiver;
 
-    // 메세지
-    private String message;
-
     // 게시글
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
 
+    // 메세지
+    @Column(name = "message")
+    private String message;
+
+    // 상태값
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, name = "status")
+    @Column(name = "status", nullable = false)
     private NotificationStatus status;
 
     // 조회 여부
+    @Column(name = "is_read")
     private boolean isRead;
 
     @CreationTimestamp
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     public Notification(User receiver, String message, Post post, NotificationStatus status) {

@@ -13,13 +13,17 @@ public class LoginUser implements UserDetails {
     private final String role;
     private final String apiKey;
     private int point;
+    private final Long ownerCharId;
+    private final String ownerCharName;
 
-    public LoginUser(Long userId, String email, String role, String apiKey, Integer point) {
+    public LoginUser(Long userId, String email, String role, String apiKey, Integer point, Long ownerCharId, String ownerCharName) {
         this.userId = userId;
         this.email = email;
         this.role = role;
         this.apiKey = apiKey;
         this.point = point;
+        this.ownerCharId = ownerCharId;
+        this.ownerCharName = ownerCharName;
     }
 
     @Override
@@ -64,4 +68,11 @@ public class LoginUser implements UserDetails {
         return point;
     }
 
+    public Long getOwnerCharId() {
+        return ownerCharId;
+    }
+
+    public String getOwnerCharName() {
+        return ownerCharName;
+    }
 }

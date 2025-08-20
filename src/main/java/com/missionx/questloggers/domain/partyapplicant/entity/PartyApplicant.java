@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
+@Table(name = "party_applicants")
 public class PartyApplicant {
 
     @Id
@@ -25,7 +26,7 @@ public class PartyApplicant {
     private Character character;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private ApplicantStatus status;
 
     public PartyApplicant(Post post, Character character) {

@@ -17,24 +17,26 @@ public class User extends BaseEntity {
     // 회원탈퇴기능 추가
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "password", nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "role", nullable = false)
     private Role role;
 
-    @Column(nullable = false)
+    @Column(name = "api_key", nullable = false)
     private String apiKey;
 
-    @Column(nullable = false)
-    private int point = 0;
+    @Column(name = "point", nullable = false)
+    private int point;
 
+    @Column(name = "owner_char_id")
     private Long ownerCharId;
 
+    @Column(name = "owner_char_name", length = 20)
     private String ownerCharName;
 
     public User(String email, String password, String apiKey, Role role) {
