@@ -20,6 +20,9 @@ spring:
       ssl:
         enabled: true
       client-type: lettuce   # 기본값이지만 명시해도 됨
+      username: default
+      password: ${REDIS_PASSWORD}
+      timeout: 5s
 
 server:
   error:
