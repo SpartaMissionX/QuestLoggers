@@ -206,8 +206,8 @@ public class CharacterService {
     }
 
 
-    // 스케쥴 ( 월요일 AM 06:00 마다 클리어 여부 초기화 )
-    @Scheduled(cron = "0 0 6 * * 1")
+    // 스케쥴 ( 목요일 AM 00:00 마다 클리어 여부 초기화 )
+    @Scheduled(cron = "0 0 0 * * 4")
     @Transactional
     public void updateIsClearedToFalse() {
         List<CharacterBoss> characterBossList = characterBossSupportService.findAll();
