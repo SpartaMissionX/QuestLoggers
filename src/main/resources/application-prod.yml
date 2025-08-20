@@ -15,13 +15,13 @@ spring:
 
   data:
     redis:
-      host: redis-db-0wursh.serverless.apn2.cache.amazonaws.com
-      port: 6379
+      host: ${REDIS_HOST2}
+      port: ${REDIS_PORT2}
       ssl:
         enabled: true
-      client-type: lettuce   # 기본값이지만 명시해도 됨
+      client-type: lettuce
       username: default
-      password: ${REDIS_PASSWORD}
+      password: ${REDIS_PASSWORD2}
       timeout: 5s
 
 server:
