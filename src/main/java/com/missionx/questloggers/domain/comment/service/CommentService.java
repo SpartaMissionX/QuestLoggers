@@ -53,6 +53,7 @@ public class CommentService {
     public PageResponseDto<FindAllCommentResponseDto> findAllComment(Long postId, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.ASC, "createdAt"));
         Page<Comment> commentsPage = commentRepository.findByPostIdAndDeletedAtNull(postId, pageable);
+        postSupportService.findById(postId);
 
         if (commentsPage.isEmpty()) {
             throw new CommentException(HttpStatus.ACCEPTED, "요청한 페이지에 댓글이 존재하지 않습니다.");

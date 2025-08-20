@@ -307,6 +307,7 @@ public class PostService {
      */
     @Transactional(readOnly = true)
     public List<PartyMemberResponseDto> getPartyMembers(Long postId) {
+        postSupportService.findById(postId);
         List<PartyMember> partyMembers = partyMemberSupportService.findAllByPostId(postId);
 
         return partyMembers.stream().map(partyMember -> new PartyMemberResponseDto(
@@ -367,7 +368,7 @@ public class PostService {
         partyMemberSupportService.delete(partyMember);
 
         User leader = post.getCharacter().getUser();
-        String message = "'" + user.getOwnerCharName() + "'님이 파티에서 탈퇴했습니다. \n 파티모집글 : [" + post.getTitle() + "]";
+        String message = "'" + user.getOwnerCharName() + "'님이 파티에서 탈퇴했습니다. \n 게시글 작성 캐릭터 : [" + post.getCharacter().getCharName() + "] \n 파티모집글 : [" + post.getTitle() + "]";
         NotificationStatus status = NotificationStatus.PARTY_APPLY;
 
         Notification notification = new Notification(leader, message, post, status);
