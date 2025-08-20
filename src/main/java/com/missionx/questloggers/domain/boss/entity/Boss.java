@@ -19,8 +19,7 @@ public class Boss {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany
-    @JoinColumn(name = "char_boss_id")
+    @OneToMany(mappedBy = "boss", cascade = CascadeType.ALL)
     private List<CharacterBoss> characterBoss = new ArrayList<>();
 
     @Column(name = "boss_name", nullable = false, length = 50)
