@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: ${DB_URL2}
+    username: ${DB_USERNAME2}
+    password: ${DB_PASSWORD2}
+
+  jpa:
+    show-sql: false
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+
+  cache:
+    type: redis
+
+  data:
+    redis:
+      host: redis-db-0wursh.serverless.apn2.cache.amazonaws.com
+      port: 6379
+      ssl:
+        enabled: true
+      client-type: lettuce   # 기본값이지만 명시해도 됨
+
+server:
+  error:
+    include-message: always
+  port: 8000
+
+jwt:
+  secret:
+    key: ${SECRET_KEY}
