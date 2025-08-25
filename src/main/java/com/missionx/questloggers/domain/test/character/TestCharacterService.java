@@ -16,6 +16,7 @@ import com.missionx.questloggers.domain.user.repository.UserRepository;
 import com.missionx.questloggers.domain.user.service.UserSupportService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,18 +37,20 @@ public class TestCharacterService {
     private final BossSupportService bossSupportService;
     private final PostRepository postRepository;
     private final BossService bossService;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Transactional
     public void createUserAndChar() {
         List<User> userList = new ArrayList<>();
-        for (int i = 1; i <= 10000; i++) {
-            User user = new User("example" + i + "@naver.com", "1234Qwer!", "test-f7d677ebd9e2982d9bbeb5d0f21cc6bd773457cc480edf8201a7ca23dce6402efe8d04e6d233bd35cf2fabdeb93fb0d" + i, Role.USER);
+        String password = "1234Qwer!";
+        String encodedPassword = passwordEncoder.encode(password);
+        for (int i = 1; i <= 1000; i++) {
+            User user = new User("example" + i + "@naver.com", encodedPassword, "test-f7d677ebd9e2982d9bbeb5d0f21cc6bd773457cc480edf8201a7ca23dce6402efe8d04e6d233bd35cf2fabdeb93fb0d" + i, Role.USER);
             userList.add(user);
         }
         userRepository.saveAll(userList);
         for (User user : userList) {
             createChar(user);
-            setUserOwnerCharId(user);
         }
     }
 
