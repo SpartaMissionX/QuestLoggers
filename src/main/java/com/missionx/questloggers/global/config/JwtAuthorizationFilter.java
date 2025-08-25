@@ -22,6 +22,7 @@ public class JwtAuthorizationFilter implements Filter {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final Set<String> excludedPaths = Set.of(
+            "/actuator/health",
             "/api/auth/login",
             "/api/auth/signup",
             "/api/auth/logout",
