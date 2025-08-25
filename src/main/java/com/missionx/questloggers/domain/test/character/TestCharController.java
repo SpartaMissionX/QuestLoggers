@@ -20,13 +20,22 @@ import java.util.Random;
 public class TestCharController {
     private final TestCharacterService testCharacterService;
 
-    @PostMapping("/test")
+    @PostMapping("/test/signup")
     public ResponseEntity<ApiResponse<Object>> createDummyChar(@AuthenticationPrincipal LoginUser loginUser) {
         if (!loginUser.getRole().equals("ADMIN")) {
             return ApiResponse.error(HttpStatus.FORBIDDEN, "테스트 계정 생성은 관리자만 가능합니다.");
         }
         testCharacterService.createUserAndChar();
         return ApiResponse.success(HttpStatus.CREATED, "테스트 계정 생성이 완료되었습니다.", null);
+    }
+
+    @PostMapping("/test/owner")
+    public ResponseEntity<ApiResponse<Object>> setOwnerChar(@AuthenticationPrincipal LoginUser loginUser) {
+        if (!loginUser.getRole().equals("ADMIN")) {
+            return ApiResponse.error(HttpStatus.FORBIDDEN, "테스트 계정 대표캐릭터 설정은 관리자만 가능합니다.");
+        }
+        testCharacterService.setUserOwnerCharId();
+        return ApiResponse.success(HttpStatus.OK, "테스트 계정 대표캐릭터 설정이 완료되었습니다.", null);
     }
 
     @PostMapping("/test/posts")

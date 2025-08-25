@@ -70,16 +70,18 @@ public class TestCharacterService {
     }
 
     @Transactional
-    public void setUserOwnerCharId(User user) {
-
-        User user1 = userSupportService.findUserById(user.getId());
-        if (user1.getOwnerCharId() == null) {
-            List<Character> foundChar = characterSupportService.findByUser(user1);
-            Character randomChar = foundChar.get(new Random().nextInt(foundChar.size()));
-            randomChar.updateOwnerChar(true);
-            characterRepository.save(randomChar);
-            user1.updateOwnerChar(randomChar.getId(), randomChar.getCharName());
-            userRepository.save(user1);
+    public void setUserOwnerCharId() {
+        List<User> all = userRepository.findAll();
+        for (User user : all) {
+            User user1 = userSupportService.findUserById(user.getId());
+            if (user1.getOwnerCharId() == null) {
+                List<Character> foundChar = characterSupportService.findByUser(user1);
+                Character randomChar = foundChar.get(new Random().nextInt(foundChar.size()));
+                randomChar.updateOwnerChar(true);
+                characterRepository.save(randomChar);
+                user1.updateOwnerChar(randomChar.getId(), randomChar.getCharName());
+                userRepository.save(user1);
+            }
         }
     }
 
