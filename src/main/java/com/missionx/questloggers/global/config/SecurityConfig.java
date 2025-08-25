@@ -40,8 +40,8 @@ public class SecurityConfig {
                 )
                 //url 접근권한
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/test/**").permitAll()
+                        .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/test/**").permitAll()
                         .anyRequest().authenticated()
                 );
 
